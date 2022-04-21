@@ -4,11 +4,14 @@ plugins {
     id("com.gradle.plugin-publish") version "0.21.0" // Task: Upgrade to 1.0.0 when it's released https://plugins.gradle.org/plugin/com.gradle.plugin-publish
 }
 
+val kotlin_version: String by project
+val junit_version: String by project
+
 object PluginCoordinates {
     const val ID = "io.ktor.plugin"
     const val GROUP = "io.ktor"
     const val VERSION = "0.0.1"
-    const val IMPLEMENTATION_CLASS = "io.ktor.KtorPlugin"
+    const val IMPLEMENTATION_CLASS = "io.ktor.plugin.KtorPlugin"
 }
 
 group = PluginCoordinates.GROUP
@@ -21,12 +24,8 @@ repositories {
 dependencies {
     implementation(gradleApi())
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.6.20")
-    testImplementation(platform("org.junit:junit-bom:5.8.2"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-
-//    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-//    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    testImplementation("org.junit.vintage:junit-vintage-engine:$junit_version")
 }
 
 object PluginBundle {

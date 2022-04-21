@@ -1,4 +1,4 @@
-package io.ktor
+package io.ktor.plugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project

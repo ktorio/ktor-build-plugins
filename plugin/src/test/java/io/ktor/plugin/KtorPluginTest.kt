@@ -1,7 +1,7 @@
-package org.jetbrains.packages.pdht.plugin
+package io.ktor.plugin
 
 import org.gradle.testfixtures.ProjectBuilder
-import org.junit.jupiter.api.Test
+import org.junit.Test
 
 class KtorPluginTest {
     @Test
