@@ -9,7 +9,8 @@ from [gh:cortinico/kotlin-gradle-plugin-template](https://github.com/cortinico/k
 
 ## Steps to take
 
-1. Find `main()` method (mockable) - **NOT READY**
-2. Add shadow plugin (mockable) - **NOT READY**
-3. Configure fat jar (mockable) - **NOT READY**
-4. Add the brand-new task to generate fat jar (non-mockable) - **NOT READY**
+1. Find `main()` method (mockable) — **NOT READY** (is it needed?)
+2. Add shadow plugin (mockable) — **READY**
+3. Configure fat jar (mockable) — **NOT READY**
+4. Add the brand-new task to generate fat jar (non-mockable) — **READY**
+5. Publish the plugin — **NOT READY** (is it needed?)
