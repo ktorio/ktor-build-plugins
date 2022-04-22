@@ -28,8 +28,8 @@ repositories {
 dependencies {
     implementation(gradleApi())
 
-    // https://mvnrepository.com/artifact/com.github.jengelman.gradle.plugins/shadow
-    implementation("com.github.jengelman.gradle.plugins:shadow:6.1.0")
+    // https://mvnrepository.com/artifact/com.github.johnrengelman.shadow/com.github.johnrengelman.shadow.gradle.plugin
+    implementation("com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:7.1.2")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("org.junit.vintage:junit-vintage-engine:$junit_version")
