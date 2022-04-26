@@ -40,12 +40,7 @@ object PluginBundle {
     const val WEBSITE = "https://github.com/ktorio/ktor-build-plugins"
     const val DESCRIPTION = "Ktor plugin"
     const val DISPLAY_NAME = "Ktor plugin"
-    val TAGS = listOf<String>(
-//        "plugin",
-//        "gradle",
-//        "sample",
-//        "template"
-    )
+    val TAGS = listOf<String>()
 }
 
 java {
