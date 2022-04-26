@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.6.20"
+    kotlin("jvm") version "1.6.21"
     id("java-gradle-plugin")
 
     // TODO: Upgrade to 0.19.0+ when we understand how to replace vulnerable log4j version with an non-vulnerable one in shadow plugin
