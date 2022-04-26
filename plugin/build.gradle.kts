@@ -11,10 +11,10 @@ val kotlin_version: String by project
 val junit_version: String by project
 
 object PluginCoordinates {
-    const val ID = "io.ktor.plugin"
+    const val ID = "io.ktor.ktor-gradle-plugin"
     const val GROUP = "io.ktor"
     const val VERSION = "0.0.1"
-    const val IMPLEMENTATION_CLASS = "io.ktor.plugin.KtorPlugin"
+    const val IMPLEMENTATION_CLASS = "io.ktor.plugin.KtorGradlePlugin"
 }
 
 group = PluginCoordinates.GROUP
@@ -38,8 +38,8 @@ dependencies {
 object PluginBundle {
     const val VCS = "https://github.com/ktorio/ktor-build-plugins"
     const val WEBSITE = "https://github.com/ktorio/ktor-build-plugins"
-    const val DESCRIPTION = "Ktor plugin"
-    const val DISPLAY_NAME = "Ktor plugin"
+    const val DESCRIPTION = "Ktor Gradle Plugin"
+    const val DISPLAY_NAME = "Ktor Gradle Plugin"
     val TAGS = listOf<String>()
 }
 
