@@ -37,7 +37,6 @@ subprojects {
             optIn("kotlin.time.ExperimentalTime")
             optIn("kotlin.ExperimentalStdlibApi")
             optIn("kotlinx.coroutines.ObsoleteCoroutinesApi")
-            optIn("kotlinx.serialization.ExperimentalSerializationApi")
         }
     }
 }
