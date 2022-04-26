@@ -9,10 +9,10 @@ plugins {
     id("io.ktor.plugin")
 }
 
-group = "io.ktor"
+group = "io.ktor.samples"
 version = "0.0.1"
 application {
-    mainClass.set("io.ktor.ApplicationKt")
+    mainClass.set("io.ktor.samples.fatjar.ApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")

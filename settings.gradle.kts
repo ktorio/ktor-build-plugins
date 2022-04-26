@@ -3,4 +3,4 @@ pluginManagement {
     includeBuild("plugin")
 }
 
-include("dummy")
+include("samples:fatjar")

@@ -1,10 +1,10 @@
-package io.ktor
+package io.ktor.samples.fatjar
 
 import org.junit.Test
 
 class ApplicationTest {
     @Test
     fun test() {
-        println("Go")
+        println("Test")
     }
 }
