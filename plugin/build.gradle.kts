@@ -2,9 +2,8 @@ plugins {
     kotlin("jvm") version "1.6.21"
     id("java-gradle-plugin")
 
-    // TODO: Upgrade to 0.19.0+ when we understand how to replace vulnerable log4j version with an non-vulnerable one in shadow plugin
     // TODO: Upgrade to 1.0.0 when it's released https://plugins.gradle.org/plugin/com.gradle.plugin-publish
-    id("com.gradle.plugin-publish") version "0.18.0"
+    id("com.gradle.plugin-publish") version "0.21.0"
 }
 
 val kotlin_version: String by project
