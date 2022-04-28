@@ -4,3 +4,4 @@ pluginManagement {
 }
 
 include("samples:fatjar")
+include("samples:docker")
