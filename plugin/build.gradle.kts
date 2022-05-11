@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.6.21"
     id("java-gradle-plugin")
+    id("maven-publish")
 
     // TODO: Upgrade to 1.0.0 when it's released https://plugins.gradle.org/plugin/com.gradle.plugin-publish
     id("com.gradle.plugin-publish") version "0.21.0"
@@ -27,7 +28,6 @@ repositories {
 dependencies {
     implementation(gradleApi())
 
-    // https://mvnrepository.com/artifact/com.github.johnrengelman.shadow/com.github.johnrengelman.shadow.gradle.plugin
     implementation("com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:7.1.2")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
@@ -39,7 +39,7 @@ object PluginBundle {
     const val WEBSITE = "https://github.com/ktorio/ktor-build-plugins"
     const val DESCRIPTION = "Ktor Gradle Plugin"
     const val DISPLAY_NAME = "Ktor Gradle Plugin"
-    val TAGS = listOf<String>()
+    val TAGS = listOf("ktor")
 }
 
 java {
@@ -69,12 +69,6 @@ pluginBundle {
             displayName = PluginBundle.DISPLAY_NAME
         }
     }
-
-    mavenCoordinates {
-        groupId = PluginCoordinates.GROUP
-        artifactId = PluginCoordinates.ID.removePrefix("$groupId.")
-        version = PluginCoordinates.VERSION
-    }
 }
 
 tasks.create("setupPluginUploadFromEnvironment") {
@@ -94,4 +88,14 @@ tasks.create("setupPluginUploadFromEnvironment") {
 // To run tests on build
 tasks.withType<Jar> {
     dependsOn("test")
+}
+
+// Allow publishing to local repository on `publish` command
+publishing {
+    repositories {
+        maven {
+            name = "localPluginRepository"
+            url = uri("../local-plugin-repository")
+        }
+    }
 }
