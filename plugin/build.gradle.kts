@@ -29,7 +29,7 @@ dependencies {
     implementation(gradleApi())
 
     implementation("com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:7.1.2")
-
+    implementation("gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:3.2.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("org.junit.vintage:junit-vintage-engine:$junit_version")
 }

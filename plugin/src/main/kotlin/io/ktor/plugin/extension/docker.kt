@@ -1,52 +1,47 @@
 package io.ktor.plugin.extension
 
-import org.gradle.api.DefaultTask
+import com.google.cloud.tools.jib.gradle.JibExtension
+import com.google.cloud.tools.jib.gradle.JibPlugin
 import org.gradle.api.Project
-import org.gradle.api.tasks.TaskAction
 
-enum class OpenJdkVersion(val numeric: Int) {
-    JDK_8(8), JDK_11(11), JDK_17(17)
+enum class JreVersion(val numeric: Int) {
+    JRE_8(8), JRE_11(11), JRE_17(17)
 }
 
 abstract class DockerExtension {
-    var jdkVersion = OpenJdkVersion.JDK_11
-    var imageTag = "my-application"
+    var jreVersion = JreVersion.JRE_11
+    var imageTag = "latest"
+    var imageName = "ktor-docker-image"
 }
+
+private const val DOCKER_EXTENSION = "docker"
+private const val BUILD_DOCKER = JibPlugin.BUILD_DOCKER_TASK_NAME
+private const val SETUP_DOCKER = "setupDocker"
+private const val RUN_DOCKER = "runDocker"
 
 fun configureDocker(project: Project) {
-    project.createKtorExtension<DockerExtension>("docker")
-    project.tasks.create("runDocker", RunDockerTask::class.java)
-}
-
-abstract class RunDockerTask : DefaultTask() {
-    @TaskAction
-    fun execute() {
-        val dockerExtension = project.getKtorExtension<DockerExtension>()
-        buildDockerfile(dockerExtension)
-        val imageTag = dockerExtension.imageTag
-        project.exec { exec -> exec.commandLine("docker", "build", "-t", imageTag, ".") }
-        project.exec { exec -> exec.commandLine("docker", "run", "-p", "8080:8080", imageTag) }
-    }
-
-    private fun buildDockerfile(dockerExtension: DockerExtension) {
-        val dockerfile = project.projectDir.resolve("Dockerfile")
-        if (!dockerfile.exists()) {
-            val jdkVersion = dockerExtension.jdkVersion.numeric
-            dockerfile.writeText(
-                """
-                FROM gradle:7-jdk$jdkVersion AS build
-                COPY --chown=gradle:gradle . /home/gradle/src
-                WORKDIR /home/gradle/src
-                RUN gradle buildFatJar --no-daemon
-
-                FROM openjdk:$jdkVersion
-                EXPOSE 8080:8080
-                RUN mkdir /app
-                COPY --from=build /home/gradle/src/build/libs/*.jar /app/fat.jar
-                ENTRYPOINT ["java","-jar","/app/fat.jar"]
-                """.trimIndent()
-            )
+    project.createKtorExtension<DockerExtension>(DOCKER_EXTENSION)
+    project.plugins.apply(JibPlugin::class.java)
+    project.tasks.create(SETUP_DOCKER) {
+        it.doLast {
+            val jibExtension = project.extensions.getByType(JibExtension::class.java)
+            val dockerExtension = project.getKtorExtension<DockerExtension>()
+            jibExtension.from.image = "eclipse-temurin:${dockerExtension.jreVersion.numeric}-jre"
+            jibExtension.to.tags = setOfNotNull(dockerExtension.imageTag)
+            jibExtension.to.image = dockerExtension.imageName
         }
     }
+    project.tasks.create(RUN_DOCKER) {
+        it.dependsOn(BUILD_DOCKER)
+        it.doLast {
+            project.exec { exec ->
+                val dockerExtension = project.getKtorExtension<DockerExtension>()
+                val fullImageName = dockerExtension.imageName + ":" + dockerExtension.imageTag
+                exec.commandLine(listOf("docker", "run", "-p", "8080:8080", fullImageName))
+            }
+        }
+    }
+    project.tasks.named(BUILD_DOCKER) {
+        it.dependsOn(SETUP_DOCKER)
+    }
 }
-

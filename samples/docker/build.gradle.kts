@@ -38,7 +38,8 @@ ktor {
         archiveFileName = "fat.jar"
     }
     docker {
-        jdkVersion = OpenJdkVersion.JDK_17
+        jreVersion = JreVersion.JRE_17
+        imageName = "sample-docker"
         imageTag = "my-docker-sample"
     }
 }
