@@ -15,9 +15,11 @@ abstract class DockerExtension {
 }
 
 private const val DOCKER_EXTENSION = "docker"
-private const val BUILD_DOCKER = JibPlugin.BUILD_DOCKER_TASK_NAME
+private const val JIB_BUILD_DOCKER = JibPlugin.BUILD_DOCKER_TASK_NAME
 private const val SETUP_DOCKER = "setupDocker"
 private const val RUN_DOCKER = "runDocker"
+
+private const val PUBLISH_IMAGE_TO_LOCAL_REGISTRY = "publishImageToLocalRegistry"
 
 fun configureDocker(project: Project) {
     project.createKtorExtension<DockerExtension>(DOCKER_EXTENSION)
@@ -32,7 +34,7 @@ fun configureDocker(project: Project) {
         }
     }
     project.tasks.create(RUN_DOCKER) {
-        it.dependsOn(BUILD_DOCKER)
+        it.dependsOn(JIB_BUILD_DOCKER)
         it.doLast {
             project.exec { exec ->
                 val dockerExtension = project.getKtorExtension<DockerExtension>()
@@ -41,7 +43,10 @@ fun configureDocker(project: Project) {
             }
         }
     }
-    project.tasks.named(BUILD_DOCKER) {
+    project.tasks.named(JIB_BUILD_DOCKER) {
         it.dependsOn(SETUP_DOCKER)
+    }
+    project.tasks.create(PUBLISH_IMAGE_TO_LOCAL_REGISTRY) {
+        it.dependsOn(JIB_BUILD_DOCKER)
     }
 }
