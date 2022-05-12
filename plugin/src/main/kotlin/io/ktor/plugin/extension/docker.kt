@@ -47,6 +47,9 @@ fun configureDocker(project: Project) {
     project.tasks.named(JIB_BUILD_DOCKER) {
         it.dependsOn(SETUP_DOCKER)
     }
+    project.tasks.named(JIB_BUILD_TAR) {
+        it.dependsOn(SETUP_DOCKER)
+    }
     project.tasks.create(PUBLISH_IMAGE_TO_LOCAL_REGISTRY) {
         it.dependsOn(JIB_BUILD_DOCKER)
     }
