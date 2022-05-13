@@ -8,7 +8,7 @@ import org.gradle.api.Project
 abstract class KtorGradlePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.plugins.apply(ShadowPlugin::class.java)
-        project.tasks.create("buildShadowJar") {
+        project.tasks.create("buildFatJar") {
             it.dependsOn("shadowJar")
         }
     }
