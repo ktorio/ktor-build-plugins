@@ -10,9 +10,10 @@ abstract class FatJarExtension {
 
 fun configureFatJar(project: Project) {
     project.plugins.apply(ShadowPlugin::class.java)
-    project.tasks.register("buildFatJar") { it.dependsOn("shadowJar"); }
+    val shadowJar = project.tasks.withType(ShadowJar::class.java)
+    project.tasks.register("buildFatJar") { it.dependsOn(shadowJar) }
     val fatJarExtension = project.createKtorExtension<FatJarExtension>("fatJar")
-    project.tasks.withType(ShadowJar::class.java) {
+    shadowJar.configureEach {
         fatJarExtension.archiveFileName?.let { name -> it.archiveFileName.set(name) }
     }
 }
