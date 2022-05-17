@@ -42,8 +42,8 @@ ktor {
         // Comment externalRepository out if you don't want to push your image to the registry
         externalRegistry = DockerImageRegistry.dockerHub(
             appName = "ktor-app",
-            username = System.getProperty("DOCKER_HUB_USERNAME"),
-            password = System.getProperty("DOCKER_HUB_PASSWORD")
+            username = System.getenv("DOCKER_HUB_USERNAME"),
+            password = System.getenv("DOCKER_HUB_PASSWORD")
         )
     }
 }
