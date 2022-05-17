@@ -30,3 +30,9 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("org.junit.vintage:junit-vintage-engine:$junit_version")
 }
+
+ktor {
+    fatJar {
+        archiveFileName = "fat.jar"
+    }
+}

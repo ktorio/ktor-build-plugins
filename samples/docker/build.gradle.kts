@@ -34,12 +34,16 @@ dependencies {
 }
 
 ktor {
-    fatJar {
-        archiveFileName = "fat.jar"
-    }
     docker {
         jreVersion = JreVersion.JRE_17
-        imageName = "sample-docker"
+        localImageName = "sample-docker-image"
         imageTag = "my-docker-sample"
+
+        // Comment externalRepository out if you don't want to push your image to the registry
+        externalRegistry = DockerImageRegistry.dockerHub(
+            appName = "ktor-app",
+            username = System.getProperty("DOCKER_HUB_USERNAME"),
+            password = System.getProperty("DOCKER_HUB_PASSWORD")
+        )
     }
 }
