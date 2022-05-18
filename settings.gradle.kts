@@ -4,4 +4,4 @@ pluginManagement {
 }
 
 include("samples:fatjar")
-include("samples:docker")
+include("samples:ktor-docker-sample")
