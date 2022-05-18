@@ -12,18 +12,10 @@ class KtorGradlePluginTest {
     }
 
     @Test
-    fun `plugin creates a new task named buildShadowJar`() {
+    fun `plugin creates a new task named buildFatJar`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply("io.ktor.ktor-gradle-plugin")
-        val buildShadowJar = project.tasks.findByName("buildShadowJar")
-        Assert.assertNotNull(buildShadowJar)
-    }
-
-    @Test
-    fun `task buildShadowJar depends on shadowJar`() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("io.ktor.ktor-gradle-plugin")
-        val buildShadowJar = requireNotNull(project.tasks.findByName("buildShadowJar"))
-        Assert.assertTrue(buildShadowJar.dependsOn.any { it == "shadowJar" })
+        val task = project.tasks.findByName("buildFatJar")
+        Assert.assertNotNull(task)
     }
 }

@@ -9,6 +9,8 @@ plugins {
 
 val kotlin_version: String by project
 val junit_version: String by project
+val shadow_plugin_version: String by project
+val jib_gradle_plugin_version: String by project
 
 object PluginCoordinates {
     const val ID = "io.ktor.ktor-gradle-plugin"
@@ -28,8 +30,8 @@ repositories {
 dependencies {
     implementation(gradleApi())
 
-    implementation("com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:7.1.2")
-
+    implementation("com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:$shadow_plugin_version")
+    implementation("gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:$jib_gradle_plugin_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("org.junit.vintage:junit-vintage-engine:$junit_version")
 }
