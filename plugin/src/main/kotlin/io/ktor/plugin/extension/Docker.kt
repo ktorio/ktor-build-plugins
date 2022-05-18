@@ -2,6 +2,7 @@ package io.ktor.plugin.extension
 
 import com.google.cloud.tools.jib.gradle.JibExtension
 import com.google.cloud.tools.jib.gradle.JibPlugin
+import com.google.cloud.tools.jib.gradle.TargetImageParameters
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
@@ -14,15 +15,41 @@ enum class JreVersion(val numeric: Int) {
 }
 
 abstract class DockerExtension {
+    /**
+     * JRE version to use in the image. Defaults to [JreVersion.JRE_11].
+     */
     var jreVersion = JreVersion.JRE_11
+
+    /**
+     * Image tag to use in the image. Defaults to `"latest"`.
+     */
     var imageTag = "latest"
+
+    /**
+     * Image name for local builds. Defaults to `"ktor-docker-image"`.
+     */
     var localImageName = "ktor-docker-image"
+
+    /**
+     * External registry to push the image into. Default is not set.
+     */
     var externalRegistry: DockerImageRegistry? = null
 }
 
 interface DockerImageRegistry {
+    /**
+     * Link for [JibExtension.to.image][TargetImageParameters.image].
+     */
     val toImage: String
+
+    /**
+     * Username for a given registry.
+     */
     val username: String
+
+    /**
+     * Password for a given registry.
+     */
     val password: String
 
     companion object {
@@ -68,10 +95,10 @@ private const val JIB_BUILD_INTO_TAR_TASK_NAME = JibPlugin.BUILD_TAR_TASK_NAME
 private const val JIB_BUILD_IMAGE_AND_PUBLISH_TASK_NAME = JibPlugin.BUILD_IMAGE_TASK_NAME
 
 // Ktor related tasks
-private const val PUBLISH_IMAGE_TO_LOCAL_REGISTRY_TASK_NAME = "publishImageToLocalRegistry"
-private const val PUBLISH_IMAGE_TO_EXTERNAL_REGISTRY_TASK_NAME = "publishImage"
-private const val BUILD_IMAGE_TASK_NAME = "buildImage"
-private const val RUN_DOCKER_TASK_NAME = "runDocker"
+const val PUBLISH_IMAGE_TO_LOCAL_REGISTRY_TASK_NAME = "publishImageToLocalRegistry"
+const val PUBLISH_IMAGE_TO_EXTERNAL_REGISTRY_TASK_NAME = "publishImage"
+const val BUILD_IMAGE_TASK_NAME = "buildImage"
+const val RUN_DOCKER_TASK_NAME = "runDocker"
 
 // Ktor configuration tasks
 private const val SETUP_JIB_LOCAL_TASK_NAME = "setupJibLocal"
