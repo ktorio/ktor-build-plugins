@@ -181,8 +181,7 @@ fun configureDocker(project: Project) {
 
     tasks.registerKtorTask(
         PUBLISH_IMAGE_TO_LOCAL_REGISTRY_TASK_NAME,
-        "Builds and publishes the project's docker image to local docker registry.",
-        RunDockerTask::class
+        "Builds and publishes the project's docker image to local docker registry."
     ) {
         dependsOn(
             setupJibLocalTask,
