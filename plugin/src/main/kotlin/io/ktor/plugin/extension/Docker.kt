@@ -147,17 +147,19 @@ fun configureDocker(project: Project) {
     project.createKtorExtension<DockerExtension>(DOCKER_EXTENSION_NAME)
     project.plugins.apply(JibPlugin::class.java)
 
-    val setupJibLocalTask = project.tasks.register(SETUP_JIB_LOCAL_TASK_NAME, SetupJibTask::class.java) {
+    val tasks = project.tasks
+
+    val setupJibLocalTask = tasks.register(SETUP_JIB_LOCAL_TASK_NAME, SetupJibTask::class.java) {
         it.setupExternalRegistry.set(false)
     }
-    val setupJibExternalTask = project.tasks.register(SETUP_JIB_EXTERNAL_TASK_NAME, SetupJibTask::class.java) {
+    val setupJibExternalTask = tasks.register(SETUP_JIB_EXTERNAL_TASK_NAME, SetupJibTask::class.java) {
         it.setupExternalRegistry.set(true)
     }
     val setupJibTasks = arrayOf(setupJibLocalTask, setupJibExternalTask)
 
-    val jibBuildIntoLocalDockerTask = project.tasks.named(JIB_BUILD_INTO_LOCAL_DOCKER_TASK_NAME)
-    val jibBuildIntoTarTask = project.tasks.named(JIB_BUILD_INTO_TAR_TASK_NAME)
-    val jibBuildImageAndPublishTask = project.tasks.named(JIB_BUILD_IMAGE_AND_PUBLISH_TASK_NAME)
+    val jibBuildIntoLocalDockerTask = tasks.named(JIB_BUILD_INTO_LOCAL_DOCKER_TASK_NAME)
+    val jibBuildIntoTarTask = tasks.named(JIB_BUILD_INTO_TAR_TASK_NAME)
+    val jibBuildImageAndPublishTask = tasks.named(JIB_BUILD_IMAGE_AND_PUBLISH_TASK_NAME)
     val jibTasks = arrayOf(jibBuildIntoLocalDockerTask, jibBuildIntoTarTask, jibBuildImageAndPublishTask)
 
     for (jibTask in jibTasks) {
@@ -166,29 +168,42 @@ fun configureDocker(project: Project) {
         }
     }
 
-    project.tasks.register(RUN_DOCKER_TASK_NAME, RunDockerTask::class.java) {
-        it.dependsOn(
+    tasks.registerKtorTask(
+        RUN_DOCKER_TASK_NAME,
+        "Builds the project's image into local docker and runs it.",
+        RunDockerTask::class
+    ) {
+        dependsOn(
             setupJibLocalTask,
             jibBuildIntoLocalDockerTask
         )
     }
 
-    project.tasks.register(PUBLISH_IMAGE_TO_LOCAL_REGISTRY_TASK_NAME) {
-        it.dependsOn(
+    tasks.registerKtorTask(
+        PUBLISH_IMAGE_TO_LOCAL_REGISTRY_TASK_NAME,
+        "Builds and publishes the project's docker image to local docker registry."
+    ) {
+        dependsOn(
             setupJibLocalTask,
             jibBuildIntoLocalDockerTask
         )
     }
 
-    project.tasks.register(PUBLISH_IMAGE_TO_EXTERNAL_REGISTRY_TASK_NAME) {
-        it.dependsOn(
+    tasks.registerKtorTask(
+        PUBLISH_IMAGE_TO_EXTERNAL_REGISTRY_TASK_NAME,
+        "Builds and publishes the project's docker image to external docker registry."
+    ) {
+        dependsOn(
             setupJibExternalTask,
             jibBuildImageAndPublishTask
         )
     }
 
-    project.tasks.register(BUILD_IMAGE_TASK_NAME) {
-        it.dependsOn(
+    tasks.registerKtorTask(
+        BUILD_IMAGE_TASK_NAME,
+        "Builds the project's docker image into tarball."
+    ) {
+        dependsOn(
             setupJibLocalTask,
             jibBuildIntoTarTask
         )
