@@ -118,14 +118,13 @@ private abstract class SetupJibTask : DefaultTask() {
         val jibExtension = project.extensions.getByType(JibExtension::class.java)
         val dockerExtension = project.getKtorExtension<DockerExtension>()
         jibExtension.from.image = "eclipse-temurin:${dockerExtension.jreVersion.numeric}-jre"
-        jibExtension.to.tags = setOfNotNull(dockerExtension.imageTag)
-        jibExtension.to.image = dockerExtension.localImageName
+        jibExtension.to.image = dockerExtension.localImageName + ":" + dockerExtension.imageTag
 
         if (setupExternalRegistry.get()) {
             val externalRegistry = requireNotNull(dockerExtension.externalRegistry) {
                 throw RuntimeException("External registry is not set")
             }
-            jibExtension.to.image = externalRegistry.toImage
+            jibExtension.to.image = externalRegistry.toImage + ":" + dockerExtension.imageTag
             jibExtension.to.auth.username = externalRegistry.username
             jibExtension.to.auth.password = externalRegistry.password
         }
