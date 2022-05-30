@@ -11,12 +11,12 @@ import org.gradle.api.tasks.Input
  */
 abstract class NativeExtension {
     /**
-     * Is verbose output.
+     * Is verbose output. Default to `true`.
      */
     var verbose = true
 
     /**
-     * Executable file name.
+     * Executable file name. Defaults to `"native-image"`.
      */
     @get:Input
     var imageName = "native-image"
