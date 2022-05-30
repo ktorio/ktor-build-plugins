@@ -9,5 +9,6 @@ abstract class KtorGradlePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         configureFatJar(project)
         configureDocker(project)
+        configureNative(project)
     }
 }
