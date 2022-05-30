@@ -34,7 +34,5 @@ dependencies {
 ktor {
     native {
         imageName = "native-image-sample"
-        initializeAtBuildTime.add("org.apache")
-        initializeAtRunTime.add("org.apache.commons.io.Charsets")
     }
 }
