@@ -32,7 +32,7 @@ dependencies {
 }
 
 ktor {
-    native {
+    nativeImage {
         imageName = "native-image-sample"
     }
 }

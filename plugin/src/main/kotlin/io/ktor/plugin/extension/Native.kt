@@ -35,7 +35,7 @@ abstract class NativeExtension {
     var initializeAtRunTime = mutableListOf<String>()
 }
 
-private const val NATIVE_EXTENSION_NAME = "native"
+private const val NATIVE_EXTENSION_NAME = "nativeImage"
 
 private const val CONFIGURE_NATIVE_TASK_NAME = "configureNative"
 
