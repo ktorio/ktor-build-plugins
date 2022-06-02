@@ -11,6 +11,7 @@ val kotlin_version: String by project
 val junit_version: String by project
 val shadow_plugin_version: String by project
 val jib_gradle_plugin_version: String by project
+val log4j_version: String by project
 
 object PluginCoordinates {
     const val ID = "io.ktor.ktor-gradle-plugin"
@@ -98,6 +99,15 @@ publishing {
         maven {
             name = "localPluginRepository"
             url = uri("../local-plugin-repository")
+        }
+    }
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.apache.logging.log4j") {
+            useVersion(log4j_version)
+            because("zero-day exploit, required for Shadow v5")
         }
     }
 }
