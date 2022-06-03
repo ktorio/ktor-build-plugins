@@ -8,13 +8,13 @@ class KtorGradlePluginTest {
     @Test
     fun `plugin exists`() {
         val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("io.ktor.ktor-gradle-plugin")
+        project.pluginManager.apply("io.ktor.plugin")
     }
 
     @Test
     fun `plugin creates a new task named buildFatJar`() {
         val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("io.ktor.ktor-gradle-plugin")
+        project.pluginManager.apply("io.ktor.plugin")
         val task = project.tasks.findByName("buildFatJar")
         Assert.assertNotNull(task)
     }

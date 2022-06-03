@@ -6,7 +6,7 @@ val junit_version: String by project
 plugins {
     application
     kotlin("jvm")
-    id("io.ktor.ktor-gradle-plugin")
+    id("io.ktor.plugin")
 }
 
 group = "io.ktor.samples"
