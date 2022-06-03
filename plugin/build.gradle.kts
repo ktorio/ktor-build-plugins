@@ -62,18 +62,22 @@ pluginBundle {
     tags = PluginBundle.TAGS
 }
 
-tasks.create("setupPluginUploadFromEnvironment") {
+val setupPluginUploadFromEnvironment = tasks.register("setupPluginUploadFromEnvironment") {
     doLast {
-        val key = System.getenv("GRADLE_API_KEY")
-        val secret = System.getenv("GRADLE_API_SECRET")
+        val key = System.getenv("GRADLE_PUBLISH_KEY")
+        val secret = System.getenv("GRADLE_PUBLISH_SECRET")
 
         if (key == null || secret == null) {
-            throw GradleException("GRADLE_API_KEY and/or GRADLE_API_SECRET are not defined environment variables")
+            throw GradleException("GRADLE_PUBLISH_KEY and/or GRADLE_PUBLISH_SECRET are not defined environment variables")
         }
 
         System.setProperty("gradle.publish.key", key)
         System.setProperty("gradle.publish.secret", secret)
     }
+}
+
+tasks.named("publishPlugins") {
+    dependsOn(setupPluginUploadFromEnvironment)
 }
 
 // To run tests on build
