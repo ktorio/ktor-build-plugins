@@ -1,10 +1,6 @@
 plugins {
     kotlin("jvm") version "1.6.21"
-    id("java-gradle-plugin")
-    id("maven-publish")
-
-    // TODO: Upgrade to 1.0.0 when it's released https://plugins.gradle.org/plugin/com.gradle.plugin-publish
-    id("com.gradle.plugin-publish") version "0.21.0"
+    id("com.gradle.plugin-publish") version "1.0.0-rc-2"
 }
 
 val kotlin_version: String by project
@@ -13,15 +9,8 @@ val shadow_plugin_version: String by project
 val jib_gradle_plugin_version: String by project
 val log4j_version: String by project
 
-object PluginCoordinates {
-    const val ID = "io.ktor.ktor-gradle-plugin"
-    const val GROUP = "io.ktor"
-    const val VERSION = "0.0.1"
-    const val IMPLEMENTATION_CLASS = "io.ktor.plugin.KtorGradlePlugin"
-}
-
-group = PluginCoordinates.GROUP
-version = PluginCoordinates.VERSION
+group = PluginBundle.GROUP
+version = PluginBundle.VERSION
 
 repositories {
     mavenCentral()
@@ -38,11 +27,16 @@ dependencies {
 }
 
 object PluginBundle {
-    const val VCS = "https://github.com/ktorio/ktor-build-plugins"
-    const val WEBSITE = "https://github.com/ktorio/ktor-build-plugins"
-    const val DESCRIPTION = "Ktor Gradle Plugin"
+    const val SHORT_NAME = "ktor"
+    const val ID = "io.ktor.plugin"
+    const val GROUP = "io.ktor"
+    const val VERSION = "2.1.0-eap-1"
+    const val IMPLEMENTATION_CLASS = "io.ktor.plugin.KtorGradlePlugin"
+    const val VCS = "https://github.com/ktorio/ktor"
+    const val WEBSITE = "https://ktor.io"
+    const val DESCRIPTION = "Provides the ability to package and containerize your Ktor application"
     const val DISPLAY_NAME = "Ktor Gradle Plugin"
-    val TAGS = listOf("ktor")
+    val TAGS = listOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework")
 }
 
 java {
@@ -52,40 +46,38 @@ java {
 
 gradlePlugin {
     plugins {
-        create(PluginCoordinates.ID) {
-            id = PluginCoordinates.ID
-            implementationClass = PluginCoordinates.IMPLEMENTATION_CLASS
-            version = PluginCoordinates.VERSION
+        create(PluginBundle.SHORT_NAME) {
+            id = PluginBundle.ID
+            displayName = PluginBundle.DISPLAY_NAME
+            implementationClass = PluginBundle.IMPLEMENTATION_CLASS
+            version = PluginBundle.VERSION
         }
     }
 }
 
-// Configuration Block for the Plugin Marker artifact on Plugin Central
 pluginBundle {
     website = PluginBundle.WEBSITE
     vcsUrl = PluginBundle.VCS
     description = PluginBundle.DESCRIPTION
     tags = PluginBundle.TAGS
-
-    (plugins) {
-        getByName(PluginCoordinates.ID) {
-            displayName = PluginBundle.DISPLAY_NAME
-        }
-    }
 }
 
-tasks.create("setupPluginUploadFromEnvironment") {
+val setupPluginUploadFromEnvironment = tasks.register("setupPluginUploadFromEnvironment") {
     doLast {
         val key = System.getenv("GRADLE_PUBLISH_KEY")
         val secret = System.getenv("GRADLE_PUBLISH_SECRET")
 
         if (key == null || secret == null) {
-            throw GradleException("gradlePublishKey and/or gradlePublishSecret are not defined environment variables")
+            throw GradleException("GRADLE_PUBLISH_KEY and/or GRADLE_PUBLISH_SECRET are not defined environment variables")
         }
 
         System.setProperty("gradle.publish.key", key)
         System.setProperty("gradle.publish.secret", secret)
     }
+}
+
+tasks.named("publishPlugins") {
+    dependsOn(setupPluginUploadFromEnvironment)
 }
 
 // To run tests on build
