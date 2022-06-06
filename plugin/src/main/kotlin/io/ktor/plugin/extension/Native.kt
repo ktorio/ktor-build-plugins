@@ -22,6 +22,17 @@ abstract class NativeExtension {
     var imageName = "native-image"
 
     /**
+     * Specifies whether to attach GraalVM agent on image building or not.
+     * Attaching an image will not produce an image,
+     * but instead will run the application
+     * and create useful configs such as `reflect-config.json` in build folder.
+     *
+     * Defaults to `false`.
+     */
+    @get:Input
+    var attachAgent = false
+
+    /**
      * Specifies packages or classes to be initialized at build time.
      */
     @get:Input
@@ -53,6 +64,7 @@ fun configureNative(project: Project) {
         project.extensions.configure(GraalVMExtension::class.java) { extension ->
             extension.binaries.named("main") { options ->
                 options.verbose.set(nativeExtension.verbose)
+                options.agent.enabled.set(nativeExtension.attachAgent)
 
                 val initializeAtBuildTime = nativeExtension.initializeAtBuildTime + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
                 options.buildArgs.add("--initialize-at-build-time=${initializeAtBuildTime.joinToString(",")}")
