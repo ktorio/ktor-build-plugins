@@ -52,7 +52,6 @@ fun configureNative(project: Project) {
     val configureNativeTask = project.tasks.register(CONFIGURE_NATIVE_TASK_NAME) {
         project.extensions.configure(GraalVMExtension::class.java) { extension ->
             extension.binaries.named("main") { options ->
-                options.fallback.set(false)
                 options.verbose.set(nativeExtension.verbose)
 
                 val initializeAtBuildTime = nativeExtension.initializeAtBuildTime + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
