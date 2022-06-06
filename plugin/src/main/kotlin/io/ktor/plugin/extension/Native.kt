@@ -11,24 +11,24 @@ import org.gradle.api.tasks.Input
  */
 abstract class NativeExtension {
     /**
-     * Is verbose output. Default to `true`.
+     * Specifies whether to enable verbose output. Defaults to `true`.
      */
     var verbose = true
 
     /**
-     * Executable file name. Defaults to `"native-image"`.
+     * Specifies a name of executable file. Defaults to `"native-image"`.
      */
     @get:Input
     var imageName = "native-image"
 
     /**
-     * Packages or classes to be initialized at build time.
+     * Specifies packages or classes to be initialized at build time.
      */
     @get:Input
     var initializeAtBuildTime = mutableListOf<String>()
 
     /**
-     * Packages or classes to be initialized at run time.
+     * Specifies packages or classes to be initialized at run time.
      * Useful when some class or package has to be initialized at run time, but it's included in [initializeAtBuildTime].
      */
     @get:Input
