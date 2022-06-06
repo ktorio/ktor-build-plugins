@@ -66,6 +66,8 @@ fun configureNative(project: Project) {
                 options.buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
                 options.buildArgs.add("-H:+ReportExceptionStackTraces")
 
+                options.resources.autodetect()
+
                 options.imageName.set(nativeExtension.imageName)
             }
         }
