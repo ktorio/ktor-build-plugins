@@ -27,6 +27,9 @@ abstract class NativeExtension {
      * but instead will run the application
      * and create useful configs such as `reflect-config.json` in build folder.
      *
+     * For further manual and usages see
+     * [official GraalVM documentation](https://www.graalvm.org/22.1/reference-manual/native-image/Agent/).
+     *
      * Defaults to `false`.
      */
     @get:Input
