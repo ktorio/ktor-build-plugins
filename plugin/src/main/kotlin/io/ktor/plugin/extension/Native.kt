@@ -22,13 +22,13 @@ abstract class NativeExtension {
     var imageName = "native-image"
 
     /**
-     * Specifies whether to attach GraalVM agent on image building or not.
-     * Attaching an image will not produce an image,
+     * Specifies whether to attach a GraalVM agent on an image building or not.
+     * Attaching an agent will not produce an image,
      * but instead will run the application
-     * and create useful configs such as `reflect-config.json` in build folder.
+     * and create useful configs such as `reflect-config.json` in the build folder.
      *
-     * For further manual and usages see
-     * [official GraalVM documentation](https://www.graalvm.org/22.1/reference-manual/native-image/Agent/).
+     * For further manual and usages, see
+     * [official GraalVM documentation](https://www.graalvm.org/reference-manual/native-image/Agent/).
      *
      * Defaults to `false`.
      */
