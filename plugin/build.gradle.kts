@@ -8,6 +8,7 @@ val junit_version: String by project
 val shadow_plugin_version: String by project
 val jib_gradle_plugin_version: String by project
 val log4j_version: String by project
+val graalvm_plugin_version: String by project
 
 group = PluginBundle.GROUP
 version = PluginBundle.VERSION
@@ -22,6 +23,7 @@ dependencies {
 
     implementation("com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:$shadow_plugin_version")
     implementation("gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:$jib_gradle_plugin_version")
+    implementation("org.graalvm.buildtools.native:org.graalvm.buildtools.native.gradle.plugin:$graalvm_plugin_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("org.junit.vintage:junit-vintage-engine:$junit_version")
 }
