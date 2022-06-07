@@ -53,7 +53,7 @@ private const val CONFIGURE_NATIVE_TASK_NAME = "configureNative"
 const val BUILD_NATIVE_IMAGE_TASK_NAME = "buildNativeImage"
 private const val BUILD_NATIVE_IMAGE_TASK_DESCRIPTION = "Builds GraalVM native image."
 
-private val PACKAGES_TO_INITIALIZE_AT_BUILD_TIME = setOf("io.ktor", "kotlin")
+private val PACKAGES_TO_INITIALIZE_AT_BUILD_TIME = setOf("io.ktor", "kotlin", "ch.qos.logback", "kotlinx")
 
 fun configureNative(project: Project) {
     project.plugins.apply(JavaPlugin::class.java) // required for NativeImagePlugin
