@@ -30,7 +30,7 @@ object PluginBundle {
     const val SHORT_NAME = "ktor"
     const val ID = "io.ktor.plugin"
     const val GROUP = "io.ktor"
-    const val VERSION = "2.1.0-eap-1"
+    const val VERSION = "0.0.1"
     const val IMPLEMENTATION_CLASS = "io.ktor.plugin.KtorGradlePlugin"
     const val VCS = "https://github.com/ktorio/ktor"
     const val WEBSITE = "https://ktor.io"
