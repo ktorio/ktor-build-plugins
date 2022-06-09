@@ -24,8 +24,8 @@ dependencies {
     implementation("com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:$shadow_plugin_version")
     implementation("gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:$jib_gradle_plugin_version")
     implementation("org.graalvm.buildtools.native:org.graalvm.buildtools.native.gradle.plugin:$graalvm_plugin_version")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
-    testImplementation("org.junit.vintage:junit-vintage-engine:$junit_version")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlin_version")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:$junit_version")
 }
 
 object PluginBundle {
@@ -80,6 +80,10 @@ val setupPluginUploadFromEnvironment = tasks.register("setupPluginUploadFromEnvi
 
 tasks.named("publishPlugins") {
     dependsOn(setupPluginUploadFromEnvironment)
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 // To run tests on build
