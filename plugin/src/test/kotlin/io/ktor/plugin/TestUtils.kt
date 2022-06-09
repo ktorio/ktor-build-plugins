@@ -21,16 +21,17 @@ fun assertZipFilesEqual(expected: ZipFile, actual: ZipFile) {
     assertEquals(expectedNames, actualNames)
 
     for ((expectedEntry, actualEntry) in expectedEntries.zip(actualEntries)) {
-        assertEquals(
-            expectedEntry.size,
-            actualEntry.size,
-            "Size of entry ${expectedEntry.name} is different (expected: ${expectedEntry.size}, actual: ${actualEntry.size})"
-        )
-
         if (expectedEntry.isDirectory) {
             assertTrue(actualEntry.isDirectory, "Entry ${actualEntry.name} is not a directory")
         } else {
             assertFalse(actualEntry.isDirectory, "Entry ${actualEntry.name} is a directory")
+
+            assertEquals(
+                expectedEntry.size,
+                actualEntry.size,
+                "Size of entry ${expectedEntry.name} is different (expected: ${expectedEntry.size}, actual: ${actualEntry.size})"
+            )
+
             val expectedContent = expected.getInputStream(expectedEntry).readBytes()
             val actualContent = actual.getInputStream(actualEntry).readBytes()
             assertContentEquals(expectedContent, actualContent, "Content of entry ${actualEntry.name} is different")
