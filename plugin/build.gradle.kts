@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
     kotlin("jvm") version "1.6.21"
     id("com.gradle.plugin-publish") version "1.0.0-rc-2"
@@ -10,8 +12,8 @@ val jib_gradle_plugin_version: String by project
 val log4j_version: String by project
 val graalvm_plugin_version: String by project
 
-group = PluginBundle.GROUP
-version = PluginBundle.VERSION
+group = "io.ktor"
+version = "0.0.1"
 
 repositories {
     mavenCentral()
@@ -31,8 +33,6 @@ dependencies {
 object PluginBundle {
     const val SHORT_NAME = "ktor"
     const val ID = "io.ktor.plugin"
-    const val GROUP = "io.ktor"
-    const val VERSION = "0.0.1"
     const val IMPLEMENTATION_CLASS = "io.ktor.plugin.KtorGradlePlugin"
     const val VCS = "https://github.com/ktorio/ktor"
     const val WEBSITE = "https://ktor.io"
@@ -52,7 +52,6 @@ gradlePlugin {
             id = PluginBundle.ID
             displayName = PluginBundle.DISPLAY_NAME
             implementationClass = PluginBundle.IMPLEMENTATION_CLASS
-            version = PluginBundle.VERSION
         }
     }
 }
@@ -84,6 +83,7 @@ tasks.named("publishPlugins") {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    testLogging.events(*TestLogEvent.values())
 }
 
 // To run tests on build
@@ -105,7 +105,7 @@ configurations.all {
     resolutionStrategy.eachDependency {
         if (requested.group == "org.apache.logging.log4j") {
             useVersion(log4j_version)
-            because("zero-day exploit, required for Shadow v5")
+            because("zero-day exploit, required for Shadow v6")
         }
     }
 }
