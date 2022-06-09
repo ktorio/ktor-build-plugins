@@ -9,7 +9,6 @@ class BuildFatJarTest {
     companion object {
         private val BUILD_GRADLE_KTS_CONTENT = """
             plugins {
-                application
                 kotlin("jvm") version "1.6.21"
                 id("io.ktor.plugin")
             }
@@ -57,7 +56,7 @@ class BuildFatJarTest {
         createGradleRunner(projectDir).withArguments("buildFatJar").build()
 
         val expected = javaClass.classLoader.getResource("fat.jar")!!.file
-        val actual = projectDir.resolve("build").resolve("libs").resolve(generatedFatJarFileName)
+        val actual = projectDir.resolve("build/libs/$generatedFatJarFileName")
         assertZipFilesEqual(ZipFile(expected), ZipFile(actual))
     }
 
