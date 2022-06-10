@@ -55,7 +55,7 @@ class BuildFatJarTest {
 
         createGradleRunner(projectDir).withArguments("buildFatJar").build()
 
-        val expected = javaClass.getResource("fat.jar")!!.file
+        val expected = javaClass.classLoader.getResource("fat.jar")!!.file
         val actual = projectDir.resolve("build/libs/$generatedFatJarFileName")
         assertZipFilesEqual(ZipFile(expected), ZipFile(actual))
     }
