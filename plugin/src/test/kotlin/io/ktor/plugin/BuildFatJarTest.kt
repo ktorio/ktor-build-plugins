@@ -9,7 +9,7 @@ class BuildFatJarTest {
     companion object {
         private val BUILD_GRADLE_KTS_CONTENT = """
             plugins {
-                kotlin("jvm") version "1.6.21"
+                kotlin("jvm") version "1.7.0"
                 id("io.ktor.plugin")
             }
 
