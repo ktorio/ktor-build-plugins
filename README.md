@@ -6,7 +6,7 @@ This plugin simplifies the [deployment](https://ktor.io/docs/deploy.html) proces
 - Building GraalVM native images.
 
 
-### Install a plugin
+### Install the plugin
 
 To install the plugin, add it to the `plugins` block of your `build.gradle.kts` ...
 
@@ -81,7 +81,7 @@ You can find a sample build script here: [ktor-docker-sample/build.gradle.kts](s
 
 To build a project's GraalVM native image, use the `buildNativeImage` task. Before running this task, ensure [GraalVM](https://www.graalvm.org/docs/getting-started/) and [Native Image](https://www.graalvm.org/reference-manual/native-image/) are installed.
 
-> Note that working with Native Image requires setting the `GRAALVM_HOME` and/or `JAVA_HOME` environment variables.
+> Note that working with Native Image requires setting the `GRAALVM_HOME` and `JAVA_HOME` environment variables.
 
 The `buildNativeImage` task generates a native executable with your application in the `build/native/nativeCompile` directory. You can optionally specify the executable name:
 
