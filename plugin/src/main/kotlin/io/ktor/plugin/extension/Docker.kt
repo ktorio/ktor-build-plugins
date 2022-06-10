@@ -169,7 +169,7 @@ fun configureDocker(project: Project) {
 
     tasks.registerKtorTask(
         RUN_DOCKER_TASK_NAME,
-        "Builds the project's image into local docker and runs it.",
+        "Builds a project's image to a Docker daemon and runs it.",
         RunDockerTask::class
     ) {
         dependsOn(
@@ -180,7 +180,7 @@ fun configureDocker(project: Project) {
 
     tasks.registerKtorTask(
         PUBLISH_IMAGE_TO_LOCAL_REGISTRY_TASK_NAME,
-        "Builds and publishes the project's docker image to local docker registry."
+        "Builds and publishes a project's Docker image to a local registry."
     ) {
         dependsOn(
             setupJibLocalTask,
@@ -190,7 +190,7 @@ fun configureDocker(project: Project) {
 
     tasks.registerKtorTask(
         PUBLISH_IMAGE_TO_EXTERNAL_REGISTRY_TASK_NAME,
-        "Builds and publishes the project's docker image to external docker registry."
+        "Builds and publishes a project's Docker image to an external registry."
     ) {
         dependsOn(
             setupJibExternalTask,
@@ -200,7 +200,7 @@ fun configureDocker(project: Project) {
 
     tasks.registerKtorTask(
         BUILD_IMAGE_TASK_NAME,
-        "Builds the project's docker image into tarball."
+        "Builds a project's Docker image to a tarball."
     ) {
         dependsOn(
             setupJibLocalTask,
