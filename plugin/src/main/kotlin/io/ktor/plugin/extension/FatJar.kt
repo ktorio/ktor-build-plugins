@@ -13,7 +13,7 @@ abstract class FatJarExtension {
 }
 
 const val BUILD_FAT_JAR_TASK_NAME = "buildFatJar"
-const val BUILD_FAT_JAR_TASK_DESCRIPTION = "Builds Fat JAR."
+const val BUILD_FAT_JAR_TASK_DESCRIPTION = "Builds a combined JAR of project and runtime dependencies."
 const val FAT_JAR_EXTENSION_NAME = "fatJar"
 
 fun configureFatJar(project: Project) {
