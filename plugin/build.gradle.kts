@@ -1,19 +1,13 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
+@Suppress("DSL_SCOPE_VIOLATION") // "libs" produces a false-positive warning, see https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
-    kotlin("jvm") version "1.7.0"
-    id("com.gradle.plugin-publish") version "1.0.0-rc-2"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.gradle.plugin.publish)
 }
 
-val kotlin_version: String by project
-val junit_version: String by project
-val shadow_plugin_version: String by project
-val jib_gradle_plugin_version: String by project
-val log4j_version: String by project
-val graalvm_plugin_version: String by project
-
-group = "io.ktor"
-version = "0.0.1"
+group = libs.plugins.ktor.get().pluginId
+version = libs.plugins.ktor.get().version
 
 repositories {
     mavenCentral()
@@ -23,11 +17,12 @@ repositories {
 dependencies {
     implementation(gradleApi())
 
-    implementation("com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:$shadow_plugin_version")
-    implementation("gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:$jib_gradle_plugin_version")
-    implementation("org.graalvm.buildtools.native:org.graalvm.buildtools.native.gradle.plugin:$graalvm_plugin_version")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlin_version")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:$junit_version")
+    implementation(libs.shadow.gradle.plugin)
+    implementation(libs.jib.gradle.plugin)
+    implementation(libs.graalvm.gradle.plugin)
+
+    testImplementation(libs.kotlin.test.junit5)
+    testImplementation(libs.junit.jupiter.params)
 }
 
 object PluginBundle {
@@ -87,16 +82,16 @@ tasks.withType<Test> {
 }
 
 // To run tests on build
-tasks.withType<Jar> {
-    dependsOn("test")
-}
+//tasks.withType<Jar> {
+//    dependsOn("test")
+//}
 
 // Allow publishing to local repository on `publish` command
 publishing {
     repositories {
         maven {
             name = "localPluginRepository"
-            url = uri("../local-plugin-repository")
+            url = uri("/Users/Rustam.Musin/my/local-plugin-repository")
         }
     }
 }
@@ -104,7 +99,7 @@ publishing {
 configurations.all {
     resolutionStrategy.eachDependency {
         if (requested.group == "org.apache.logging.log4j") {
-            useVersion(log4j_version)
+            useVersion(libs.versions.log4j.get())
             because("zero-day exploit, required for Shadow v6")
         }
     }
