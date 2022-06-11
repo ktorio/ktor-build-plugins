@@ -4,12 +4,13 @@ import org.graalvm.buildtools.gradle.NativeImagePlugin
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.Input
 
 /**
  * Configuration for GraalVM native image generation.
  */
-abstract class NativeImageExtension {
+abstract class NativeImageExtension(project: Project) {
     /**
      * Specifies whether to enable verbose output. Defaults to `true`.
      */
@@ -40,14 +41,15 @@ abstract class NativeImageExtension {
      * Specifies packages or classes to be initialized at build time.
      */
     @get:Input
-    var initializeAtBuildTime = mutableListOf<String>()
+    var initializeAtBuildTime: SetProperty<String> = project.objects.setProperty(String::class.java)
 
     /**
      * Specifies packages or classes to be initialized at run time.
-     * Useful when some class or package has to be initialized at run time, but it's included in [initializeAtBuildTime].
+     * Useful when some class or package has to be initialized at run time,
+     * but it's included in [initializeAtBuildTime].
      */
     @get:Input
-    var initializeAtRunTime = mutableListOf<String>()
+    var initializeAtRunTime: SetProperty<String> = project.objects.setProperty(String::class.java)
 }
 
 private const val NATIVE_IMAGE_EXTENSION_NAME = "nativeImage"
@@ -63,7 +65,7 @@ fun configureNative(project: Project) {
     project.plugins.apply(JavaPlugin::class.java) // required for NativeImagePlugin
     project.plugins.apply(NativeImagePlugin::class.java)
 
-    val nativeImageExtension = project.createKtorExtension<NativeImageExtension>(NATIVE_IMAGE_EXTENSION_NAME)
+    val nativeImageExtension = project.createKtorExtension<NativeImageExtension>(NATIVE_IMAGE_EXTENSION_NAME, project)
     val configureNativeTask = project.tasks.register(CONFIGURE_NATIVE_TASK_NAME) {
         project.extensions.configure(GraalVMExtension::class.java) { extension ->
             extension.binaries.named("main") { options ->
@@ -71,10 +73,10 @@ fun configureNative(project: Project) {
                 options.agent.enabled.set(nativeImageExtension.attachAgent)
 
                 val initializeAtBuildTime =
-                    nativeImageExtension.initializeAtBuildTime.toSet() + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
+                    nativeImageExtension.initializeAtBuildTime.get() + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
                 options.buildArgs.add("--initialize-at-build-time=${initializeAtBuildTime.joinToString(",")}")
 
-                val initializeAtRunTime = nativeImageExtension.initializeAtRunTime
+                val initializeAtRunTime = nativeImageExtension.initializeAtRunTime.get()
                 if (initializeAtRunTime.isNotEmpty())
                     options.buildArgs.add("--initialize-at-run-time=${initializeAtRunTime.joinToString(",")}")
 

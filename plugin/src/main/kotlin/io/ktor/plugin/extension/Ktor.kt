@@ -49,8 +49,8 @@ private val Project.ktorExtension: KtorExtension
 val Project.ktorExtensions: ExtensionContainer
     get() = (ktorExtension as ExtensionAware).extensions
 
-inline fun <reified T : Any> Project.createKtorExtension(name: String): T =
-    ktorExtensions.create(name, T::class.java)
+inline fun <reified T : Any> Project.createKtorExtension(name: String, vararg constructorArguments: Any?): T =
+    ktorExtensions.create(name, T::class.java, *constructorArguments)
 
 inline fun <reified T : Any> Project.getKtorExtension(): T =
     ktorExtensions.getByType(T::class.java)
