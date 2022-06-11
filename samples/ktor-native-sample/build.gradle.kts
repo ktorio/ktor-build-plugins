@@ -1,34 +1,9 @@
-val ktor_version: String by project
-val kotlin_version: String by project
-val logback_version: String by project
-val junit_version: String by project
-
+@Suppress("DSL_SCOPE_VIOLATION") // "libs" produces a false-positive warning, see https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
-    kotlin("jvm")
-    id("io.ktor.plugin")
+    id(libs.plugins.ktor.get().pluginId)
 }
 
-group = "io.ktor.samples"
-version = "0.0.1"
-application {
-    mainClass.set("io.ktor.samples.native.ApplicationKt")
-
-    val isDevelopment: Boolean = project.ext.has("development")
-    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-cio-jvm:$ktor_version")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
-    testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
-    testImplementation("org.junit.vintage:junit-vintage-engine:$junit_version")
-}
+application.mainClass.set("io.ktor.samples.native.ApplicationKt")
 
 ktor {
     nativeImage {
