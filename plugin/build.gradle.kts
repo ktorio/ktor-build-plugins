@@ -25,17 +25,6 @@ dependencies {
     testImplementation(libs.junit.jupiter.params)
 }
 
-object PluginBundle {
-    const val SHORT_NAME = "ktor"
-    const val ID = "io.ktor.plugin"
-    const val IMPLEMENTATION_CLASS = "io.ktor.plugin.KtorGradlePlugin"
-    const val VCS = "https://github.com/ktorio/ktor"
-    const val WEBSITE = "https://ktor.io"
-    const val DESCRIPTION = "Provides the ability to package and containerize your Ktor application"
-    const val DISPLAY_NAME = "Ktor Gradle Plugin"
-    val TAGS = listOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework")
-}
-
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
@@ -43,19 +32,19 @@ java {
 
 gradlePlugin {
     plugins {
-        create(PluginBundle.SHORT_NAME) {
-            id = PluginBundle.ID
-            displayName = PluginBundle.DISPLAY_NAME
-            implementationClass = PluginBundle.IMPLEMENTATION_CLASS
+        create("ktor") {
+            id = "io.ktor.plugin"
+            displayName = "Ktor Gradle Plugin"
+            implementationClass = "io.ktor.plugin.KtorGradlePlugin"
         }
     }
 }
 
 pluginBundle {
-    website = PluginBundle.WEBSITE
-    vcsUrl = PluginBundle.VCS
-    description = PluginBundle.DESCRIPTION
-    tags = PluginBundle.TAGS
+    website = "https://ktor.io"
+    vcsUrl = "https://github.com/ktorio/ktor"
+    description = "Provides the ability to package and containerize your Ktor application"
+    tags = listOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework")
 }
 
 val setupPluginUploadFromEnvironment = tasks.register("setupPluginUploadFromEnvironment") {
