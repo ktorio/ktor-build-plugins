@@ -9,10 +9,11 @@ import org.gradle.api.tasks.Input
 /**
  * Configuration for GraalVM native image generation.
  */
-abstract class NativeExtension {
+abstract class NativeImageExtension {
     /**
      * Specifies whether to enable verbose output. Defaults to `true`.
      */
+    @get:Input
     var verbose = true
 
     /**
@@ -49,7 +50,7 @@ abstract class NativeExtension {
     var initializeAtRunTime = mutableListOf<String>()
 }
 
-private const val NATIVE_EXTENSION_NAME = "nativeImage"
+private const val NATIVE_IMAGE_EXTENSION_NAME = "nativeImage"
 
 private const val CONFIGURE_NATIVE_TASK_NAME = "configureNative"
 
@@ -62,17 +63,18 @@ fun configureNative(project: Project) {
     project.plugins.apply(JavaPlugin::class.java) // required for NativeImagePlugin
     project.plugins.apply(NativeImagePlugin::class.java)
 
-    val nativeExtension = project.createKtorExtension<NativeExtension>(NATIVE_EXTENSION_NAME)
+    val nativeImageExtension = project.createKtorExtension<NativeImageExtension>(NATIVE_IMAGE_EXTENSION_NAME)
     val configureNativeTask = project.tasks.register(CONFIGURE_NATIVE_TASK_NAME) {
         project.extensions.configure(GraalVMExtension::class.java) { extension ->
             extension.binaries.named("main") { options ->
-                options.verbose.set(nativeExtension.verbose)
-                options.agent.enabled.set(nativeExtension.attachAgent)
+                options.verbose.set(nativeImageExtension.verbose)
+                options.agent.enabled.set(nativeImageExtension.attachAgent)
 
-                val initializeAtBuildTime = nativeExtension.initializeAtBuildTime + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
+                val initializeAtBuildTime =
+                    nativeImageExtension.initializeAtBuildTime + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
                 options.buildArgs.add("--initialize-at-build-time=${initializeAtBuildTime.joinToString(",")}")
 
-                val initializeAtRunTime = nativeExtension.initializeAtRunTime
+                val initializeAtRunTime = nativeImageExtension.initializeAtRunTime
                 if (initializeAtRunTime.isNotEmpty())
                     options.buildArgs.add("--initialize-at-run-time=${initializeAtRunTime.joinToString(",")}")
 
@@ -82,7 +84,7 @@ fun configureNative(project: Project) {
 
                 options.resources.autodetect()
 
-                options.imageName.set(nativeExtension.imageName)
+                options.imageName.set(nativeImageExtension.imageName)
             }
         }
     }
