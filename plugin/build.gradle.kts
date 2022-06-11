@@ -44,7 +44,7 @@ pluginBundle {
     website = "https://ktor.io"
     vcsUrl = "https://github.com/ktorio/ktor"
     description = "Provides the ability to package and containerize your Ktor application"
-    tags = listOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework")
+    tags = setOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework")
 }
 
 val setupPluginUploadFromEnvironment = tasks.register("setupPluginUploadFromEnvironment") {
