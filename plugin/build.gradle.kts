@@ -80,7 +80,7 @@ publishing {
     repositories {
         maven {
             name = "localPluginRepository"
-            url = uri("/Users/Rustam.Musin/my/local-plugin-repository")
+            url = uri("../local-plugin-repository")
         }
     }
 }
