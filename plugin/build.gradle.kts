@@ -70,11 +70,6 @@ tasks.withType<Test> {
     testLogging.events(*TestLogEvent.values())
 }
 
-// To run tests on build
-//tasks.withType<Jar> {
-//    dependsOn("test")
-//}
-
 // Allow publishing to local repository on `publish` command
 publishing {
     repositories {
