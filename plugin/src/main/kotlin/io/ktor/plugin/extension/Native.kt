@@ -71,7 +71,7 @@ fun configureNative(project: Project) {
                 options.agent.enabled.set(nativeImageExtension.attachAgent)
 
                 val initializeAtBuildTime =
-                    nativeImageExtension.initializeAtBuildTime + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
+                    nativeImageExtension.initializeAtBuildTime.toSet() + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
                 options.buildArgs.add("--initialize-at-build-time=${initializeAtBuildTime.joinToString(",")}")
 
                 val initializeAtRunTime = nativeImageExtension.initializeAtRunTime
