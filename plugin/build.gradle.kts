@@ -66,14 +66,11 @@ val setupPluginUploadFromEnvironment = tasks.register("setupPluginUploadFromEnvi
 //  The bug is known since June 2017 and still not fixed.
 //  The workaround used below is described here: https://github.com/gradle/gradle/issues/2517#issuecomment-437490287
 if (gradle.parent != null && gradle.parent!!.startParameter.isDryRun) {
-    println("Was dry run: ${gradle.startParameter.isDryRun}")
     gradle.startParameter.isDryRun = true
-    println("Now dry run: ${gradle.startParameter.isDryRun}")
 }
 
 tasks.named("publishPlugins") {
     dependsOn("test", setupPluginUploadFromEnvironment)
-    dependsOn("test")
 }
 
 tasks.withType<Test> {
