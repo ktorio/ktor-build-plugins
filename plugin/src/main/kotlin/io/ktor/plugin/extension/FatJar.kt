@@ -13,8 +13,10 @@ abstract class FatJarExtension {
 }
 
 const val BUILD_FAT_JAR_TASK_NAME = "buildFatJar"
-const val BUILD_FAT_JAR_TASK_DESCRIPTION = "Builds a combined JAR of project and runtime dependencies."
+private const val BUILD_FAT_JAR_TASK_DESCRIPTION = "Builds a combined JAR of project and runtime dependencies."
 const val FAT_JAR_EXTENSION_NAME = "fatJar"
+
+private const val CONFIGURE_SHADOW_JAR_TASK_NAME = "configureShadowJar"
 
 fun configureFatJar(project: Project) {
     project.plugins.apply(ShadowPlugin::class.java)
@@ -23,7 +25,7 @@ fun configureFatJar(project: Project) {
     // We need to set `mainClassName` even if `mainClass` is set, because ShadowJar Plugin v6 needs it.
     // We can remove this block when we move to ShadowJar Plugin v7 or above.
     val shadowJar = tasks.withType(ShadowJar::class.java)
-    val configureShadowJar = tasks.register("configureShadowJar") {
+    val configureShadowJar = tasks.register(CONFIGURE_SHADOW_JAR_TASK_NAME) {
         it.doLast {
             if (project.findProperty("mainClassName") == null) {
                 val application = project.extensions.getByType(JavaApplication::class.java)
