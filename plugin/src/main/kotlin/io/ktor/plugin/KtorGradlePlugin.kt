@@ -11,6 +11,6 @@ abstract class KtorGradlePlugin : Plugin<Project> {
         project.plugins.apply(ApplicationPlugin::class.java)
         configureFatJar(project)
         configureDocker(project)
-        configureNative(project)
+        configureNativeImage(project)
     }
 }
