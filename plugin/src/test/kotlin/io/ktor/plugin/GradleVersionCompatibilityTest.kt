@@ -11,7 +11,7 @@ class GradleVersionCompatibilityTest {
         projectDir.resolve("build.gradle").writeText("plugins { id 'io.ktor.plugin' }")
         createGradleRunner(projectDir)
             .withGradleVersion(gradleVersion)
-            .let { if (expectSuccess) it.build() else it.buildAndFail() }
+            .run { if (expectSuccess) build() else buildAndFail() }
     }
 
     @ParameterizedTest
