@@ -6,7 +6,6 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.SetProperty
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import javax.inject.Inject
 
@@ -17,13 +16,11 @@ abstract class NativeImageExtension(project: Project) {
     /**
      * Specifies whether to enable verbose output. Defaults to `true`.
      */
-    @get:Input
     var verbose = true
 
     /**
      * Specifies a name of executable file. Defaults to `"native-image"`.
      */
-    @get:Input
     var imageName = "native-image"
 
     /**
@@ -37,13 +34,11 @@ abstract class NativeImageExtension(project: Project) {
      *
      * Defaults to `false`.
      */
-    @get:Input
     var attachAgent = false
 
     /**
      * Specifies packages or classes to be initialized at build time.
      */
-    @get:Input
     var initializeAtBuildTime: SetProperty<String> = project.objects.setProperty(String::class.java)
 
     /**
@@ -51,7 +46,6 @@ abstract class NativeImageExtension(project: Project) {
      * Useful when some class or package has to be initialized at run time,
      * but it's included in [initializeAtBuildTime].
      */
-    @get:Input
     var initializeAtRunTime: SetProperty<String> = project.objects.setProperty(String::class.java)
 }
 
