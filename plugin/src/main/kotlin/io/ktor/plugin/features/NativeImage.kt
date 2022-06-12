@@ -1,4 +1,4 @@
-package io.ktor.plugin.extension
+package io.ktor.plugin.features
 
 import org.graalvm.buildtools.gradle.NativeImagePlugin
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension

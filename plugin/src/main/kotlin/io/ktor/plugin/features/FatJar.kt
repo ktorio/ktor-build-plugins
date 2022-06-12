@@ -1,4 +1,4 @@
-package io.ktor.plugin.extension
+package io.ktor.plugin.features
 
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar

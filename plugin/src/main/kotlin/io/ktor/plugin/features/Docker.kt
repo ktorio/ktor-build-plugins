@@ -1,4 +1,4 @@
-package io.ktor.plugin.extension
+package io.ktor.plugin.features
 
 import com.google.cloud.tools.jib.gradle.JibExtension
 import com.google.cloud.tools.jib.gradle.JibPlugin

@@ -1,6 +1,6 @@
 package io.ktor.plugin
 
-import io.ktor.plugin.extension.*
+import io.ktor.plugin.features.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ApplicationPlugin
