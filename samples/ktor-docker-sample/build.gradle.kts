@@ -1,4 +1,4 @@
-import io.ktor.plugin.extension.*
+import io.ktor.plugin.features.*
 
 plugins {
     @Suppress("DSL_SCOPE_VIOLATION") // "libs" produces a false-positive warning, see https://youtrack.jetbrains.com/issue/KTIJ-19369
