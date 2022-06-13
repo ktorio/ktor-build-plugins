@@ -16,43 +16,47 @@ enum class JreVersion(val numeric: Int) {
 
 abstract class DockerExtension {
     /**
-     * JRE version to use in the image. Defaults to [JreVersion.JRE_11].
+     * Specifies JRE version to use in the image. Defaults to [JreVersion.JRE_11].
      */
     var jreVersion = JreVersion.JRE_11
 
     /**
-     * Image tag to use in the image. Defaults to `"latest"`.
+     * Specifies a tag to use in the image. Defaults to `"latest"`.
      */
     var imageTag = "latest"
 
     /**
-     * Image name for local builds. Defaults to `"ktor-docker-image"`.
+     * Specifies an image name for local builds. Defaults to `"ktor-docker-image"`.
      */
     var localImageName = "ktor-docker-image"
 
     /**
-     * External registry to push the image into. Default is not set.
+     * Specifies an external registry to push the image into. Default is not set.
      */
     var externalRegistry: DockerImageRegistry? = null
 }
 
 interface DockerImageRegistry {
     /**
-     * Link for [JibExtension.to.image][TargetImageParameters.image].
+     * Specifies a link for [JibExtension.to.image][TargetImageParameters.image].
      */
     val toImage: String
 
     /**
-     * Username for a given registry.
+     * Specifies a username for a given registry.
      */
     val username: String
 
     /**
-     * Password for a given registry.
+     * Specifies a password for a given registry.
      */
     val password: String
 
     companion object {
+        /**
+         * Creates a [DockerImageRegistry] for [DockerHub](https://hub.docker.com/)
+         * from a given [appName], [username] and [password].
+         */
         @Suppress("unused")
         fun dockerHub(
             appName: String,
@@ -60,6 +64,10 @@ interface DockerImageRegistry {
             password: String
         ): DockerImageRegistry = DockerHubRegistry(appName, username, password)
 
+        /**
+         * Creates a [DockerImageRegistry] for [Google Container Registry](https://cloud.google.com/container-registry)
+         * from a given [appName] and [username].
+         */
         @Suppress("unused")
         fun googleContainerRegistry(
             projectName: String,
