@@ -9,7 +9,7 @@ provides the following capabilities:
 
 ### Install the plugin
 
-To install the plugin, add it to the `plugins` block of your `build.gradle.kts` ...
+To install the plugin, add it to the `plugins` block of your `build.gradle.kts`:
 
 ```kotlin
 plugins {
@@ -17,7 +17,7 @@ plugins {
 }
 ```
 
-... or `build.gradle` file:
+or `build.gradle` file:
 
 ```groovy
 plugins {
