@@ -1,19 +1,13 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
+@Suppress("DSL_SCOPE_VIOLATION") // "libs" produces a false-positive warning, see https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
-    kotlin("jvm") version "1.6.21"
-    id("com.gradle.plugin-publish") version "1.0.0-rc-2"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.gradle.plugin.publish)
 }
 
-val kotlin_version: String by project
-val junit_version: String by project
-val shadow_plugin_version: String by project
-val jib_gradle_plugin_version: String by project
-val log4j_version: String by project
-val graalvm_plugin_version: String by project
-
-group = "io.ktor"
-version = "0.0.1"
+group = libs.plugins.ktor.get().pluginId
+version = libs.plugins.ktor.get().version
 
 repositories {
     mavenCentral()
@@ -23,22 +17,12 @@ repositories {
 dependencies {
     implementation(gradleApi())
 
-    implementation("com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:$shadow_plugin_version")
-    implementation("gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:$jib_gradle_plugin_version")
-    implementation("org.graalvm.buildtools.native:org.graalvm.buildtools.native.gradle.plugin:$graalvm_plugin_version")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlin_version")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:$junit_version")
-}
+    implementation(libs.shadow.gradle.plugin)
+    implementation(libs.jib.gradle.plugin)
+    implementation(libs.graalvm.gradle.plugin)
 
-object PluginBundle {
-    const val SHORT_NAME = "ktor"
-    const val ID = "io.ktor.plugin"
-    const val IMPLEMENTATION_CLASS = "io.ktor.plugin.KtorGradlePlugin"
-    const val VCS = "https://github.com/ktorio/ktor"
-    const val WEBSITE = "https://ktor.io"
-    const val DESCRIPTION = "Provides the ability to package and containerize your Ktor application"
-    const val DISPLAY_NAME = "Ktor Gradle Plugin"
-    val TAGS = listOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework")
+    testImplementation(libs.kotlin.test.junit5)
+    testImplementation(libs.junit.jupiter.params)
 }
 
 java {
@@ -48,19 +32,19 @@ java {
 
 gradlePlugin {
     plugins {
-        create(PluginBundle.SHORT_NAME) {
-            id = PluginBundle.ID
-            displayName = PluginBundle.DISPLAY_NAME
-            implementationClass = PluginBundle.IMPLEMENTATION_CLASS
+        create("ktor") {
+            id = "io.ktor.plugin"
+            displayName = "Ktor Gradle Plugin"
+            implementationClass = "io.ktor.plugin.KtorGradlePlugin"
         }
     }
 }
 
 pluginBundle {
-    website = PluginBundle.WEBSITE
-    vcsUrl = PluginBundle.VCS
-    description = PluginBundle.DESCRIPTION
-    tags = PluginBundle.TAGS
+    website = "https://ktor.io"
+    vcsUrl = "https://github.com/ktorio/ktor"
+    description = "Provides the ability to package and containerize your Ktor application"
+    tags = setOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework")
 }
 
 val setupPluginUploadFromEnvironment = tasks.register("setupPluginUploadFromEnvironment") {
@@ -77,18 +61,21 @@ val setupPluginUploadFromEnvironment = tasks.register("setupPluginUploadFromEnvi
     }
 }
 
+// This block is needed to show plugin tasks on --dry-run
+//  and to not run task actions on ":plugin:task --dry-run".
+//  The bug is known since June 2017 and still not fixed.
+//  The workaround used below is described here: https://github.com/gradle/gradle/issues/2517#issuecomment-437490287
+if (gradle.parent != null && gradle.parent!!.startParameter.isDryRun) {
+    gradle.startParameter.isDryRun = true
+}
+
 tasks.named("publishPlugins") {
-    dependsOn(setupPluginUploadFromEnvironment)
+    dependsOn("test", setupPluginUploadFromEnvironment)
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
     testLogging.events(*TestLogEvent.values())
-}
-
-// To run tests on build
-tasks.withType<Jar> {
-    dependsOn("test")
 }
 
 // Allow publishing to local repository on `publish` command
@@ -104,7 +91,7 @@ publishing {
 configurations.all {
     resolutionStrategy.eachDependency {
         if (requested.group == "org.apache.logging.log4j") {
-            useVersion(log4j_version)
+            useVersion(libs.versions.log4j.get())
             because("zero-day exploit, required for Shadow v6")
         }
     }

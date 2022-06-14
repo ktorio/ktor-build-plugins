@@ -1,4 +1,4 @@
-package io.ktor.samples.docker
+package io.ktor.samples.native
 
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
