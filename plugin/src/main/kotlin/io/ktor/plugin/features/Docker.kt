@@ -16,7 +16,7 @@ enum class JreVersion(val numeric: Int) {
 
 abstract class DockerExtension {
     /**
-     * Specifies JRE version to use in the image. Defaults to [JreVersion.JRE_11].
+     * Specifies the JRE version to use in the image. Defaults to [JreVersion.JRE_11].
      */
     var jreVersion = JreVersion.JRE_11
 
