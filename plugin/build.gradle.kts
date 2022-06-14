@@ -82,8 +82,17 @@ tasks.withType<Test> {
 publishing {
     repositories {
         maven {
-            name = "localPluginRepository"
-            url = uri("../local-plugin-repository")
+            name = "SpacePackages"
+            val publishingUrl = System.getenv("PUBLISHING_URL")
+            if (publishingUrl == null) {
+                url = uri("local-plugin-repository")
+            } else {
+                url = uri(publishingUrl)
+                credentials {
+                    username = System.getenv("PUBLISHING_USER")
+                    password = System.getenv("PUBLISHING_PASSWORD")
+                }
+            }
         }
     }
 }
