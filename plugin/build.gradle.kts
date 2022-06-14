@@ -78,16 +78,13 @@ tasks.withType<Test> {
     testLogging.events(*TestLogEvent.values())
 }
 
-// Allow publishing to local repository on `publish` command
-publishing {
-    repositories {
-        maven {
-            name = "SpacePackages"
-            val publishingUrl = System.getenv("PUBLISHING_URL")
-            if (publishingUrl == null) {
-                url = uri("local-plugin-repository")
-            } else {
-                url = uri(publishingUrl)
+if (hasProperty("eap")) {
+    project.version = project.version.toString() + "-eap-" + System.getenv("BUILD_NUMBER")
+    publishing {
+        repositories {
+            maven {
+                name = "SpacePackages"
+                url = uri(System.getenv("PUBLISHING_URL"))
                 credentials {
                     username = System.getenv("PUBLISHING_USER")
                     password = System.getenv("PUBLISHING_PASSWORD")
