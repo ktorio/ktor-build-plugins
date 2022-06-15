@@ -2,12 +2,9 @@ package io.ktor.plugin.features
 
 import org.graalvm.buildtools.gradle.NativeImagePlugin
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension
-import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.SetProperty
-import org.gradle.api.tasks.TaskAction
-import javax.inject.Inject
 
 /**
  * Configuration for GraalVM native image generation.
@@ -58,32 +55,27 @@ private val PACKAGES_TO_INITIALIZE_AT_BUILD_TIME = setOf("io.ktor", "kotlin", "c
 
 private const val CONFIGURE_GRAALVM_TASK_NAME = "configureGraalVM"
 
-private abstract class ConfigureGraalVMTask @Inject constructor(
-    private val nativeImageExtension: NativeImageExtension
-) : DefaultTask() {
-    @TaskAction
-    fun execute() {
-        project.extensions.configure(GraalVMExtension::class.java) { graalVMExtension ->
-            graalVMExtension.binaries.named("main") { options ->
-                options.verbose.set(nativeImageExtension.verbose)
-                options.agent.enabled.set(nativeImageExtension.attachAgent)
+private fun configureGraalVM(project: Project, nativeImageExtension: NativeImageExtension) {
+    project.extensions.configure(GraalVMExtension::class.java) { graalVMExtension ->
+        graalVMExtension.binaries.named("main") { options ->
+            options.verbose.set(nativeImageExtension.verbose)
+            options.agent.enabled.set(nativeImageExtension.attachAgent)
 
-                val initializeAtBuildTime =
-                    nativeImageExtension.initializeAtBuildTime.get() + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
-                options.buildArgs.add("--initialize-at-build-time=${initializeAtBuildTime.joinToString(",")}")
+            val initializeAtBuildTime =
+                nativeImageExtension.initializeAtBuildTime.get() + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
+            options.buildArgs.add("--initialize-at-build-time=${initializeAtBuildTime.joinToString(",")}")
 
-                val initializeAtRunTime = nativeImageExtension.initializeAtRunTime.get()
-                if (initializeAtRunTime.isNotEmpty())
-                    options.buildArgs.add("--initialize-at-run-time=${initializeAtRunTime.joinToString(",")}")
+            val initializeAtRunTime = nativeImageExtension.initializeAtRunTime.get()
+            if (initializeAtRunTime.isNotEmpty())
+                options.buildArgs.add("--initialize-at-run-time=${initializeAtRunTime.joinToString(",")}")
 
-                options.buildArgs.add("-H:+InstallExitHandlers")
-                options.buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
-                options.buildArgs.add("-H:+ReportExceptionStackTraces")
+            options.buildArgs.add("-H:+InstallExitHandlers")
+            options.buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
+            options.buildArgs.add("-H:+ReportExceptionStackTraces")
 
-                options.resources.autodetect()
+            options.resources.autodetect()
 
-                options.imageName.set(nativeImageExtension.imageName)
-            }
+            options.imageName.set(nativeImageExtension.imageName)
         }
     }
 }
@@ -93,11 +85,15 @@ fun configureNativeImage(project: Project) {
     project.plugins.apply(NativeImagePlugin::class.java)
 
     val nativeImageExtension = project.createKtorExtension<NativeImageExtension>(NATIVE_IMAGE_EXTENSION_NAME, project)
-    val configureGraalVM =
-        project.tasks.register(CONFIGURE_GRAALVM_TASK_NAME, ConfigureGraalVMTask::class.java, nativeImageExtension)
-    val nativeCompileTask = project.tasks.named(NativeImagePlugin.NATIVE_COMPILE_TASK_NAME) {
-        it.dependsOn(configureGraalVM)
+    val configureGraalVMTask = project.tasks.register(CONFIGURE_GRAALVM_TASK_NAME) {
+        // This configuration has to be done in the configuration phase.
+        configureGraalVM(project, nativeImageExtension)
     }
+
+    val nativeCompileTask = project.tasks.named(NativeImagePlugin.NATIVE_COMPILE_TASK_NAME) {
+        it.dependsOn(configureGraalVMTask)
+    }
+
     project.tasks.registerKtorTask(BUILD_NATIVE_IMAGE_TASK_NAME, BUILD_NATIVE_IMAGE_TASK_DESCRIPTION) {
         dependsOn(nativeCompileTask)
     }
