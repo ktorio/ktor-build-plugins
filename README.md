@@ -25,6 +25,8 @@ plugins {
 }
 ```
 
+### Using EAP Builds
+
 You can also use EAP versions of the plugin
 published on [Space Packages](https://maven.pkg.jetbrains.space/public/p/ktor/eap/io/ktor/plugin/plugin/).
 To do this, consider adding <https://maven.pkg.jetbrains.space/public/p/ktor/eap> to the list of plugin repositories
