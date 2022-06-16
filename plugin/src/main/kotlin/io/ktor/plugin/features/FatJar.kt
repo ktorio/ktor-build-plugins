@@ -1,5 +1,6 @@
 package io.ktor.plugin.features
 
+import com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
@@ -41,7 +42,7 @@ fun configureFatJar(project: Project) {
     }
 
     val fatJarExtension = project.createKtorExtension<FatJarExtension>(FAT_JAR_EXTENSION_NAME)
-    val shadowJar = tasks.named("shadowJar", ShadowJar::class.java) {
+    val shadowJar = tasks.named(ShadowJavaPlugin.getSHADOW_JAR_TASK_NAME(), ShadowJar::class.java) {
         it.dependsOn(configureShadowJar)
         fatJarExtension.archiveFileName?.let { name -> it.archiveFileName.set(name) }
     }
