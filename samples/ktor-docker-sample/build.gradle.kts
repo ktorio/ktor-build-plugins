@@ -9,15 +9,16 @@ application.mainClass.set("io.ktor.samples.docker.ApplicationKt")
 
 ktor {
     docker {
-        jreVersion = JreVersion.JRE_17
-        localImageName = "sample-docker-image"
-        imageTag = "my-docker-sample"
+        jreVersion.set(JreVersion.JRE_17)
+        localImageName.set("sample-docker-image")
+        imageTag.set("my-docker-sample")
 
-        // Uncomment externalRepository if you want to publish your image to the registry
-//        externalRegistry = DockerImageRegistry.dockerHub(
-//            appName = "ktor-app",
-//            username = System.getenv("DOCKER_HUB_USERNAME"),
-//            password = System.getenv("DOCKER_HUB_PASSWORD")
-//        )
+        externalRegistry.set(
+            DockerImageRegistry.dockerHub(
+                appName = provider { "ktor-app" },
+                username = provider { System.getenv("DOCKER_HUB_USERNAME") },
+                password = provider { System.getenv("DOCKER_HUB_PASSWORD") }
+            )
+        )
     }
 }

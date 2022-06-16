@@ -1,5 +1,6 @@
 package io.ktor.plugin
 
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import java.io.File
 import java.util.zip.ZipFile
@@ -35,6 +36,31 @@ fun assertZipFilesEqual(expected: ZipFile, actual: ZipFile) {
             val expectedContent = expected.getInputStream(expectedEntry).readBytes()
             val actualContent = actual.getInputStream(actualEntry).readBytes()
             assertContentEquals(expectedContent, actualContent, "Content of entry ${actualEntry.name} is different")
+        }
+    }
+}
+
+fun buildProject(
+    projectDir: File,
+    buildGradleKtsContent: String,
+    settingsGradleKtsContent: String,
+    mainKtContent: String,
+    buildCommand: String,
+    expectSuccess: Boolean = true
+): BuildResult {
+    projectDir.resolve("build.gradle.kts").writeText(buildGradleKtsContent)
+    projectDir.resolve("settings.gradle.kts").writeText(settingsGradleKtsContent)
+    projectDir
+        .resolve("src/main/kotlin/my/org")
+        .also { it.mkdirs() }
+        .resolve("Main.kt")
+        .writeText(mainKtContent)
+
+    return createGradleRunner(projectDir).withArguments(buildCommand).run {
+        if (expectSuccess) {
+            build()
+        } else {
+            buildAndFail()
         }
     }
 }

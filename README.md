@@ -55,13 +55,13 @@ application {
 ```
 
 After the task is executed, you should see the `***-all.jar` file in the `build/libs` directory.
-You can optionally configure a name of fat JAR to be generated:
+You can optionally configure the name of the fat JAR to be generated:
 
 ```kotlin
 // build.gradle.kts
 ktor {
     fatJar {
-        archiveFileName = "fat.jar"
+        archiveFileName.set("fat.jar")
     }
 }
 ```
@@ -88,14 +88,16 @@ A sample configuration for Docker-related tasks might look as follows:
 // build.gradle.kts
 ktor {
     docker {
-        jreVersion = JreVersion.JRE_17
-        localImageName = "sample-docker-image"
-        imageTag = "0.0.1-preview"
+        jreVersion.set(JreVersion.JRE_17)
+        localImageName.set("sample-docker-image")
+        imageTag.set("0.0.1-preview")
 
-        externalRegistry = DockerImageRegistry.dockerHub(
-            appName = "ktor-app",
-            username = System.getenv("DOCKER_HUB_USERNAME"),
-            password = System.getenv("DOCKER_HUB_PASSWORD")
+        externalRegistry.set(
+            DockerImageRegistry.dockerHub(
+                appName = provider { "ktor-app" },
+                username = provider { System.getenv("DOCKER_HUB_USERNAME") },
+                password = provider { System.getenv("DOCKER_HUB_PASSWORD") }
+            )
         )
     }
 }
@@ -120,7 +122,7 @@ You can optionally specify the executable name:
 // build.gradle.kts
 ktor {
     nativeImage {
-        imageName = "native-image-sample"
+        imageName.set("native-image-sample")
     }
 }
 ```
