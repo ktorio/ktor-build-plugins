@@ -1,5 +1,6 @@
 package io.ktor.plugin.features
 
+import com.github.jengelman.gradle.plugins.shadow.ShadowApplicationPlugin
 import com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
@@ -51,12 +52,11 @@ fun configureFatJar(project: Project) {
         dependsOn(shadowJar)
     }
 
+    val runShadow = tasks.named(ShadowApplicationPlugin.getSHADOW_RUN_TASK_NAME()) {
+        it.dependsOn(buildFatJar)
+    }
+
     tasks.registerKtorTask(RUN_FAT_JAR_TASK_NAME, RUN_FAT_JAR_TASK_DESCRIPTION) {
-        dependsOn(buildFatJar)
-        doLast {
-            project.javaexec { java ->
-                java.classpath(shadowJar.flatMap { it.archiveFile })
-            }
-        }
+        dependsOn(runShadow)
     }
 }
