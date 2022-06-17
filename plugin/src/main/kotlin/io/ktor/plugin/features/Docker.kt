@@ -4,22 +4,27 @@ import com.google.cloud.tools.jib.gradle.JibExtension
 import com.google.cloud.tools.jib.gradle.JibPlugin
 import com.google.cloud.tools.jib.gradle.TargetImageParameters
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
-@Suppress("unused")
-enum class JreVersion(val numeric: Int) {
-    JRE_8(8), JRE_11(11), JRE_17(17)
+enum class JreVersion(val javaVersion: JavaVersion) {
+    JRE_1_8(JavaVersion.VERSION_1_8),
+    JRE_11(JavaVersion.VERSION_11),
+    JRE_17(JavaVersion.VERSION_17);
+
+    val majorVersion = javaVersion.majorVersion.toInt()
 }
 
 abstract class DockerExtension(project: Project) {
     /**
-     * Specifies the JRE version to use in the image. Defaults to [JreVersion.JRE_11].
+     * Specifies the JRE version to use in the image. Defaults to [JreVersion.JRE_17].
      */
-    val jreVersion = project.property(defaultValue = JreVersion.JRE_11)
+    val jreVersion = project.property(defaultValue = JreVersion.JRE_17)
 
     /**
      * Specifies a tag to use in the image. Defaults to `"latest"`.
@@ -126,7 +131,7 @@ private abstract class SetupJibTask : DefaultTask() {
     fun execute() {
         val jibExtension = project.extensions.getByType(JibExtension::class.java)
         val dockerExtension = project.getKtorExtension<DockerExtension>()
-        jibExtension.from.setImage(dockerExtension.jreVersion.map { "eclipse-temurin:${it.numeric}-jre" })
+        jibExtension.from.setImage(dockerExtension.jreVersion.map { "eclipse-temurin:${it.majorVersion}-jre" })
         jibExtension.to.setImage(dockerExtension.localImageName.zipWithTag(dockerExtension.imageTag))
 
         if (setupExternalRegistry.get()) {
@@ -134,6 +139,16 @@ private abstract class SetupJibTask : DefaultTask() {
             jibExtension.to.setImage(externalRegistry.flatMap { it.toImage }.zipWithTag(dockerExtension.imageTag))
             jibExtension.to.auth.setUsername(externalRegistry.flatMap { it.username })
             jibExtension.to.auth.setPassword(externalRegistry.flatMap { it.password })
+        }
+
+        val imageJava = dockerExtension.jreVersion.get().javaVersion
+        val projectJava = project.javaVersion
+        if (imageJava < projectJava) {
+            throw GradleException(
+                "You're trying to build an image with JRE $imageJava when your project JDK or targetCompatibility is $projectJava. " +
+                        "Please use a higher version of image JRE through the ktor.docker extension in the build file, " +
+                        "or set the targetCompatibility property to a lower version."
+            )
         }
     }
 }
