@@ -57,25 +57,27 @@ private const val CONFIGURE_GRAALVM_TASK_NAME = "configureGraalVM"
 
 private fun configureGraalVM(project: Project, nativeImageExtension: NativeImageExtension) {
     project.extensions.configure(GraalVMExtension::class.java) { graalVMExtension ->
-        graalVMExtension.binaries.named("main") { options ->
-            options.verbose.set(nativeImageExtension.verbose)
-            options.agent.enabled.set(nativeImageExtension.attachAgent)
+        graalVMExtension.binaries.named("main") { nativeImageOptions ->
+            nativeImageOptions.apply {
+                verbose.set(nativeImageExtension.verbose)
+                agent.enabled.set(nativeImageExtension.attachAgent)
 
-            val initializeAtBuildTime =
-                nativeImageExtension.initializeAtBuildTime.get() + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
-            options.buildArgs.add("--initialize-at-build-time=${initializeAtBuildTime.joinToString(",")}")
+                val initializeAtBuildTime =
+                    nativeImageExtension.initializeAtBuildTime.get() + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
+                buildArgs.add("--initialize-at-build-time=${initializeAtBuildTime.joinToString(",")}")
 
-            val initializeAtRunTime = nativeImageExtension.initializeAtRunTime.get()
-            if (initializeAtRunTime.isNotEmpty())
-                options.buildArgs.add("--initialize-at-run-time=${initializeAtRunTime.joinToString(",")}")
+                val initializeAtRunTime = nativeImageExtension.initializeAtRunTime.get()
+                if (initializeAtRunTime.isNotEmpty())
+                    buildArgs.add("--initialize-at-run-time=${initializeAtRunTime.joinToString(",")}")
 
-            options.buildArgs.add("-H:+InstallExitHandlers")
-            options.buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
-            options.buildArgs.add("-H:+ReportExceptionStackTraces")
+                buildArgs.add("-H:+InstallExitHandlers")
+                buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
+                buildArgs.add("-H:+ReportExceptionStackTraces")
 
-            options.resources.autodetect()
+                resources.autodetect()
 
-            options.imageName.set(nativeImageExtension.imageName)
+                imageName.set(nativeImageExtension.imageName)
+            }
         }
     }
 }
