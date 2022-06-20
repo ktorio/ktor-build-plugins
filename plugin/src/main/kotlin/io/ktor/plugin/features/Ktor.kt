@@ -1,9 +1,11 @@
 package io.ktor.plugin.features
 
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
@@ -58,3 +60,5 @@ inline fun <reified T> Project.getKtorExtension(): T =
 
 inline fun <reified T> Project.property(defaultValue: T?): Property<T> =
     objects.property(T::class.java).convention(defaultValue)
+
+val Project.javaVersion: JavaVersion get() = extensions.getByType(JavaPluginExtension::class.java).targetCompatibility
