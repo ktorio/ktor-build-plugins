@@ -25,12 +25,12 @@ plugins {
 }
 ```
 
-### Using EAP Builds
+### EAP builds
 
 You can also use EAP versions of the plugin
 published on [Space Packages](https://maven.pkg.jetbrains.space/public/p/ktor/eap/io/ktor/plugin/plugin/).
 To do this, consider adding <https://maven.pkg.jetbrains.space/public/p/ktor/eap> to the list of plugin repositories
-in `settings.gradle` file, which may look like this:
+in the `settings.gradle` file, which may look like this:
 
 ```kotlin
 pluginManagement {
@@ -43,7 +43,7 @@ pluginManagement {
 
 ### Build a fat JAR
 
-To build a fat JAR, use the `buildFatJar` task.
+To build and run a fat JAR, use the `buildFatJar`/`runFatJar` tasks.
 Note that a [main class](https://ktor.io/docs/server-dependencies.html#create-entry-point) should be configured for your
 application, for example:
 
