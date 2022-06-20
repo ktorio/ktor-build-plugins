@@ -89,9 +89,9 @@ class DockerTest {
             )
             assertContains(
                 charSequence = buildResult.output,
-                other = "You're trying to build an image with JRE 1.8 when your project JDK or targetCompatibility is 11. " +
-                        "Please use a higher version of image JRE through the ktor.docker extension in the build file, " +
-                        "or set the targetCompatibility property to a lower version.",
+                other = "You're trying to build an image with JRE 1.8 while your project's JDK or 'java.targetCompatibility' is 11. " +
+                        "Please use a higher version of an image JRE through the 'ktor.docker.jreVersion' extension in the build file, " +
+                        "or set the 'java.targetCompatibility' property to a lower version.",
                 message = "Actual output does not contain the expected message"
             )
         }

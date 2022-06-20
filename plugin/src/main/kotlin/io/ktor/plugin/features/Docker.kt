@@ -145,9 +145,9 @@ private abstract class SetupJibTask : DefaultTask() {
         val projectJava = project.javaVersion
         if (imageJava < projectJava) {
             throw GradleException(
-                "You're trying to build an image with JRE $imageJava when your project JDK or targetCompatibility is $projectJava. " +
-                        "Please use a higher version of image JRE through the ktor.docker extension in the build file, " +
-                        "or set the targetCompatibility property to a lower version."
+                "You're trying to build an image with JRE $imageJava while your project's JDK or 'java.targetCompatibility' is $projectJava. " +
+                        "Please use a higher version of an image JRE through the 'ktor.docker.jreVersion' extension in the build file, " +
+                        "or set the 'java.targetCompatibility' property to a lower version."
             )
         }
     }
