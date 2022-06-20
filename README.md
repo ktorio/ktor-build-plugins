@@ -43,7 +43,7 @@ pluginManagement {
 
 ### Build a fat JAR
 
-To build and run a fat JAR, use the `buildFatJar`/`runFatJat` tasks.
+To build and run a fat JAR, use the `buildFatJar`/`runFatJar` tasks.
 Note that a [main class](https://ktor.io/docs/server-dependencies.html#create-entry-point) should be configured for your
 application, for example:
 
