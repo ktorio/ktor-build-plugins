@@ -4,6 +4,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import kotlin.reflect.KClass
@@ -49,8 +50,11 @@ private val Project.ktorExtension: KtorExtension
 val Project.ktorExtensions: ExtensionContainer
     get() = (ktorExtension as ExtensionAware).extensions
 
-inline fun <reified T : Any> Project.createKtorExtension(name: String, vararg constructorArguments: Any?): T =
-    ktorExtensions.create(name, T::class.java, *constructorArguments)
+inline fun <reified T> Project.createKtorExtension(name: String): T =
+    ktorExtensions.create(name, T::class.java, project)
 
-inline fun <reified T : Any> Project.getKtorExtension(): T =
+inline fun <reified T> Project.getKtorExtension(): T =
     ktorExtensions.getByType(T::class.java)
+
+inline fun <reified T> Project.property(defaultValue: T?): Property<T> =
+    objects.property(T::class.java).convention(defaultValue)

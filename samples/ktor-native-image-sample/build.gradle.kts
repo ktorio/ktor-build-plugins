@@ -7,6 +7,6 @@ application.mainClass.set("io.ktor.samples.native.ApplicationKt")
 
 ktor {
     nativeImage {
-        imageName = "native-image-sample"
+        imageName.set("native-image-sample")
     }
 }

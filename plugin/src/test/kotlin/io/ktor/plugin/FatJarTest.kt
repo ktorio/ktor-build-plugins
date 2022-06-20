@@ -1,9 +1,11 @@
 package io.ktor.plugin
 
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.util.zip.ZipFile
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -40,70 +42,93 @@ class FatJarTest {
         projectDir: File,
         buildGradleKtsContent: String,
         generatedFatJarFileName: String,
-        taskName: String = "buildFatJar"
-    ) {
-        projectDir.resolve("build.gradle.kts").writeText(buildGradleKtsContent)
-        projectDir.resolve("settings.gradle.kts").writeText(SETTINGS_GRADLE_KTS_CONTENT)
-        projectDir
-            .resolve("src/main/kotlin/my/org")
-            .also { it.mkdirs() }
-            .resolve("Main.kt")
-            .writeText(MAIN_KT_CONTENT)
-
-        createGradleRunner(projectDir).withArguments(taskName).build()
-
-        val expected = javaClass.classLoader.getResource("fat.jar")!!.file
-        val actual = projectDir.resolve("build/libs/$generatedFatJarFileName")
-        assertZipFilesEqual(ZipFile(expected), ZipFile(actual))
+        taskName: String = "buildFatJar",
+        expectSuccess: Boolean = true
+    ) = buildProject(
+        projectDir = projectDir,
+        buildGradleKtsContent = buildGradleKtsContent,
+        settingsGradleKtsContent = SETTINGS_GRADLE_KTS_CONTENT,
+        mainKtContent = MAIN_KT_CONTENT,
+        buildCommand = taskName,
+        expectSuccess = expectSuccess
+    ).also {
+        if (expectSuccess) {
+            val expected = javaClass.classLoader.getResource("fat.jar")!!.file
+            val actual = projectDir.resolve("build/libs/$generatedFatJarFileName")
+            assertZipFilesEqual(ZipFile(expected), ZipFile(actual))
+        }
     }
 
-    @Test
-    fun `build fat jar without extra settings builds name-all_jar`(@TempDir projectDir: File) = testFatJar(
-        projectDir,
-        BUILD_GRADLE_KTS_CONTENT,
-        generatedFatJarFileName = "test-fat-jar-all.jar"
-    )
+    @Nested
+    inner class BuildFatJar {
+        @Test
+        fun `without extra settings builds name-all_jar`(@TempDir projectDir: File) {
+            testFatJar(
+                projectDir,
+                BUILD_GRADLE_KTS_CONTENT,
+                generatedFatJarFileName = "test-fat-jar-all.jar"
+            )
+        }
 
-    @Test
-    fun `build fat jar with version builds name-version-all_jar`(@TempDir projectDir: File) = testFatJar(
-        projectDir,
-        buildGradleKtsContent = "$BUILD_GRADLE_KTS_CONTENT\nversion = \"1.2.3\"",
-        generatedFatJarFileName = "test-fat-jar-1.2.3-all.jar"
-    )
+        @Test
+        fun `with fixed jar name builds fixed-named-jar`(@TempDir projectDir: File) {
+            testFatJar(
+                projectDir,
+                BUILD_GRADLE_KTS_CONTENT.plus("\nktor.fatJar.archiveFileName.set(\"fat.jar\")"),
+                generatedFatJarFileName = "fat.jar"
+            )
+        }
 
-    @Test
-    fun `build fat jar with fixed jar name builds fixed-named-jar`(@TempDir projectDir: File) = testFatJar(
-        projectDir,
-        buildGradleKtsContent = "$BUILD_GRADLE_KTS_CONTENT\nktor.fatJar.archiveFileName = \"fat.jar\"",
-        generatedFatJarFileName = "fat.jar"
-    )
+        @Test
+        fun `without mainClass set but with mainClassName set works`(@TempDir projectDir: File) {
+            testFatJar(
+                projectDir,
+                BUILD_GRADLE_KTS_CONTENT
+                    .replace("""application { mainClass.set("my.org.MainKt") }""", "")
+                    .plus("\nsetProperty(\"mainClassName\", \"my.org.MainKt\")"),
+                generatedFatJarFileName = "test-fat-jar-all.jar"
+            )
+        }
 
-    @Test
-    fun `build fat jar with fixed jar name and version builds fixed-named-jar`(@TempDir projectDir: File) = testFatJar(
-        projectDir,
-        buildGradleKtsContent = "$BUILD_GRADLE_KTS_CONTENT\nktor.fatJar.archiveFileName = \"fat.jar\"\nversion = \"1.2.3\"",
-        generatedFatJarFileName = "fat.jar"
-    )
+        @Test
+        fun `fails when mainClass and mainClassName are not set`(@TempDir projectDir: File) {
+            val result = testFatJar(
+                projectDir,
+                BUILD_GRADLE_KTS_CONTENT.replace("application.mainClass.set(\"my.org.MainKt\")", ""),
+                generatedFatJarFileName = "test-fat-jar-all.jar",
+                expectSuccess = false
+            )
+            assertContains(
+                charSequence = result.output,
+                other = "You should point application.mainClass to your main class in order to build a Fat JAR"
+            )
+        }
+    }
 
-    @Test
-    fun `build fat jar without mainClass set but with mainClassName set works`(@TempDir projectDir: File) = testFatJar(
-        projectDir,
-        buildGradleKtsContent = BUILD_GRADLE_KTS_CONTENT
-            .replace("""application { mainClass.set("my.org.MainKt") }""", "")
-            .plus("\nsetProperty(\"mainClassName\", \"my.org.MainKt\")"),
-        generatedFatJarFileName = "test-fat-jar-all.jar"
-    )
+    @Nested
+    inner class RunFatJar {
+        @Test
+        fun `task runs after buildFatJar`(@TempDir projectDir: File) {
+            val result = testFatJar(
+                projectDir,
+                BUILD_GRADLE_KTS_CONTENT,
+                generatedFatJarFileName = "test-fat-jar-all.jar",
+                taskName = "runFatJar"
+            )
+            assertContains(result.tasks.map { it.path }, ":buildFatJar")
+        }
 
-    @Test
-    fun `runFatJar runs the fat jar`(@TempDir projectDir: File) {
-        testFatJar(
-            projectDir,
-            BUILD_GRADLE_KTS_CONTENT,
-            generatedFatJarFileName = "test-fat-jar-all.jar",
-            taskName = "runFatJar"
-        )
-        val resultFile = projectDir.resolve("result.txt")
-        assertTrue(resultFile.exists(), "Resulting file has not been created")
-        assertEquals("""{"name":"John","age":30}""", resultFile.readText(), "Content differs")
+        @Test
+        fun `builds and runs the fat jar`(@TempDir projectDir: File) {
+            testFatJar(
+                projectDir,
+                BUILD_GRADLE_KTS_CONTENT,
+                generatedFatJarFileName = "test-fat-jar-all.jar",
+                taskName = "runFatJar"
+            )
+            val resultFile = projectDir.resolve("result.txt")
+            assertTrue(resultFile.exists(), "Resulting file has not been created")
+            assertEquals("""{"name":"John","age":30}""", resultFile.readText(), "Content differs")
+        }
     }
 }

@@ -4,14 +4,15 @@ import com.github.jengelman.gradle.plugins.shadow.ShadowApplicationPlugin
 import com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaApplication
 
-abstract class FatJarExtension {
+abstract class FatJarExtension(project: Project) {
     /**
-     * Specifies the fat jar archive name.
+     * Specifies the fat jar archive name. Defaults to `"${project.name}-all.jar"`.
      */
-    var archiveFileName: String? = null
+    val archiveFileName = project.property(defaultValue = "${project.name}-all.jar")
 }
 
 const val FAT_JAR_EXTENSION_NAME = "fatJar"
@@ -35,9 +36,9 @@ fun configureFatJar(project: Project) {
             // We can remove this block when we move to ShadowJar Plugin v7 or above.
             if (project.findProperty("mainClassName") == null) {
                 val application = project.extensions.getByType(JavaApplication::class.java)
-                application.mainClass.orNull?.let { mainClassName ->
-                    application.mainClassName = mainClassName
-                }
+                val mainClassName = application.mainClass.orNull
+                    ?: throw GradleException("You should point application.mainClass to your main class in order to build a Fat JAR")
+                application.mainClassName = mainClassName
             }
         }
     }
@@ -45,7 +46,7 @@ fun configureFatJar(project: Project) {
     val fatJarExtension = project.createKtorExtension<FatJarExtension>(FAT_JAR_EXTENSION_NAME)
     val shadowJar = tasks.named(ShadowJavaPlugin.getSHADOW_JAR_TASK_NAME(), ShadowJar::class.java) {
         it.dependsOn(configureShadowJar)
-        fatJarExtension.archiveFileName?.let { name -> it.archiveFileName.set(name) }
+        it.archiveFileName.set(fatJarExtension.archiveFileName)
     }
 
     val buildFatJar = tasks.registerKtorTask(BUILD_FAT_JAR_TASK_NAME, BUILD_FAT_JAR_TASK_DESCRIPTION) {

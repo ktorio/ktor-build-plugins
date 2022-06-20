@@ -7,6 +7,6 @@ application.mainClass.set("io.ktor.samples.fatjar.ApplicationKt")
 
 ktor {
     fatJar {
-        archiveFileName = "fat.jar"
+        archiveFileName.set("fat.jar")
     }
 }

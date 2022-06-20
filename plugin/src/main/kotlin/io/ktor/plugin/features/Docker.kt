@@ -6,6 +6,7 @@ import com.google.cloud.tools.jib.gradle.TargetImageParameters
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
@@ -14,43 +15,43 @@ enum class JreVersion(val numeric: Int) {
     JRE_8(8), JRE_11(11), JRE_17(17)
 }
 
-abstract class DockerExtension {
+abstract class DockerExtension(project: Project) {
     /**
      * Specifies the JRE version to use in the image. Defaults to [JreVersion.JRE_11].
      */
-    var jreVersion = JreVersion.JRE_11
+    val jreVersion = project.property(defaultValue = JreVersion.JRE_11)
 
     /**
      * Specifies a tag to use in the image. Defaults to `"latest"`.
      */
-    var imageTag = "latest"
+    val imageTag = project.property(defaultValue = "latest")
 
     /**
      * Specifies an image name for local builds. Defaults to `"ktor-docker-image"`.
      */
-    var localImageName = "ktor-docker-image"
+    val localImageName = project.property(defaultValue = "ktor-docker-image")
 
     /**
      * Specifies an external registry to push the image into. Default is not set.
      */
-    var externalRegistry: DockerImageRegistry? = null
+    val externalRegistry = project.property<DockerImageRegistry>(defaultValue = null)
 }
 
 interface DockerImageRegistry {
     /**
      * Specifies a link for [JibExtension.to.image][TargetImageParameters.image].
      */
-    val toImage: String
+    val toImage: Provider<String>
 
     /**
      * Specifies a username for a given registry.
      */
-    val username: String
+    val username: Provider<String>
 
     /**
      * Specifies a password for a given registry.
      */
-    val password: String
+    val password: Provider<String>
 
     companion object {
         /**
@@ -59,9 +60,9 @@ interface DockerImageRegistry {
          */
         @Suppress("unused")
         fun dockerHub(
-            appName: String,
-            username: String,
-            password: String
+            appName: Provider<String>,
+            username: Provider<String>,
+            password: Provider<String>
         ): DockerImageRegistry = DockerHubRegistry(appName, username, password)
 
         /**
@@ -70,29 +71,29 @@ interface DockerImageRegistry {
          */
         @Suppress("unused")
         fun googleContainerRegistry(
-            projectName: String,
-            appName: String,
-            username: String,
-            password: String
+            projectName: Provider<String>,
+            appName: Provider<String>,
+            username: Provider<String>,
+            password: Provider<String>
         ): DockerImageRegistry = GoogleContainerRegistry(projectName, appName, username, password)
     }
 }
 
 private class DockerHubRegistry(
-    appName: String,
-    override val username: String,
-    override val password: String
+    appName: Provider<String>,
+    override val username: Provider<String>,
+    override val password: Provider<String>
 ) : DockerImageRegistry {
-    override val toImage: String = "$username/$appName"
+    override val toImage: Provider<String> = username.zip(appName) { user, app -> "$user/$app" }
 }
 
 private class GoogleContainerRegistry(
-    projectName: String,
-    appName: String,
-    override val username: String,
-    override val password: String
+    projectName: Provider<String>,
+    appName: Provider<String>,
+    override val username: Provider<String>,
+    override val password: Provider<String>
 ) : DockerImageRegistry {
-    override val toImage: String = "gcr.io/$projectName/$appName"
+    override val toImage: Provider<String> = projectName.zip(appName) { project, app -> "gcr.io/$project/$app" }
 }
 
 private const val DOCKER_EXTENSION_NAME = "docker"
@@ -112,29 +113,27 @@ const val RUN_DOCKER_TASK_NAME = "runDocker"
 private const val SETUP_JIB_LOCAL_TASK_NAME = "setupJibLocal"
 private const val SETUP_JIB_EXTERNAL_TASK_NAME = "setupJibExternal"
 
+private fun Provider<String>.zipWithTag(tag: Provider<String>): Provider<String> =
+    zip(tag) { imageName, imageTag ->
+        "$imageName:$imageTag"
+    }
+
 private abstract class SetupJibTask : DefaultTask() {
     @get:Input
     abstract val setupExternalRegistry: Property<Boolean>
-
-    init {
-        @Suppress("LeakingThis")
-        setupExternalRegistry.convention(false)
-    }
 
     @TaskAction
     fun execute() {
         val jibExtension = project.extensions.getByType(JibExtension::class.java)
         val dockerExtension = project.getKtorExtension<DockerExtension>()
-        jibExtension.from.image = "eclipse-temurin:${dockerExtension.jreVersion.numeric}-jre"
-        jibExtension.to.image = dockerExtension.localImageName + ":" + dockerExtension.imageTag
+        jibExtension.from.setImage(dockerExtension.jreVersion.map { "eclipse-temurin:${it.numeric}-jre" })
+        jibExtension.to.setImage(dockerExtension.localImageName.zipWithTag(dockerExtension.imageTag))
 
         if (setupExternalRegistry.get()) {
-            val externalRegistry = requireNotNull(dockerExtension.externalRegistry) {
-                throw RuntimeException("External registry is not set")
-            }
-            jibExtension.to.image = externalRegistry.toImage + ":" + dockerExtension.imageTag
-            jibExtension.to.auth.username = externalRegistry.username
-            jibExtension.to.auth.password = externalRegistry.password
+            val externalRegistry = dockerExtension.externalRegistry
+            jibExtension.to.setImage(externalRegistry.flatMap { it.toImage }.zipWithTag(dockerExtension.imageTag))
+            jibExtension.to.auth.setUsername(externalRegistry.flatMap { it.username })
+            jibExtension.to.auth.setPassword(externalRegistry.flatMap { it.password })
         }
     }
 }
@@ -144,8 +143,8 @@ private abstract class RunDockerTask : DefaultTask() {
     fun execute() {
         project.exec { exec ->
             val dockerExtension = project.getKtorExtension<DockerExtension>()
-            val fullImageName = dockerExtension.localImageName + ":" + dockerExtension.imageTag
-            exec.commandLine("docker", "run", "-p", "8080:8080", fullImageName)
+            val fullImageName = dockerExtension.localImageName.zipWithTag(dockerExtension.imageTag)
+            exec.commandLine("docker", "run", "-p", "8080:8080", fullImageName.get())
         }
     }
 }

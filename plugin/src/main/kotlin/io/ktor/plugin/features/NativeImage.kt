@@ -13,12 +13,12 @@ abstract class NativeImageExtension(project: Project) {
     /**
      * Specifies whether to enable verbose output. Defaults to `true`.
      */
-    var verbose = true
+    val verbose = project.property(defaultValue = true)
 
     /**
      * Specifies a name of executable file. Defaults to `"native-image"`.
      */
-    var imageName = "native-image"
+    val imageName = project.property(defaultValue = "native-image")
 
     /**
      * Specifies whether to attach a GraalVM agent on an image building or not.
@@ -31,19 +31,19 @@ abstract class NativeImageExtension(project: Project) {
      *
      * Defaults to `false`.
      */
-    var attachAgent = false
+    val attachAgent = project.property(defaultValue = false)
 
     /**
      * Specifies packages or classes to be initialized at build time.
      */
-    var initializeAtBuildTime: SetProperty<String> = project.objects.setProperty(String::class.java)
+    val initializeAtBuildTime: SetProperty<String> = project.objects.setProperty(String::class.java)
 
     /**
      * Specifies packages or classes to be initialized at run time.
      * Useful when some class or package has to be initialized at run time,
      * but it's included in [initializeAtBuildTime].
      */
-    var initializeAtRunTime: SetProperty<String> = project.objects.setProperty(String::class.java)
+    val initializeAtRunTime: SetProperty<String> = project.objects.setProperty(String::class.java)
 }
 
 private const val NATIVE_IMAGE_EXTENSION_NAME = "nativeImage"
@@ -62,13 +62,13 @@ private fun configureGraalVM(project: Project, nativeImageExtension: NativeImage
                 verbose.set(nativeImageExtension.verbose)
                 agent.enabled.set(nativeImageExtension.attachAgent)
 
-                val initializeAtBuildTime =
-                    nativeImageExtension.initializeAtBuildTime.get() + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME
-                buildArgs.add("--initialize-at-build-time=${initializeAtBuildTime.joinToString(",")}")
+                buildArgs.add(nativeImageExtension.initializeAtBuildTime.map {
+                    "--initialize-at-build-time=${(it + PACKAGES_TO_INITIALIZE_AT_BUILD_TIME).joinToString(",")}"
+                })
 
-                val initializeAtRunTime = nativeImageExtension.initializeAtRunTime.get()
-                if (initializeAtRunTime.isNotEmpty())
-                    buildArgs.add("--initialize-at-run-time=${initializeAtRunTime.joinToString(",")}")
+                buildArgs.add(nativeImageExtension.initializeAtRunTime.map {
+                    "--initialize-at-run-time=${it.joinToString(",")}"
+                })
 
                 buildArgs.add("-H:+InstallExitHandlers")
                 buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
@@ -86,7 +86,7 @@ fun configureNativeImage(project: Project) {
     project.plugins.apply(JavaPlugin::class.java) // required for NativeImagePlugin
     project.plugins.apply(NativeImagePlugin::class.java)
 
-    val nativeImageExtension = project.createKtorExtension<NativeImageExtension>(NATIVE_IMAGE_EXTENSION_NAME, project)
+    val nativeImageExtension = project.createKtorExtension<NativeImageExtension>(NATIVE_IMAGE_EXTENSION_NAME)
     val configureGraalVMTask = project.tasks.register(CONFIGURE_GRAALVM_TASK_NAME) {
         // This configuration has to be done in the configuration phase.
         configureGraalVM(project, nativeImageExtension)
