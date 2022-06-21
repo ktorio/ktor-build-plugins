@@ -2,7 +2,7 @@
 kotlin = "1.7.0"
 ktor-plugin = "2.1.0"
 logback = "1.2.11"
-gradle-plugin-publish = "1.0.0-rc-2"
+gradle-plugin-publish = "1.0.0-rc-3"
 shadow-gradle-plugin = "6.1.0"
 jib-gradle-plugin = "3.2.1"
 graalvm-gradle-plugin = "0.9.11"
