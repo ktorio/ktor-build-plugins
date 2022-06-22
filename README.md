@@ -95,8 +95,8 @@ ktor {
         externalRegistry.set(
             DockerImageRegistry.dockerHub(
                 appName = provider { "ktor-app" },
-                username = provider { System.getenv("DOCKER_HUB_USERNAME") },
-                password = provider { System.getenv("DOCKER_HUB_PASSWORD") }
+                username = providers.environmentVariable("DOCKER_HUB_USERNAME"),
+                password = providers.environmentVariable("DOCKER_HUB_PASSWORD")
             )
         )
     }
