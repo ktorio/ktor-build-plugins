@@ -2,15 +2,12 @@ package io.ktor.plugin.features
 
 import com.google.cloud.tools.jib.gradle.JibExtension
 import com.google.cloud.tools.jib.gradle.JibPlugin
+import com.google.cloud.tools.jib.gradle.JibTask
 import com.google.cloud.tools.jib.gradle.TargetImageParameters
-import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
-import org.gradle.api.JavaVersion
-import org.gradle.api.Project
-import org.gradle.api.provider.Property
+import org.gradle.api.*
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.TaskProvider
 
 enum class JreVersion(val javaVersion: JavaVersion) {
     JRE_1_8(JavaVersion.VERSION_1_8),
@@ -118,38 +115,44 @@ const val RUN_DOCKER_TASK_NAME = "runDocker"
 private const val SETUP_JIB_LOCAL_TASK_NAME = "setupJibLocal"
 private const val SETUP_JIB_EXTERNAL_TASK_NAME = "setupJibExternal"
 
+@Suppress("UnstableApiUsage")
+private fun markJibTaskNotCompatible(task: Task) = task.notCompatibleWithConfigurationCache(
+    "JIB plugin is not compatible with the configuration cache. " +
+            "See https://github.com/GoogleContainerTools/jib/issues/3132"
+)
+
 private fun Provider<String>.zipWithTag(tag: Provider<String>): Provider<String> =
     zip(tag) { imageName, imageTag ->
         "$imageName:$imageTag"
     }
 
-private abstract class SetupJibTask : DefaultTask() {
-    @get:Input
-    abstract val setupExternalRegistry: Property<Boolean>
+private fun registerSetupJibTask(
+    project: Project,
+    taskName: String,
+    setupExternalRegistry: Boolean
+): TaskProvider<Task> = project.tasks.register(taskName) {
+    val jibExtension = project.extensions.getByType(JibExtension::class.java)
+    val dockerExtension = project.getKtorExtension<DockerExtension>()
+    jibExtension.from.setImage(dockerExtension.jreVersion.map { "eclipse-temurin:${it.majorVersion}-jre" })
 
-    @TaskAction
-    fun execute() {
-        val jibExtension = project.extensions.getByType(JibExtension::class.java)
-        val dockerExtension = project.getKtorExtension<DockerExtension>()
-        jibExtension.from.setImage(dockerExtension.jreVersion.map { "eclipse-temurin:${it.majorVersion}-jre" })
+    if (setupExternalRegistry) {
+        val externalRegistry = dockerExtension.externalRegistry
+        jibExtension.to.setImage(externalRegistry.flatMap { it.toImage }.zipWithTag(dockerExtension.imageTag))
+        jibExtension.to.auth.setUsername(externalRegistry.flatMap { it.username })
+        jibExtension.to.auth.setPassword(externalRegistry.flatMap { it.password })
+    } else {
         jibExtension.to.setImage(dockerExtension.localImageName.zipWithTag(dockerExtension.imageTag))
+    }
 
-        if (setupExternalRegistry.get()) {
-            val externalRegistry = dockerExtension.externalRegistry
-            jibExtension.to.setImage(externalRegistry.flatMap { it.toImage }.zipWithTag(dockerExtension.imageTag))
-            jibExtension.to.auth.setUsername(externalRegistry.flatMap { it.username })
-            jibExtension.to.auth.setPassword(externalRegistry.flatMap { it.password })
-        }
-
-        val imageJava = dockerExtension.jreVersion.get().javaVersion
-        val projectJava = project.javaVersion
-        if (imageJava < projectJava) {
-            throw GradleException(
-                "You're trying to build an image with JRE $imageJava while your project's JDK or 'java.targetCompatibility' is $projectJava. " +
-                        "Please use a higher version of an image JRE through the 'ktor.docker.jreVersion' extension in the build file, " +
-                        "or set the 'java.targetCompatibility' property to a lower version."
-            )
-        }
+    // Eagerly check for incompatible Java versions to show a meaningful error instead of a JIB's one.
+    val imageJava = dockerExtension.jreVersion.get().javaVersion
+    val projectJava = project.javaVersion
+    if (imageJava < projectJava) {
+        throw GradleException(
+            "You're trying to build an image with JRE $imageJava while your project's JDK or 'java.targetCompatibility' is $projectJava. " +
+                    "Please use a higher version of an image JRE through the 'ktor.docker.jreVersion' extension in the build file, " +
+                    "or set the 'java.targetCompatibility' property to a lower version."
+        )
     }
 }
 
@@ -170,12 +173,10 @@ fun configureDocker(project: Project) {
 
     val tasks = project.tasks
 
-    val setupJibLocalTask = tasks.register(SETUP_JIB_LOCAL_TASK_NAME, SetupJibTask::class.java) {
-        it.setupExternalRegistry.set(false)
-    }
-    val setupJibExternalTask = tasks.register(SETUP_JIB_EXTERNAL_TASK_NAME, SetupJibTask::class.java) {
-        it.setupExternalRegistry.set(true)
-    }
+    tasks.withType(JibTask::class.java).configureEach(::markJibTaskNotCompatible)
+
+    val setupJibLocalTask = registerSetupJibTask(project, SETUP_JIB_LOCAL_TASK_NAME, setupExternalRegistry = false)
+    val setupJibExternalTask = registerSetupJibTask(project, SETUP_JIB_EXTERNAL_TASK_NAME, setupExternalRegistry = true)
     val setupJibTasks = arrayOf(setupJibLocalTask, setupJibExternalTask)
 
     val jibBuildIntoLocalDockerTask = tasks.named(JIB_BUILD_INTO_LOCAL_DOCKER_TASK_NAME)
