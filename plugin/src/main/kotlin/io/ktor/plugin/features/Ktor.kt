@@ -1,5 +1,6 @@
 package io.ktor.plugin.features
 
+import org.gradle.api.DefaultTask
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -9,38 +10,30 @@ import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
-import kotlin.reflect.KClass
 
 const val KTOR_TASK_GROUP_NAME = "Ktor"
 
-fun TaskContainer.registerKtorTask(
+inline fun TaskContainer.registerKtorTask(
     name: String,
     description: String,
-    configure: Task.() -> Unit = {}
-): TaskProvider<Task> {
-    return register(name) {
-        it.configureKtorTask(description, configure)
-    }
-}
+    crossinline configure: Task.() -> Unit = {}
+): TaskProvider<DefaultTask> = registerKtorTask<DefaultTask>(
+    name = name,
+    description = description,
+    configure = configure
+)
 
-fun <T : Task> TaskContainer.registerKtorTask(
+inline fun <reified T : Task> TaskContainer.registerKtorTask(
     name: String,
     description: String,
-    clazz: KClass<T>,
-    configure: T.() -> Unit = {}
-): TaskProvider<T> {
-    return register(name, clazz.java) {
-        it.configureKtorTask(description, configure)
+    vararg constructorArgs: Any?,
+    crossinline configure: T.() -> Unit = {}
+): TaskProvider<T> = register(name, T::class.java, *constructorArgs).also { taskProvider ->
+    taskProvider.configure { task ->
+        task.group = KTOR_TASK_GROUP_NAME
+        task.description = description
+        task.configure()
     }
-}
-
-private fun <T : Task> T.configureKtorTask(
-    description: String,
-    configure: T.() -> Unit
-) {
-    this.group = KTOR_TASK_GROUP_NAME
-    this.description = description
-    this.configure()
 }
 
 abstract class KtorExtension

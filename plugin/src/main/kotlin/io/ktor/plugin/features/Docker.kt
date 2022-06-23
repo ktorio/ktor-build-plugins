@@ -5,9 +5,13 @@ import com.google.cloud.tools.jib.gradle.JibPlugin
 import com.google.cloud.tools.jib.gradle.JibTask
 import com.google.cloud.tools.jib.gradle.TargetImageParameters
 import org.gradle.api.*
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.process.ExecOperations
+import javax.inject.Inject
 
 enum class JreVersion(val javaVersion: JavaVersion) {
     JRE_1_8(JavaVersion.VERSION_1_8),
@@ -17,7 +21,15 @@ enum class JreVersion(val javaVersion: JavaVersion) {
     val majorVersion = javaVersion.majorVersion.toInt()
 }
 
+@Suppress("MemberVisibilityCanBePrivate") // Provides a public API
 abstract class DockerExtension(project: Project) {
+    private companion object {
+        private fun Provider<String>.zipWithTag(tag: Provider<String>): Provider<String> =
+            zip(tag) { imageName, imageTag ->
+                "$imageName:$imageTag"
+            }
+    }
+
     /**
      * Specifies the JRE version to use in the image. Defaults to [JreVersion.JRE_17].
      */
@@ -37,6 +49,16 @@ abstract class DockerExtension(project: Project) {
      * Specifies an external registry to push the image into. Default is not set.
      */
     val externalRegistry = project.property<DockerImageRegistry>(defaultValue = null)
+
+    /**
+     * Specifies an image name in form `"imageName:tag"` for a local registry.
+     */
+    val fullLocalImageName = localImageName.zipWithTag(imageTag)
+
+    /**
+     * Specifies an image name in form `"imageName:tag"` for an external registry.
+     */
+    val fullExternalImageName = externalRegistry.flatMap { it.toImage }.zipWithTag(imageTag)
 }
 
 interface DockerImageRegistry {
@@ -121,11 +143,6 @@ private fun markJibTaskNotCompatible(task: Task) = task.notCompatibleWithConfigu
             "See https://github.com/GoogleContainerTools/jib/issues/3132"
 )
 
-private fun Provider<String>.zipWithTag(tag: Provider<String>): Provider<String> =
-    zip(tag) { imageName, imageTag ->
-        "$imageName:$imageTag"
-    }
-
 private fun registerSetupJibTask(
     project: Project,
     taskName: String,
@@ -137,11 +154,11 @@ private fun registerSetupJibTask(
 
     if (setupExternalRegistry) {
         val externalRegistry = dockerExtension.externalRegistry
-        jibExtension.to.setImage(externalRegistry.flatMap { it.toImage }.zipWithTag(dockerExtension.imageTag))
+        jibExtension.to.setImage(dockerExtension.fullExternalImageName)
         jibExtension.to.auth.setUsername(externalRegistry.flatMap { it.username })
         jibExtension.to.auth.setPassword(externalRegistry.flatMap { it.password })
     } else {
-        jibExtension.to.setImage(dockerExtension.localImageName.zipWithTag(dockerExtension.imageTag))
+        jibExtension.to.setImage(dockerExtension.fullLocalImageName)
     }
 
     // Eagerly check for incompatible Java versions to show a meaningful error instead of a JIB's one.
@@ -149,28 +166,31 @@ private fun registerSetupJibTask(
     val projectJava = project.javaVersion
     if (imageJava < projectJava) {
         throw GradleException(
-            "You're trying to build an image with JRE $imageJava while your project's JDK or 'java.targetCompatibility' is $projectJava. " +
+            "You're trying to build an image with JRE $imageJava while your project's JDK or 'targetCompatibility' is $projectJava. " +
                     "Please use a higher version of an image JRE through the 'ktor.docker.jreVersion' extension in the build file, " +
-                    "or set the 'java.targetCompatibility' property to a lower version."
+                    "or set the 'targetCompatibility' property to a lower version."
         )
     }
 }
 
 private abstract class RunDockerTask : DefaultTask() {
+    @get:Inject
+    abstract val execOperations: ExecOperations
+
+    @get:Input
+    abstract val fullImageName: Property<String>
+
     @TaskAction
     fun execute() {
-        project.exec { exec ->
-            val dockerExtension = project.getKtorExtension<DockerExtension>()
-            val fullImageName = dockerExtension.localImageName.zipWithTag(dockerExtension.imageTag)
-            exec.commandLine("docker", "run", "-p", "8080:8080", fullImageName.get())
+        execOperations.exec {
+            it.commandLine("docker", "run", "-p", "8080:8080", fullImageName.get())
         }
     }
 }
 
 fun configureDocker(project: Project) {
-    project.createKtorExtension<DockerExtension>(DOCKER_EXTENSION_NAME)
     project.plugins.apply(JibPlugin::class.java)
-
+    val dockerExtension = project.createKtorExtension<DockerExtension>(DOCKER_EXTENSION_NAME)
     val tasks = project.tasks
 
     tasks.withType(JibTask::class.java).configureEach(::markJibTaskNotCompatible)
@@ -190,11 +210,11 @@ fun configureDocker(project: Project) {
         }
     }
 
-    tasks.registerKtorTask(
+    tasks.registerKtorTask<RunDockerTask>(
         RUN_DOCKER_TASK_NAME,
-        "Builds a project's image to a Docker daemon and runs it.",
-        RunDockerTask::class
+        "Builds a project's image to a Docker daemon and runs it."
     ) {
+        fullImageName.set(dockerExtension.fullLocalImageName)
         dependsOn(
             setupJibLocalTask,
             jibBuildIntoLocalDockerTask
