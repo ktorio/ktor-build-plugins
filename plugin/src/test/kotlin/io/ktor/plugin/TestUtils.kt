@@ -56,7 +56,7 @@ fun buildProject(
         .resolve("Main.kt")
         .writeText(mainKtContent)
 
-    return createGradleRunner(projectDir).withArguments(buildCommand).run {
+    return createGradleRunner(projectDir).withDebug(true).withArguments("--configuration-cache", buildCommand).run {
         if (expectSuccess) {
             build()
         } else {
