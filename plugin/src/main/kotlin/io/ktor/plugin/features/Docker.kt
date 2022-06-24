@@ -162,14 +162,17 @@ private fun registerSetupJibTask(
     }
 
     // Eagerly check for incompatible Java versions to show a meaningful error instead of a JIB's one.
-    val imageJava = dockerExtension.jreVersion.get().javaVersion
     val projectJava = project.javaVersion
-    if (imageJava < projectJava) {
-        throw GradleException(
-            "You're trying to build an image with JRE $imageJava while your project's JDK or 'targetCompatibility' is $projectJava. " +
-                    "Please use a higher version of an image JRE through the 'ktor.docker.jreVersion' extension in the build file, " +
-                    "or set the 'targetCompatibility' property to a lower version."
-        )
+    val imageJavaProvider = dockerExtension.jreVersion
+    it.doLast {
+        val imageJava = imageJavaProvider.get().javaVersion
+        if (imageJava < projectJava) {
+            throw GradleException(
+                "You're trying to build an image with JRE $imageJava while your project's JDK or 'java.targetCompatibility' is $projectJava. " +
+                        "Please use a higher version of an image JRE through the 'ktor.docker.jreVersion' extension in the build file, " +
+                        "or set the 'java.targetCompatibility' property to a lower version."
+            )
+        }
     }
 }
 
