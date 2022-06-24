@@ -4,6 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.ShadowApplicationPlugin
 import com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.JavaApplication
@@ -31,13 +32,15 @@ private const val RUN_FAT_JAR_TASK_DESCRIPTION =
  */
 private fun configureMainClass(project: Project) {
     val application = project.extensions.getByType(JavaApplication::class.java)
-    application.mainClass.orNull?.let { mainClassName -> application.mainClassName = mainClassName }
+    val mainClassName = application.mainClass.orNull
+        ?: throw GradleException("You should point application.mainClass to your main class in order to build a Fat JAR")
+    application.mainClassName = mainClassName
 }
 
 @Suppress("UnstableApiUsage")
 private fun Task.shadowTaskIsNotCompatibleWithConfigurationCache(taskName: String) {
     notCompatibleWithConfigurationCache(
-        /* reason = */ "`$taskName` is not compatible yet: " +
+        "`$taskName` is not compatible yet: " +
                 "https://github.com/johnrengelman/shadow/issues/775"
     )
 }

@@ -92,11 +92,15 @@ class FatJarTest {
 
         @Test
         fun `fails when mainClass and mainClassName are not set`(@TempDir projectDir: File) {
-            testFatJar(
+            val result = testFatJar(
                 projectDir,
                 BUILD_GRADLE_KTS_CONTENT.replace("application.mainClass.set(\"my.org.MainKt\")", ""),
                 generatedFatJarFileName = "test-fat-jar-all.jar",
                 expectSuccess = false
+            )
+            assertContains(
+                charSequence = result.output,
+                other = "You should point application.mainClass to your main class in order to build a Fat JAR"
             )
         }
     }
