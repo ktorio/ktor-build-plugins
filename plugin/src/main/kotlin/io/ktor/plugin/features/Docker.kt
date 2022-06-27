@@ -9,7 +9,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.TaskProvider
 import org.gradle.process.ExecOperations
 import javax.inject.Inject
 
@@ -143,29 +142,29 @@ private fun markJibTaskNotCompatible(task: Task) = task.notCompatibleWithConfigu
             "See https://github.com/GoogleContainerTools/jib/issues/3132"
 )
 
-private fun registerSetupJibTask(
-    project: Project,
-    taskName: String,
-    setupExternalRegistry: Boolean
-): TaskProvider<Task> = project.tasks.register(taskName) {
-    val jibExtension = project.extensions.getByType(JibExtension::class.java)
-    val dockerExtension = project.getKtorExtension<DockerExtension>()
-    jibExtension.from.setImage(dockerExtension.jreVersion.map { "eclipse-temurin:${it.majorVersion}-jre" })
-
-    if (setupExternalRegistry) {
-        val externalRegistry = dockerExtension.externalRegistry
-        jibExtension.to.setImage(dockerExtension.fullExternalImageName)
-        jibExtension.to.auth.setUsername(externalRegistry.flatMap { it.username })
-        jibExtension.to.auth.setPassword(externalRegistry.flatMap { it.password })
-    } else {
-        jibExtension.to.setImage(dockerExtension.fullLocalImageName)
+private abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) : DefaultTask() {
+    init {
+        @Suppress("LeakingThis")
+        markJibTaskNotCompatible(this)
     }
 
-    // Eagerly check for incompatible Java versions to show a meaningful error instead of a JIB's one.
-    val projectJava = project.javaVersion
-    val imageJavaProvider = dockerExtension.jreVersion
-    it.doLast {
-        val imageJava = imageJavaProvider.get().javaVersion
+    @TaskAction
+    fun execute() {
+        val jibExtension = project.extensions.getByType(JibExtension::class.java)
+        val dockerExtension = project.getKtorExtension<DockerExtension>()
+        jibExtension.from.setImage(dockerExtension.jreVersion.map { "eclipse-temurin:${it.majorVersion}-jre" })
+
+        if (isExternal) {
+            val externalRegistry = dockerExtension.externalRegistry
+            jibExtension.to.setImage(dockerExtension.fullExternalImageName)
+            jibExtension.to.auth.setUsername(externalRegistry.flatMap { it.username })
+            jibExtension.to.auth.setPassword(externalRegistry.flatMap { it.password })
+        } else {
+            jibExtension.to.setImage(dockerExtension.fullLocalImageName)
+        }
+
+        val projectJava = project.javaVersion
+        val imageJava = dockerExtension.jreVersion.get().javaVersion
         if (imageJava < projectJava) {
             throw GradleException(
                 "You're trying to build an image with JRE $imageJava while your project's JDK or 'java.targetCompatibility' is $projectJava. " +
@@ -175,6 +174,10 @@ private fun registerSetupJibTask(
         }
     }
 }
+
+private abstract class ConfigureJibLocalTask : ConfigureJibTaskBase(isExternal = false)
+
+private abstract class ConfigureJibExternalTask : ConfigureJibTaskBase(isExternal = true)
 
 private abstract class RunDockerTask : DefaultTask() {
     @get:Inject
@@ -198,9 +201,9 @@ fun configureDocker(project: Project) {
 
     tasks.withType(JibTask::class.java).configureEach(::markJibTaskNotCompatible)
 
-    val setupJibLocalTask = registerSetupJibTask(project, SETUP_JIB_LOCAL_TASK_NAME, setupExternalRegistry = false)
-    val setupJibExternalTask = registerSetupJibTask(project, SETUP_JIB_EXTERNAL_TASK_NAME, setupExternalRegistry = true)
-    val setupJibTasks = arrayOf(setupJibLocalTask, setupJibExternalTask)
+    val configureJibLocalTask = tasks.register(SETUP_JIB_LOCAL_TASK_NAME, ConfigureJibLocalTask::class.java)
+    val configureJibExternalTask = tasks.register(SETUP_JIB_EXTERNAL_TASK_NAME, ConfigureJibExternalTask::class.java)
+    val configureJibTasks = arrayOf(configureJibLocalTask, configureJibExternalTask)
 
     val jibBuildIntoLocalDockerTask = tasks.named(JIB_BUILD_INTO_LOCAL_DOCKER_TASK_NAME)
     val jibBuildIntoTarTask = tasks.named(JIB_BUILD_INTO_TAR_TASK_NAME)
@@ -209,7 +212,7 @@ fun configureDocker(project: Project) {
 
     for (jibTask in jibTasks) {
         jibTask.configure {
-            it.mustRunAfter(*setupJibTasks)
+            it.mustRunAfter(*configureJibTasks)
         }
     }
 
@@ -219,7 +222,7 @@ fun configureDocker(project: Project) {
     ) {
         fullImageName.set(dockerExtension.fullLocalImageName)
         dependsOn(
-            setupJibLocalTask,
+            configureJibLocalTask,
             jibBuildIntoLocalDockerTask
         )
     }
@@ -229,7 +232,7 @@ fun configureDocker(project: Project) {
         "Builds and publishes a project's Docker image to a local registry."
     ) {
         dependsOn(
-            setupJibLocalTask,
+            configureJibLocalTask,
             jibBuildIntoLocalDockerTask
         )
     }
@@ -239,7 +242,7 @@ fun configureDocker(project: Project) {
         "Builds and publishes a project's Docker image to an external registry."
     ) {
         dependsOn(
-            setupJibExternalTask,
+            configureJibExternalTask,
             jibBuildImageAndPublishTask
         )
     }
@@ -249,7 +252,7 @@ fun configureDocker(project: Project) {
         "Builds a project's Docker image to a tarball."
     ) {
         dependsOn(
-            setupJibLocalTask,
+            configureJibLocalTask,
             jibBuildIntoTarTask
         )
     }
