@@ -143,6 +143,11 @@ private fun markJibTaskNotCompatible(task: Task) = task.notCompatibleWithConfigu
 )
 
 private abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) : DefaultTask() {
+    init {
+        @Suppress("LeakingThis")
+        markJibTaskNotCompatible(this)
+    }
+
     @TaskAction
     fun execute() {
         val jibExtension = project.extensions.getByType(JibExtension::class.java)
