@@ -142,7 +142,7 @@ private fun markJibTaskNotCompatible(task: Task) = task.notCompatibleWithConfigu
             "See https://github.com/GoogleContainerTools/jib/issues/3132"
 )
 
-abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) : DefaultTask() {
+private abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) : DefaultTask() {
     @TaskAction
     fun execute() {
         val jibExtension = project.extensions.getByType(JibExtension::class.java)
@@ -170,9 +170,9 @@ abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) : Defaul
     }
 }
 
-abstract class ConfigureJibLocalTask : ConfigureJibTaskBase(isExternal = false)
+private abstract class ConfigureJibLocalTask : ConfigureJibTaskBase(isExternal = false)
 
-abstract class ConfigureJibExternalTask : ConfigureJibTaskBase(isExternal = true)
+private abstract class ConfigureJibExternalTask : ConfigureJibTaskBase(isExternal = true)
 
 private abstract class RunDockerTask : DefaultTask() {
     @get:Inject
