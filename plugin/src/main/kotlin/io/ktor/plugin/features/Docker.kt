@@ -142,7 +142,6 @@ private fun markJibTaskNotCompatible(task: Task) = task.notCompatibleWithConfigu
             "See https://github.com/GoogleContainerTools/jib/issues/3132"
 )
 
-@Suppress("LeakingThis")
 abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) : DefaultTask() {
     @TaskAction
     fun execute() {
