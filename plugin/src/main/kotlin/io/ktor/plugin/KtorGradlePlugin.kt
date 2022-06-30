@@ -11,6 +11,8 @@ abstract class KtorGradlePlugin : Plugin<Project> {
         project.plugins.apply(ApplicationPlugin::class.java)
         configureFatJar(project)
         configureDocker(project)
-        configureNativeImage(project)
+        // Disabled until the native image generation is not possible with a single task with default configs
+        // See https://youtrack.jetbrains.com/issue/KTOR-4596/Disable-Native-image-related-tasks
+        // configureNativeImage(project)
     }
 }
