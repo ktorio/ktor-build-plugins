@@ -1,6 +1,5 @@
 package io.ktor.plugin
 
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -25,8 +24,4 @@ class GradleVersionCompatibilityTest {
     )
     fun testProjectBuild(gradleVersion: String, @TempDir projectDir: File) =
         buildProject(gradleVersion, projectDir, true)
-
-    @Test
-    fun testProjectBuildFailsOnOlderVersions(@TempDir projectDir: File) =
-        buildProject("6.6.1", projectDir, false)
 }

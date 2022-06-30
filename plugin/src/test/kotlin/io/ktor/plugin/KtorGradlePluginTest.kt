@@ -20,7 +20,7 @@ class KtorGradlePluginTest {
         val expectedTasks = listOf(
             "buildFatJar",
             "publishImageToLocalRegistry", "publishImage", "buildImage", "runDocker",
-            "buildNativeImage"
+//            "buildNativeImage" // KTOR-4596 Disable Native image related tasks
         )
         for (taskName in expectedTasks) {
             val task = assertNotNull(project.tasks.findByName(taskName), "Task $taskName not found")
