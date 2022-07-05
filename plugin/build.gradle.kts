@@ -83,8 +83,7 @@ tasks.withType<Test> {
     testLogging.events(*TestLogEvent.values())
 }
 
-if (hasProperty("eap")) {
-    project.version = project.version.toString() + "-eap-" + System.getenv("BUILD_NUMBER")
+if (hasProperty("space")) {
     publishing {
         repositories {
             maven {
