@@ -9,6 +9,11 @@ plugins {
 group = libs.plugins.ktor.get().pluginId
 version = libs.plugins.ktor.get().version
 
+if (hasProperty("versionSuffix")) {
+    val suffix = property("versionSuffix")
+    version = "$version-$suffix"
+}
+
 repositories {
     mavenCentral()
     gradlePluginPortal()
