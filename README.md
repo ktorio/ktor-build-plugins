@@ -106,26 +106,43 @@ ktor {
 You can find a sample build script
 here: [ktor-docker-sample/build.gradle.kts](samples/ktor-docker-sample/build.gradle.kts).
 
-### Build a GraalVM native image
+[//]: # (### Build a GraalVM native image)
 
-To build a project's GraalVM native image, use the `buildNativeImage` task.
-Before running this task, ensure [GraalVM](https://www.graalvm.org/docs/getting-started/)
-and [Native Image](https://www.graalvm.org/reference-manual/native-image/) are installed.
+[//]: # ()
+[//]: # (To build a project's GraalVM native image, use the `buildNativeImage` task.)
 
-> Note that working with Native Image requires setting the `GRAALVM_HOME` and `JAVA_HOME` environment variables.
+[//]: # (Before running this task, ensure [GraalVM]&#40;https://www.graalvm.org/docs/getting-started/&#41;)
 
-The `buildNativeImage` task generates a native executable with your application in the `build/native/nativeCompile`
-directory.
-You can optionally specify the executable name:
+[//]: # (and [Native Image]&#40;https://www.graalvm.org/reference-manual/native-image/&#41; are installed.)
 
-```kotlin
-// build.gradle.kts
-ktor {
-    nativeImage {
-        imageName.set("native-image-sample")
-    }
-}
-```
+[//]: # ()
+[//]: # (> Note that working with Native Image requires setting the `GRAALVM_HOME` and `JAVA_HOME` environment variables.)
 
-You can find a sample build script
-here: [ktor-native-image-sample/build.gradle.kts](samples/ktor-native-image-sample/build.gradle.kts).
+[//]: # ()
+[//]: # (The `buildNativeImage` task generates a native executable with your application in the `build/native/nativeCompile`)
+
+[//]: # (directory.)
+
+[//]: # (You can optionally specify the executable name:)
+
+[//]: # ()
+[//]: # (```kotlin)
+
+[//]: # (// build.gradle.kts)
+
+[//]: # (ktor {)
+
+[//]: # (    nativeImage {)
+
+[//]: # (        imageName.set&#40;"native-image-sample"&#41;)
+
+[//]: # (    })
+
+[//]: # (})
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (You can find a sample build script)
+
+[//]: # (here: [ktor-native-image-sample/build.gradle.kts]&#40;samples/ktor-native-image-sample/build.gradle.kts&#41;.)
