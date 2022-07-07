@@ -5,7 +5,8 @@ provides the following capabilities:
 
 - Building fat JARs.
 - Dockerizing your applications.
-- Building GraalVM native images.
+
+[//]: # (- Building GraalVM native images.)
 
 ### Install the plugin
 
