@@ -5,7 +5,7 @@ logback = "1.2.11"
 gradle-plugin-publish = "1.0.0"
 shadow-gradle-plugin = "6.1.0"
 jib-gradle-plugin = "3.2.1"
-graalvm-gradle-plugin = "0.9.11"
+graalvm-gradle-plugin = "0.9.13"
 junit = "5.8.2"
 log4j = "2.17.2" # To replace vulnerable versions
 
