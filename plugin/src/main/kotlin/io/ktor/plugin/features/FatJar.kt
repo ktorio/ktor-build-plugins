@@ -1,7 +1,5 @@
 package io.ktor.plugin.features
 
-import com.github.jengelman.gradle.plugins.shadow.ShadowApplicationPlugin
-import com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.GradleException
@@ -26,6 +24,10 @@ const val RUN_FAT_JAR_TASK_NAME = "runFatJar"
 private const val RUN_FAT_JAR_TASK_DESCRIPTION =
     "Builds a combined JAR of project and runtime dependencies and runs it."
 
+private const val SHADOW_INSTALL_TASK_NAME = "installShadowDist"
+private const val SHADOW_RUN_TASK_NAME = "runShadow"
+private const val SHADOW_JAR_TASK_NAME = "shadowJar"
+
 /**
  * We need to set `mainClassName` even if `mainClass` is set, because ShadowJar Plugin v6 needs it.
  * We can remove this function when we move to ShadowJar Plugin v7 or above.
@@ -46,8 +48,8 @@ private fun Task.shadowTaskIsNotCompatibleWithConfigurationCache(taskName: Strin
 }
 
 private val INCOMPATIBLE_SHADOW_TASK_NAMES = arrayOf(
-    ShadowApplicationPlugin.getSHADOW_INSTALL_TASK_NAME(),
-    ShadowApplicationPlugin.getSHADOW_RUN_TASK_NAME()
+    SHADOW_INSTALL_TASK_NAME,
+    SHADOW_RUN_TASK_NAME
 )
 
 private fun markShadowTasksAsNotCompatibleWithConfigurationCache(tasks: TaskContainer) {
@@ -65,7 +67,7 @@ fun configureFatJar(project: Project) {
     markShadowTasksAsNotCompatibleWithConfigurationCache(tasks)
 
     val fatJarExtension = project.createKtorExtension<FatJarExtension>(FAT_JAR_EXTENSION_NAME)
-    val shadowJar = tasks.named(ShadowJavaPlugin.getSHADOW_JAR_TASK_NAME(), ShadowJar::class.java) {
+    val shadowJar = tasks.named(SHADOW_JAR_TASK_NAME, ShadowJar::class.java) {
         configureMainClass(project)
         it.archiveFileName.set(fatJarExtension.archiveFileName)
     }
@@ -74,7 +76,7 @@ fun configureFatJar(project: Project) {
         dependsOn(shadowJar)
     }
 
-    val runShadow = tasks.named(ShadowApplicationPlugin.getSHADOW_RUN_TASK_NAME()) {
+    val runShadow = tasks.named(SHADOW_RUN_TASK_NAME) {
         it.dependsOn(buildFatJar)
     }
 
