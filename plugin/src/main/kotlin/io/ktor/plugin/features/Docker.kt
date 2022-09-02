@@ -5,6 +5,7 @@ import com.google.cloud.tools.jib.gradle.JibPlugin
 import com.google.cloud.tools.jib.gradle.JibTask
 import com.google.cloud.tools.jib.gradle.TargetImageParameters
 import org.gradle.api.*
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
@@ -19,6 +20,16 @@ enum class JreVersion(val javaVersion: JavaVersion) {
 
     val majorVersion = javaVersion.majorVersion.toInt()
 }
+
+enum class DockerPortMappingProtocol {
+    TCP, UDP
+}
+
+data class DockerPortMapping(
+    val outsideDocker: Int,
+    val insideDocker: Int = outsideDocker,
+    val protocol: DockerPortMappingProtocol = DockerPortMappingProtocol.TCP
+)
 
 @Suppress("MemberVisibilityCanBePrivate") // Provides a public API
 abstract class DockerExtension(project: Project) {
@@ -58,6 +69,12 @@ abstract class DockerExtension(project: Project) {
      * Specifies an image name in form `"imageName:tag"` for an external registry.
      */
     val fullExternalImageName = externalRegistry.flatMap { it.toImage }.zipWithTag(imageTag)
+
+    /**
+     * Specifies port mappings for a `runDocker` command.
+     */
+    val portMappings: ListProperty<DockerPortMapping> = project.objects.listProperty(DockerPortMapping::class.java)
+        .convention(listOf(DockerPortMapping(8080, 8080, DockerPortMappingProtocol.TCP)))
 }
 
 interface DockerImageRegistry {
@@ -188,8 +205,19 @@ private abstract class RunDockerTask : DefaultTask() {
 
     @TaskAction
     fun execute() {
+        val dockerExtension = project.getKtorExtension<DockerExtension>()
         execOperations.exec {
-            it.commandLine("docker", "run", "-p", "8080:8080", fullImageName.get())
+            it.commandLine(buildList {
+                add("docker")
+                add("run")
+                for (portMapping in dockerExtension.portMappings.get()) {
+                    add("-p")
+                    with(portMapping) {
+                        add("${outsideDocker}:${insideDocker}/${protocol.name.lowercase()}")
+                    }
+                }
+                add(fullImageName.get())
+            })
         }
     }
 }
