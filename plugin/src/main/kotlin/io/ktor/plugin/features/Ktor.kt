@@ -10,6 +10,7 @@ import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.util.GradleVersion
 
 const val KTOR_TASK_GROUP_NAME = "Ktor"
 
@@ -55,3 +56,10 @@ inline fun <reified T> Project.property(defaultValue: T?): Property<T> =
     objects.property(T::class.java).convention(defaultValue)
 
 val Project.javaVersion: JavaVersion get() = extensions.getByType(JavaPluginExtension::class.java).targetCompatibility
+
+fun Task.markNotCompatibleWithConfigurationCache(reason: String) {
+    if (GradleVersion.current() >= GradleVersion.version("7.4")) {
+        @Suppress("UnstableApiUsage")
+        notCompatibleWithConfigurationCache(reason)
+    }
+}
