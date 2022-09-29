@@ -221,12 +221,16 @@ private abstract class RunDockerTask : DefaultTask() {
     }
 }
 
+fun noop(task: Task) {}
+
 fun configureDocker(project: Project) {
     project.plugins.apply(JibPlugin::class.java)
     val dockerExtension = project.createKtorExtension<DockerExtension>(DOCKER_EXTENSION_NAME)
     val tasks = project.tasks
 
-    tasks.withType(JibTask::class.java).configureEach(::markJibTaskNotCompatible)
+    tasks
+        .withType(JibTask::class.java)
+        .configureEach(::noop)
 
     val configureJibLocalTask = tasks.register(SETUP_JIB_LOCAL_TASK_NAME, ConfigureJibLocalTask::class.java)
     val configureJibExternalTask = tasks.register(SETUP_JIB_EXTERNAL_TASK_NAME, ConfigureJibExternalTask::class.java)
