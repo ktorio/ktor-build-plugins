@@ -153,8 +153,7 @@ const val RUN_DOCKER_TASK_NAME = "runDocker"
 private const val SETUP_JIB_LOCAL_TASK_NAME = "setupJibLocal"
 private const val SETUP_JIB_EXTERNAL_TASK_NAME = "setupJibExternal"
 
-@Suppress("UnstableApiUsage")
-private fun markJibTaskNotCompatible(task: Task) = task.notCompatibleWithConfigurationCache(
+private fun markJibTaskNotCompatible(task: Task) = task.markNotCompatibleWithConfigurationCache(
     "JIB plugin is not compatible with the configuration cache. " +
             "See https://github.com/GoogleContainerTools/jib/issues/3132"
 )

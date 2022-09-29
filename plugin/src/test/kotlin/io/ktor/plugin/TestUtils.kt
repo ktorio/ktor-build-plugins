@@ -2,6 +2,7 @@ package io.ktor.plugin
 
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.util.GradleVersion
 import java.io.File
 import java.util.zip.ZipFile
 import kotlin.test.assertContentEquals
@@ -40,13 +41,17 @@ fun assertZipFilesEqual(expected: ZipFile, actual: ZipFile) {
     }
 }
 
+private fun isGradleConfigurationCacheSupported(gradleVersion: String) =
+    GradleVersion.version(gradleVersion) >= GradleVersion.version("7.4")
+
 fun buildProject(
     projectDir: File,
     buildGradleKtsContent: String,
     settingsGradleKtsContent: String,
     mainKtContent: String,
     buildCommand: String,
-    expectSuccess: Boolean = true
+    expectSuccess: Boolean = true,
+    gradleVersion: String? = null
 ): BuildResult {
     projectDir.resolve("build.gradle.kts").writeText(buildGradleKtsContent)
     projectDir.resolve("settings.gradle.kts").writeText(settingsGradleKtsContent)
@@ -56,11 +61,14 @@ fun buildProject(
         .resolve("Main.kt")
         .writeText(mainKtContent)
 
-    return createGradleRunner(projectDir).withDebug(true).withArguments("--configuration-cache", buildCommand).run {
-        if (expectSuccess) {
-            build()
-        } else {
-            buildAndFail()
-        }
-    }
+    return createGradleRunner(projectDir)
+        .withDebug(true)
+        .withArguments(
+            buildList {
+                if (gradleVersion == null || isGradleConfigurationCacheSupported(gradleVersion))
+                    add("--configuration-cache")
+                add(buildCommand)
+            }
+        ).let { if (gradleVersion != null) it.withGradleVersion(gradleVersion) else it }
+        .run { if (expectSuccess) build() else buildAndFail() }
 }

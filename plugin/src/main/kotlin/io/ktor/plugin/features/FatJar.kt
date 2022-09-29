@@ -4,7 +4,6 @@ import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.plugins.JavaApplication
 import org.gradle.api.tasks.TaskContainer
 
@@ -39,14 +38,6 @@ private fun configureMainClass(project: Project) {
     application.mainClassName = mainClassName
 }
 
-@Suppress("UnstableApiUsage")
-private fun Task.shadowTaskIsNotCompatibleWithConfigurationCache(taskName: String) {
-    notCompatibleWithConfigurationCache(
-        "`$taskName` is not compatible yet: " +
-                "https://github.com/johnrengelman/shadow/issues/775"
-    )
-}
-
 private val INCOMPATIBLE_SHADOW_TASK_NAMES = arrayOf(
     SHADOW_INSTALL_TASK_NAME,
     SHADOW_RUN_TASK_NAME
@@ -55,7 +46,10 @@ private val INCOMPATIBLE_SHADOW_TASK_NAMES = arrayOf(
 private fun markShadowTasksAsNotCompatibleWithConfigurationCache(tasks: TaskContainer) {
     INCOMPATIBLE_SHADOW_TASK_NAMES.forEach { taskName ->
         tasks.named(taskName) {
-            it.shadowTaskIsNotCompatibleWithConfigurationCache(taskName)
+            it.markNotCompatibleWithConfigurationCache(
+                "`$taskName` is not compatible with Gradle Configuration Cache yet: " +
+                        "https://github.com/johnrengelman/shadow/issues/775"
+            )
         }
     }
 }
