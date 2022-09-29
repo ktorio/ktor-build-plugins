@@ -99,6 +99,15 @@ if (hasProperty("space")) {
     }
 }
 
+publishing {
+    repositories {
+        maven {
+            name = "local"
+            url = uri("published")
+        }
+    }
+}
+
 configurations.all {
     resolutionStrategy.eachDependency {
         if (requested.group == "org.apache.logging.log4j") {
