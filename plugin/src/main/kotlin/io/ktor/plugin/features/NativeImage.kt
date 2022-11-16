@@ -2,6 +2,7 @@ package io.ktor.plugin.features
 
 import org.graalvm.buildtools.gradle.NativeImagePlugin
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension
+import org.graalvm.buildtools.gradle.dsl.GraalVMReachabilityMetadataRepositoryExtension
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.SetProperty
@@ -57,6 +58,7 @@ private const val CONFIGURE_GRAALVM_TASK_NAME = "configureGraalVM"
 
 private fun configureGraalVM(project: Project, nativeImageExtension: NativeImageExtension) {
     project.extensions.configure(GraalVMExtension::class.java) { graalVMExtension ->
+        graalVMExtension.getExtension<GraalVMReachabilityMetadataRepositoryExtension>().enabled.set(true)
         graalVMExtension.binaries.named("main") { nativeImageOptions ->
             nativeImageOptions.apply {
                 verbose.set(nativeImageExtension.verbose)
