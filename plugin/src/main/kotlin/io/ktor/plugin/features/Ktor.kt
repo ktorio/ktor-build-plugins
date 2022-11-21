@@ -43,6 +43,9 @@ private val Project.ktorExtension: KtorExtension
     get() = extensions.findByType(KtorExtension::class.java)
         ?: project.extensions.create("ktor", KtorExtension::class.java)
 
+inline fun <reified T> Any.getExtension(): T =
+    (this as ExtensionAware).extensions.getByType(T::class.java)
+
 val Project.ktorExtensions: ExtensionContainer
     get() = (ktorExtension as ExtensionAware).extensions
 
