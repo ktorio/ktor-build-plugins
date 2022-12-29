@@ -8,7 +8,7 @@ import kotlin.test.Test
 
 class GradleVersionCompatibilityTest {
     @ParameterizedTest
-    @ValueSource(strings = ["6.7.1", "7.3.3", "7.5.1"])
+    @ValueSource(strings = ["7.3.3", "7.5.1", "7.6"])
     fun testProjectBuild(gradleVersion: String, @TempDir projectDir: File) {
         projectDir.resolve("build.gradle").writeText("plugins { id 'io.ktor.plugin' }")
         createGradleRunner(projectDir)
