@@ -98,12 +98,3 @@ if (hasProperty("space")) {
         }
     }
 }
-
-configurations.all {
-    resolutionStrategy.eachDependency {
-        if (requested.group == "org.apache.logging.log4j") {
-            useVersion(libs.versions.log4j.get())
-            because("zero-day exploit, required for Shadow v6")
-        }
-    }
-}

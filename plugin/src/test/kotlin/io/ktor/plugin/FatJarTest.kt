@@ -100,7 +100,7 @@ class FatJarTest {
             )
             assertContains(
                 charSequence = result.output,
-                other = "You should point application.mainClass to your main class in order to build a Fat JAR"
+                other = "Cannot query the value of extension 'application' property 'mainClass' because it has no value available."
             )
         }
     }
