@@ -1,12 +1,17 @@
 package io.ktor.plugin
 
 import io.ktor.plugin.features.*
+import io.ktor.plugin.features.DockerImageRegistry.Companion.externalRegistry
 import org.gradle.api.JavaVersion
+import org.gradle.api.internal.provider.Providers
+import org.gradle.testfixtures.ProjectBuilder
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.assertContains
+import kotlin.test.assertEquals
 
 class DockerTest {
     companion object {
@@ -94,6 +99,85 @@ class DockerTest {
                         "or set the 'java.targetCompatibility' property to a lower version.",
                 message = "Actual output does not contain the expected message"
             )
+        }
+    }
+
+    @Nested
+    inner class FullExternalImageName {
+        private val imageTag = "4.1.8"
+        private val username = "myusername"
+        private val password = "mypassword"
+        private val project = "docker-test"
+        private val namespace = "io.ktor.plugin"
+        private val hostname = "registry.example.com"
+
+        private lateinit var dockerExtension: DockerExtension
+
+        @BeforeEach
+        fun setUp() {
+            dockerExtension = ProjectBuilder.builder().build()
+                .also { it.plugins.apply("io.ktor.plugin") }
+                .getKtorExtension()
+        }
+
+        @Test
+        fun `combines external registry project with image tag`() {
+            dockerExtension.imageTag.set(imageTag)
+            dockerExtension.externalRegistry.set(
+                externalRegistry(
+                    username = Providers.of(username),
+                    password = Providers.of(password),
+                    project = Providers.of(project)
+                )
+            )
+
+            assertEquals("$project:$imageTag", dockerExtension.fullExternalImageName.get())
+        }
+
+        @Test
+        fun `combines external registry project and namespace with image tag`() {
+            dockerExtension.imageTag.set(imageTag)
+            dockerExtension.externalRegistry.set(
+                externalRegistry(
+                    username = Providers.of(username),
+                    password = Providers.of(password),
+                    project = Providers.of(project),
+                    namespace = Providers.of(namespace),
+                )
+            )
+
+            assertEquals("$namespace/$project:$imageTag", dockerExtension.fullExternalImageName.get())
+        }
+
+        @Test
+        fun `combines external registry project and hostname with image tag`() {
+            dockerExtension.imageTag.set(imageTag)
+            dockerExtension.externalRegistry.set(
+                externalRegistry(
+                    username = Providers.of(username),
+                    password = Providers.of(password),
+                    project = Providers.of(project),
+                    hostname = Providers.of(hostname)
+                )
+            )
+
+            assertEquals("$hostname/$project:$imageTag", dockerExtension.fullExternalImageName.get())
+        }
+
+        @Test
+        fun `combines external registry project, namespace and hostname with image tag`() {
+            dockerExtension.imageTag.set(imageTag)
+            dockerExtension.externalRegistry.set(
+                externalRegistry(
+                    username = Providers.of(username),
+                    password = Providers.of(password),
+                    project = Providers.of(project),
+                    namespace = Providers.of(namespace),
+                    hostname = Providers.of(hostname)
+                )
+            )
+
+            assertEquals("$hostname/$namespace/$project:$imageTag", dockerExtension.fullExternalImageName.get())
         }
     }
 }

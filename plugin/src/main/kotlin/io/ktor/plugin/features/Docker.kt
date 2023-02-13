@@ -106,6 +106,25 @@ interface DockerImageRegistry {
         ): DockerImageRegistry = DockerHubRegistry(appName, username, password)
 
         /**
+         * Creates a [DockerImageRegistry] from a given [project], [username] and [password],
+         * and an optional [hostname] and [namespace].
+         *
+         * The [hostname], [namespace], and [project] are combined in order to generate
+         * the full image name, e.g.:
+         * - hostname/namespace/project
+         * - hostname/project
+         * - project
+         */
+        @Suppress("unused")
+        fun externalRegistry(
+            username: Provider<String>,
+            password: Provider<String>,
+            project: Provider<String>,
+            hostname: Provider<String>? = null,
+            namespace: Provider<String>? = null,
+        ): DockerImageRegistry = ExternalRegistry(username, password, project, hostname, namespace)
+
+        /**
          * Creates a [DockerImageRegistry] for [Google Container Registry](https://cloud.google.com/container-registry)
          * from a given [appName] and [username].
          */
@@ -125,6 +144,20 @@ private class DockerHubRegistry(
     override val password: Provider<String>
 ) : DockerImageRegistry {
     override val toImage: Provider<String> = username.zip(appName) { user, app -> "$user/$app" }
+}
+
+private class ExternalRegistry(
+    override val username: Provider<String>,
+    override val password: Provider<String>,
+    project: Provider<String>,
+    hostname: Provider<String>? = null,
+    namespace: Provider<String>? = null,
+) : DockerImageRegistry {
+    override val toImage: Provider<String> = project.map { project ->
+        hostname?.let { "${it.get()}/" }.orEmpty()
+            .plus(namespace?.let { "${it.get()}/" }.orEmpty())
+            .plus(project)
+    }
 }
 
 private class GoogleContainerRegistry(
