@@ -10,7 +10,7 @@ fun main() {
     embeddedServer(CIO, port = 8080) {
         routing {
             get("/") {
-                call.respondText("Hello World!")
+                call.respondText("Hello ${System.getenv()["NAME"]?:"World"}!")
             }
         }
     }.start(wait = true)
