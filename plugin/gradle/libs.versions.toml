@@ -6,7 +6,7 @@ gradle-plugin-publish = "1.1.0"
 shadow-gradle-plugin = "7.1.2"
 jib-gradle-plugin = "3.2.1"
 graalvm-gradle-plugin = "0.9.12"
-junit = "5.9.1"
+junit = "5.9.3"
 
 [libraries]
 kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
