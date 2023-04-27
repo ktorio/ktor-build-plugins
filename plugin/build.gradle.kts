@@ -37,20 +37,18 @@ java {
 }
 
 gradlePlugin {
+    website.set("https://ktor.io")
+    vcsUrl.set("https://github.com/ktorio/ktor")
+
     plugins {
         create("ktor") {
             id = "io.ktor.plugin"
             displayName = "Ktor Gradle Plugin"
             implementationClass = "io.ktor.plugin.KtorGradlePlugin"
+            description = "Ktor Gradle Plugin configures deployment and version management for Ktor applications"
+            tags.set(setOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework", "fatjar", "docker", "jib", "graalvm"))
         }
     }
-}
-
-pluginBundle {
-    website = "https://ktor.io"
-    vcsUrl = "https://github.com/ktorio/ktor"
-    description = "Provides the ability to package and containerize your Ktor application"
-    tags = setOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework")
 }
 
 val setupPluginUploadFromEnvironment = tasks.register("setupPluginUploadFromEnvironment") {
