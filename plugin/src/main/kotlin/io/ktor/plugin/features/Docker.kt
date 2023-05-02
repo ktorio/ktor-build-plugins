@@ -31,6 +31,11 @@ data class DockerPortMapping(
     val protocol: DockerPortMappingProtocol = DockerPortMappingProtocol.TCP
 )
 
+data class DockerEnvironmentVariable(
+    val variable: String,
+    val value: String? = null
+)
+
 @Suppress("MemberVisibilityCanBePrivate") // Provides a public API
 abstract class DockerExtension(project: Project) {
     private companion object {
@@ -75,6 +80,16 @@ abstract class DockerExtension(project: Project) {
      */
     val portMappings: ListProperty<DockerPortMapping> = project.objects.listProperty(DockerPortMapping::class.java)
         .convention(listOf(DockerPortMapping(8080, 8080, DockerPortMappingProtocol.TCP)))
+
+    /**
+     * Specifies environment variable mappings for a `runDocker` command.
+     */
+    val environmentVariables: ListProperty<DockerEnvironmentVariable> = project.objects.listProperty(DockerEnvironmentVariable::class.java)
+        .convention(emptyList())
+
+    fun environmentVariable(name: String, value: String) {
+        environmentVariables.add(DockerEnvironmentVariable(name, value))
+    }
 }
 
 interface DockerImageRegistry {
@@ -246,6 +261,16 @@ private abstract class RunDockerTask : DefaultTask() {
                     add("-p")
                     with(portMapping) {
                         add("${outsideDocker}:${insideDocker}/${protocol.name.lowercase()}")
+                    }
+                }
+                for (environmentVariable in dockerExtension.environmentVariables.get()) {
+                    add("-e")
+                    with(environmentVariable) {
+                        if (value != null) {
+                            add("${environmentVariable.variable}=${environmentVariable.value}")
+                        } else {
+                            add(environmentVariable.variable)
+                        }
                     }
                 }
                 add(fullImageName.get())

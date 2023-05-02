@@ -20,5 +20,7 @@ ktor {
                 password = providers.environmentVariable("DOCKER_HUB_PASSWORD")
             )
         )
+
+        environmentVariable("NAME", "\"Container\"")
     }
 }
