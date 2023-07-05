@@ -5,7 +5,7 @@ logback = "1.2.11"
 gradle-plugin-publish = "1.2.0"
 shadow-gradle-plugin = "7.1.2"
 jib-gradle-plugin = "3.2.1"
-graalvm-gradle-plugin = "0.9.12"
+graalvm-gradle-plugin = "0.9.23"
 junit = "5.9.3"
 
 [libraries]
