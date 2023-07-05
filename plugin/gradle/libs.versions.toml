@@ -1,5 +1,5 @@
 [versions]
-kotlin = "1.7.21"
+kotlin = "1.8.22"
 ktor-plugin = "2.3.2"
 logback = "1.2.11"
 gradle-plugin-publish = "1.2.0"
