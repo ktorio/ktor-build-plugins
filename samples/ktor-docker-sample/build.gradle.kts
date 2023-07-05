@@ -1,13 +1,18 @@
 import io.ktor.plugin.features.*
 
 plugins {
-    @Suppress("DSL_SCOPE_VIOLATION") // "libs" produces a false-positive warning, see https://youtrack.jetbrains.com/issue/KTIJ-19369
     id(libs.plugins.ktor.get().pluginId)
 }
 
 application.mainClass.set("io.ktor.samples.docker.ApplicationKt")
 
 ktor {
+    dependencies {
+        implementation(rootProject.libs.ktor.server.core)
+        implementation(rootProject.libs.ktor.server.cio)
+        implementation(rootProject.libs.logback)
+    }
+
     docker {
         jreVersion.set(JreVersion.JRE_17)
         localImageName.set("sample-docker-image")

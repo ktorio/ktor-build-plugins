@@ -1,6 +1,5 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
-@Suppress("DSL_SCOPE_VIOLATION") // "libs" produces a false-positive warning, see https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.gradle.plugin.publish)

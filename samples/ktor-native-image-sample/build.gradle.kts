@@ -6,6 +6,12 @@ plugins {
 application.mainClass.set("io.ktor.samples.native.ApplicationKt")
 
 ktor {
+    dependencies {
+        implementation(rootProject.libs.ktor.server.core)
+        implementation(rootProject.libs.ktor.server.cio)
+        implementation(rootProject.libs.logback)
+    }
+
     nativeImage {
         imageName.set("native-image-sample")
     }
