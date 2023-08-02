@@ -220,13 +220,11 @@ private abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) 
 
         if (isExternal) {
             val externalRegistry = dockerExtension.externalRegistry
-            jibExtension.to.setImage(dockerExtension.externalRegistry.get().toImage)
-            jibExtension.to.tags.add(dockerExtension.imageTag.get())
+            jibExtension.to.setImage(dockerExtension.fullExternalImageName)
             jibExtension.to.auth.setUsername(externalRegistry.flatMap { it.username })
             jibExtension.to.auth.setPassword(externalRegistry.flatMap { it.password })
         } else {
-            jibExtension.to.setImage(dockerExtension.localImageName)
-            jibExtension.to.tags.add(dockerExtension.imageTag.get())
+            jibExtension.to.setImage(dockerExtension.fullLocalImageName)
         }
 
         val projectJava = project.javaVersion
