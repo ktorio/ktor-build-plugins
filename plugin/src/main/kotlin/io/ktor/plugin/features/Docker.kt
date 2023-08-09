@@ -13,14 +13,6 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
 import javax.inject.Inject
 
-enum class JreVersion(val javaVersion: JavaVersion) {
-    JRE_1_8(JavaVersion.VERSION_1_8),
-    JRE_11(JavaVersion.VERSION_11),
-    JRE_17(JavaVersion.VERSION_17);
-
-    val majorVersion = javaVersion.majorVersion.toInt()
-}
-
 enum class DockerPortMappingProtocol {
     TCP, UDP
 }
@@ -48,7 +40,7 @@ abstract class DockerExtension(project: Project) {
     /**
      * Specifies the JRE version to use in the image. Defaults to [JreVersion.JRE_17].
      */
-    val jreVersion = project.property(defaultValue = JreVersion.JRE_17)
+    val jreVersion = project.property(defaultValue = JavaVersion.VERSION_19)
 
     /**
      * Specifies a tag to use in the image. Defaults to `"latest"`.
@@ -228,7 +220,7 @@ private abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) 
         }
 
         val projectJava = project.javaVersion
-        val imageJava = dockerExtension.jreVersion.get().javaVersion
+        val imageJava = dockerExtension.jreVersion.get()
         if (imageJava < projectJava) {
             throw GradleException(
                 "You're trying to build an image with JRE $imageJava while your project's JDK or 'java.targetCompatibility' is $projectJava. " +

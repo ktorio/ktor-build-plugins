@@ -24,15 +24,15 @@ class DockerTest {
             repositories.mavenCentral()
             application.mainClass.set("my.org.MainKt")
             java.targetCompatibility = JavaVersion.VERSION_%project.java.version%
-            ktor.docker.jreVersion.set(JreVersion.%docker.java.version%)
+            ktor.docker.jreVersion.set(JavaVersion.VERSION_%docker.java.version%)
         """.trimIndent()
 
         private fun buildGradleKts(
             projectJava: JavaVersion = JavaVersion.VERSION_17,
-            imageJava: JreVersion = JreVersion.JRE_17
+            imageJava: JavaVersion = JavaVersion.VERSION_17
         ) = BUILD_GRADLE_KTS_CONTENT
             .replace("%project.java.version%", projectJava.toString().replace('.', '_'))
-            .replace("%docker.java.version%", imageJava.toString())
+            .replace("%docker.java.version%", imageJava.toString().replace(".", "_"))
 
         private val SETTINGS_GRADLE_KTS_CONTENT = """
             rootProject.name = "docker-test"
@@ -66,7 +66,7 @@ class DockerTest {
                 projectDir = projectDir,
                 buildGradleKtsContent = buildGradleKts(
                     projectJava = JavaVersion.VERSION_1_8,
-                    imageJava = JreVersion.JRE_11
+                    imageJava = JavaVersion.VERSION_11
                 )
             )
         }
@@ -77,7 +77,7 @@ class DockerTest {
                 projectDir = projectDir,
                 buildGradleKtsContent = buildGradleKts(
                     projectJava = JavaVersion.VERSION_1_8,
-                    imageJava = JreVersion.JRE_1_8
+                    imageJava = JavaVersion.VERSION_1_8
                 )
             )
         }
@@ -88,7 +88,7 @@ class DockerTest {
                 projectDir = projectDir,
                 buildGradleKtsContent = buildGradleKts(
                     projectJava = JavaVersion.VERSION_11,
-                    imageJava = JreVersion.JRE_1_8
+                    imageJava = JavaVersion.VERSION_1_8
                 ),
                 expectSuccess = false
             )
