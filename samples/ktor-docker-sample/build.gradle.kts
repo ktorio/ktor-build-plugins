@@ -9,7 +9,7 @@ application.mainClass.set("io.ktor.samples.docker.ApplicationKt")
 
 ktor {
     docker {
-        jreVersion.set(JreVersion.JRE_17)
+        jreVersion.set(JavaVersion.VERSION_17)
         localImageName.set("sample-docker-image")
         imageTag.set("my-docker-sample")
 
