@@ -1,14 +1,16 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    @Suppress("DSL_SCOPE_VIOLATION") // "libs" produces a false-positive warning, see https://youtrack.jetbrains.com/issue/KTIJ-19369
     alias(libs.plugins.kotlin.jvm)
 }
 
-repositories.mavenCentral()
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}
 
 subprojects {
-    repositories.mavenCentral()
     tasks.withType<Test> {
         useJUnitPlatform()
         testLogging.events(*TestLogEvent.values())
