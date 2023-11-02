@@ -7,17 +7,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class KtorGradlePluginTest {
-    @Test
-    fun `plugin exists`() {
-        val project = ProjectBuilder.builder().build()
-        project.plugins.apply("io.ktor.plugin")
-    }
-
+class PluginTest {
     @Test
     fun `plugin creates all public tasks`() {
         val project = ProjectBuilder.builder().build()
-        project.plugins.apply("io.ktor.plugin")
+        project.plugins.apply(KtorGradlePlugin::class.java)
         val expectedTasks = listOf(
             "buildFatJar",
             "publishImageToLocalRegistry", "publishImage", "buildImage", "runDocker",
@@ -32,14 +26,14 @@ class KtorGradlePluginTest {
     @Test
     fun `plugin applies application plugin`() {
         val project = ProjectBuilder.builder().build()
-        project.plugins.apply("io.ktor.plugin")
+        project.plugins.apply(KtorGradlePlugin::class.java)
         assertTrue(project.plugins.hasPlugin(ApplicationPlugin::class.java))
     }
 
     @Test
     fun `plugin does not add any dependencies except the bom file`() {
         val project = ProjectBuilder.builder().build()
-        project.plugins.apply("io.ktor.plugin")
+        project.plugins.apply(KtorGradlePlugin::class.java)
         val deps = project.configurations.flatMap { it.dependencies }
         assertEquals(1, deps.size)
         val bom = deps.single()

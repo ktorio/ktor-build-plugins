@@ -1,5 +1,11 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
+configurations.all {
+    resolutionStrategy {
+        force("com.fasterxml.jackson:jackson-bom:2.14.3") // To prevent https://github.com/gradle/gradle/issues/24390
+    }
+}
+
 @Suppress("DSL_SCOPE_VIOLATION") // "libs" produces a false-positive warning, see https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -26,6 +32,7 @@ dependencies {
     implementation(libs.jib.gradle.plugin)
     implementation(libs.graalvm.gradle.plugin)
 
+    testImplementation(libs.mockk)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(libs.junit.jupiter.params)
 }
