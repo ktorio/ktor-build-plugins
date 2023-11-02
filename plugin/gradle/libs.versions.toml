@@ -4,14 +4,14 @@ ktor-plugin = "2.3.5"
 logback = "1.2.11"
 gradle-plugin-publish = "1.2.0"
 shadow-gradle-plugin = "7.1.2"
-jib-gradle-plugin = "3.2.1"
+jib-gradle-plugin = "3.4.0"
 graalvm-gradle-plugin = "0.9.23"
 junit = "5.9.3"
 
 [libraries]
 kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
 shadow-gradle-plugin = { module = "com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin", version.ref = "shadow-gradle-plugin" }
-jib-gradle-plugin = { module = "gradle.plugin.com.google.cloud.tools:jib-gradle-plugin", version.ref = "jib-gradle-plugin" }
+jib-gradle-plugin = { module = "com.google.cloud.tools:jib-gradle-plugin", version.ref = "jib-gradle-plugin" }
 graalvm-gradle-plugin = { module = "org.graalvm.buildtools.native:org.graalvm.buildtools.native.gradle.plugin", version.ref = "graalvm-gradle-plugin" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
 
