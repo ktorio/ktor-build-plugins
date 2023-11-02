@@ -119,7 +119,7 @@ class DockerTest {
     }
 
     @Test
-    fun `docker extension configures adds tag to the target image tags`() {
+    fun `docker extension adds a tag to the target image tags`() {
         val project = ProjectBuilder.builder().build()
         project.applyPlugin {
             getExtension<DockerExtension>().imageTag.set("1.2.3")
@@ -136,7 +136,7 @@ class DockerTest {
     }
 
     @Test
-    fun `jib task is marked as not compatible with configuration cache if gradle version is greater than 7_4`() {
+    fun `jib and shadow tasks are marked as not compatible with configuration cache if gradle version is greater than 7_4`() {
         mockkStatic(GradleVersion::class) {
             val project = ProjectBuilder.builder().build()
             every { GradleVersion.current() } returns GradleVersion.version("7.4")
@@ -148,11 +148,19 @@ class DockerTest {
                 "JIB plugin is not compatible with the configuration cache. See https://github.com/GoogleContainerTools/jib/issues/3132",
                 jibTask.reasonTaskIsIncompatibleWithConfigurationCache.get()
             )
+
+            val runShadowTask = project.tasks.named("runShadow", DefaultTask::class.java).get()
+            assertFalse { runShadowTask.isCompatibleWithConfigurationCache }
+
+            assertEquals(
+                "`runShadow` is not compatible with Gradle Configuration Cache yet: https://github.com/johnrengelman/shadow/issues/775",
+                runShadowTask.reasonTaskIsIncompatibleWithConfigurationCache.get()
+            )
         }
     }
 
     @Test
-    fun `jib task is NOT marked as not compatible with configuration cache if gradle version is lesser than 7_4`() {
+    fun `jib and shadow tasks are NOT marked as not compatible with configuration cache if gradle version is lesser than 7_4`() {
         mockkStatic(GradleVersion::class) {
             val project = ProjectBuilder.builder().build()
             every { GradleVersion.current() } returns GradleVersion.version("7.3")
@@ -160,6 +168,8 @@ class DockerTest {
 
             val jibTask = project.tasks.named("jib", DefaultTask::class.java).get()
             assertTrue { jibTask.isCompatibleWithConfigurationCache }
+            val runShadowTask = project.tasks.named("runShadow", DefaultTask::class.java).get()
+            assertTrue { runShadowTask.isCompatibleWithConfigurationCache }
         }
     }
 

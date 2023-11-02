@@ -41,7 +41,7 @@ class FatJarTest {
     }
 
     @Test
-    fun `runShadow task depends on buildFatJar task too`() {
+    fun `runShadow task depends on buildFatJar task`() {
         val project = ProjectBuilder.builder().build()
         project.plugins.apply(KtorGradlePlugin::class.java)
         val runTask = project.tasks.named("runShadow").get()
