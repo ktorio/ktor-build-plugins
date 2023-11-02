@@ -198,7 +198,7 @@ private fun markJibTaskNotCompatible(task: Task) = task.markNotCompatibleWithCon
             "See https://github.com/GoogleContainerTools/jib/issues/3132"
 )
 
-private abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) : DefaultTask() {
+internal abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) : DefaultTask() {
     init {
         @Suppress("LeakingThis")
         markJibTaskNotCompatible(this)
@@ -220,7 +220,7 @@ private abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) 
         }
 
         val tag: String = dockerExtension.imageTag.get()
-        jibExtension.to.setTags(jibExtension.to.tags + tag)
+        jibExtension.to.tags = jibExtension.to.tags + tag
 
         val projectJava = project.javaVersion
         val imageJava = dockerExtension.jreVersion.get()
@@ -234,9 +234,9 @@ private abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) 
     }
 }
 
-private abstract class ConfigureJibLocalTask : ConfigureJibTaskBase(isExternal = false)
+internal abstract class ConfigureJibLocalTask : ConfigureJibTaskBase(isExternal = false)
 
-private abstract class ConfigureJibExternalTask : ConfigureJibTaskBase(isExternal = true)
+internal abstract class ConfigureJibExternalTask : ConfigureJibTaskBase(isExternal = true)
 
 private abstract class RunDockerTask : DefaultTask() {
     @get:Inject
