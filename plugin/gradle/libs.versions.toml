@@ -7,6 +7,7 @@ shadow-gradle-plugin = "7.1.2"
 jib-gradle-plugin = "3.4.0"
 graalvm-gradle-plugin = "0.9.23"
 junit = "5.9.3"
+mockk = "1.12.5"
 
 [libraries]
 kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
@@ -14,6 +15,7 @@ shadow-gradle-plugin = { module = "com.github.johnrengelman.shadow:com.github.jo
 jib-gradle-plugin = { module = "com.google.cloud.tools:jib-gradle-plugin", version.ref = "jib-gradle-plugin" }
 graalvm-gradle-plugin = { module = "org.graalvm.buildtools.native:org.graalvm.buildtools.native.gradle.plugin", version.ref = "graalvm-gradle-plugin" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

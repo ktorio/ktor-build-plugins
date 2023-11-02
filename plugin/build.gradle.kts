@@ -32,6 +32,7 @@ dependencies {
     implementation(libs.jib.gradle.plugin)
     implementation(libs.graalvm.gradle.plugin)
 
+    testImplementation(libs.mockk)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(libs.junit.jupiter.params)
 }

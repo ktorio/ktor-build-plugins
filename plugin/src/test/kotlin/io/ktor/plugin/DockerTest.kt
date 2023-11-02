@@ -1,183 +1,201 @@
 package io.ktor.plugin
 
+import com.google.cloud.tools.jib.gradle.JibExtension
 import io.ktor.plugin.features.*
 import io.ktor.plugin.features.DockerImageRegistry.Companion.externalRegistry
+import io.mockk.every
+import io.mockk.mockkStatic
+import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
 import org.gradle.api.internal.provider.Providers
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.testfixtures.ProjectBuilder
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import kotlin.test.assertContains
-import kotlin.test.assertEquals
+import org.gradle.util.GradleVersion
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
+import kotlin.test.*
 
 class DockerTest {
-    companion object {
-        private val BUILD_GRADLE_KTS_CONTENT = """
-            import io.ktor.plugin.features.*
-            plugins {
-                kotlin("jvm") version "1.7.0"
-                id("io.ktor.plugin")
+    @Test
+    fun `cannot build an image when the target java version is greater than the image's jre version`() {
+        val project = ProjectBuilder.builder().build()
+        project.applyPlugin {
+            getExtension<DockerExtension>().jreVersion.set(JavaVersion.VERSION_11)
+        }
+        project.extensions.configure(JavaPluginExtension::class.java) {
+            it.targetCompatibility = JavaVersion.VERSION_17
+        }
+
+        val task = project.tasks.named("setupJibLocal", ConfigureJibLocalTask::class.java).get()
+        val cause = assertFailsWith<GradleException> {
+            task.execute()
+        }
+
+        assertEquals(
+            "You're trying to build an image with JRE 11 while your project's JDK or " +
+                "'java.targetCompatibility' is 17. Please use a higher version of an image JRE " +
+                "through the 'ktor.docker.jreVersion' extension in the build file, or " +
+                "set the 'java.targetCompatibility' property to a lower version.",
+            cause.message
+        )
+    }
+
+    @Test
+    fun `name of the source image considers set image's jre version`() {
+        val project = ProjectBuilder.builder().build()
+
+        project.applyPlugin {
+            getExtension<DockerExtension>().jreVersion.set(JavaVersion.VERSION_17)
+        }
+
+        val task = project.tasks.named("setupJibLocal", ConfigureJibLocalTask::class.java).get()
+        task.execute()
+
+        val jibException = project.extensions.getByType(JibExtension::class.java)
+        assertEquals("eclipse-temurin:17-jre", jibException.from.image)
+    }
+
+
+    @Test
+    fun `name of the target image has a default value`() {
+        val project = ProjectBuilder.builder().build()
+        project.applyPlugin()
+
+        val task = project.tasks.named("setupJibLocal", ConfigureJibLocalTask::class.java).get()
+        task.execute()
+        val jibException = project.extensions.getByType(JibExtension::class.java)
+        assertEquals("ktor-docker-image", jibException.to.image)
+    }
+    @Test
+    fun `name of the target image is determined by the docker extension`() {
+        val project = ProjectBuilder.builder().build()
+        project.applyPlugin {
+            getExtension<DockerExtension>().localImageName.set("target-image")
+        }
+
+        val task = project.tasks.named("setupJibLocal", ConfigureJibLocalTask::class.java).get()
+        task.execute()
+        val jibException = project.extensions.getByType(JibExtension::class.java)
+        assertEquals("target-image", jibException.to.image)
+    }
+
+    @Test
+    fun `docker extension configures target image name and registry auth`() {
+        val project = ProjectBuilder.builder().build()
+        project.applyPlugin {
+            getExtension<DockerExtension>().apply {
+                externalRegistry.set(
+                    externalRegistry(
+                        username = Providers.of("username"),
+                        password = Providers.of("password"),
+                        hostname = Providers.of("localhost"),
+                        namespace = Providers.of("ns"),
+                        project = Providers.of("project")
+                    )
+                )
             }
-            repositories.mavenCentral()
-            application.mainClass.set("my.org.MainKt")
-            java.targetCompatibility = JavaVersion.VERSION_%project.java.version%
-            ktor.docker.jreVersion.set(JavaVersion.VERSION_%docker.java.version%)
-        """.trimIndent()
+        }
 
-        private fun buildGradleKts(
-            projectJava: JavaVersion = JavaVersion.VERSION_17,
-            imageJava: JavaVersion = JavaVersion.VERSION_17
-        ) = BUILD_GRADLE_KTS_CONTENT
-            .replace("%project.java.version%", projectJava.toString().replace('.', '_'))
-            .replace("%docker.java.version%", imageJava.toString().replace(".", "_"))
-
-        private val SETTINGS_GRADLE_KTS_CONTENT = """
-            rootProject.name = "docker-test"
-        """.trimIndent()
-
-        private val MAIN_KT_CONTENT = """
-            package my.org
-
-            fun main() = println("Hello, world!")
-        """.trimIndent()
+        val task = project.tasks.named("setupJibExternal", ConfigureJibExternalTask::class.java).get()
+        task.execute()
+        val jibException = project.extensions.getByType(JibExtension::class.java)
+        assertEquals("localhost/ns/project", jibException.to.image)
+        assertEquals("username", jibException.to.auth.username)
+        assertEquals("password", jibException.to.auth.password)
     }
 
-    private fun buildDockerImage(
-        projectDir: File,
-        buildGradleKtsContent: String,
-        expectSuccess: Boolean = true
-    ) = buildProject(
-        projectDir = projectDir,
-        buildGradleKtsContent = buildGradleKtsContent,
-        settingsGradleKtsContent = SETTINGS_GRADLE_KTS_CONTENT,
-        mainKtContent = MAIN_KT_CONTENT,
-        buildCommand = "buildImage",
-        expectSuccess = expectSuccess
-    )
-
-    @Nested
-    inner class BuildDockerImage {
-        @Test
-        fun `builds an image when the project java version is less than the image java version`(@TempDir projectDir: File) {
-            buildDockerImage(
-                projectDir = projectDir,
-                buildGradleKtsContent = buildGradleKts(
-                    projectJava = JavaVersion.VERSION_1_8,
-                    imageJava = JavaVersion.VERSION_11
-                )
-            )
+    @Test
+    fun `docker extension configures tag of the target image`() {
+        val project = ProjectBuilder.builder().build()
+        project.applyPlugin {
+            getExtension<DockerExtension>().imageTag.set("1.2.3")
         }
 
-        @Test
-        fun `builds an image when the project java version is equal to the image java version`(@TempDir projectDir: File) {
-            buildDockerImage(
-                projectDir = projectDir,
-                buildGradleKtsContent = buildGradleKts(
-                    projectJava = JavaVersion.VERSION_1_8,
-                    imageJava = JavaVersion.VERSION_1_8
-                )
-            )
+        val task = project.tasks.named("setupJibLocal", ConfigureJibLocalTask::class.java).get()
+        task.execute()
+        val jibException = project.extensions.getByType(JibExtension::class.java)
+        assertEquals(listOf("1.2.3"), jibException.to.tags.toList())
+    }
+
+    @Test
+    fun `docker extension adds a tag to the target image tags`() {
+        val project = ProjectBuilder.builder().build()
+        project.applyPlugin {
+            getExtension<DockerExtension>().imageTag.set("1.2.3")
         }
 
-        @Test
-        fun `fails when the project java version is higher than the image java version`(@TempDir projectDir: File) {
-            val buildResult = buildDockerImage(
-                projectDir = projectDir,
-                buildGradleKtsContent = buildGradleKts(
-                    projectJava = JavaVersion.VERSION_11,
-                    imageJava = JavaVersion.VERSION_1_8
-                ),
-                expectSuccess = false
+        project.extensions.configure(JibExtension::class.java) { ext ->
+            ext.to.setTags(listOf("latest"))
+        }
+
+        val task = project.tasks.named("setupJibLocal", ConfigureJibLocalTask::class.java).get()
+        task.execute()
+        val jibException = project.extensions.getByType(JibExtension::class.java)
+        assertEquals(listOf("latest", "1.2.3"), jibException.to.tags.toList())
+    }
+
+    @Test
+    fun `jib and shadow tasks are marked as not compatible with configuration cache if gradle version is greater than 7_4`() {
+        mockkStatic(GradleVersion::class) {
+            val project = ProjectBuilder.builder().build()
+            every { GradleVersion.current() } returns GradleVersion.version("7.4")
+            project.applyPlugin()
+
+            val jibTask = project.tasks.named("jib", DefaultTask::class.java).get()
+            assertFalse { jibTask.isCompatibleWithConfigurationCache }
+            assertEquals(
+                "JIB plugin is not compatible with the configuration cache. See https://github.com/GoogleContainerTools/jib/issues/3132",
+                jibTask.reasonTaskIsIncompatibleWithConfigurationCache.get()
             )
-            assertContains(
-                charSequence = buildResult.output,
-                other = "You're trying to build an image with JRE 1.8 while your project's JDK or 'java.targetCompatibility' is 11. " +
-                        "Please use a higher version of an image JRE through the 'ktor.docker.jreVersion' extension in the build file, " +
-                        "or set the 'java.targetCompatibility' property to a lower version.",
-                message = "Actual output does not contain the expected message"
+
+            val runShadowTask = project.tasks.named("runShadow", DefaultTask::class.java).get()
+            assertFalse { runShadowTask.isCompatibleWithConfigurationCache }
+
+            assertEquals(
+                "`runShadow` is not compatible with Gradle Configuration Cache yet: https://github.com/johnrengelman/shadow/issues/775",
+                runShadowTask.reasonTaskIsIncompatibleWithConfigurationCache.get()
             )
         }
     }
 
-    @Nested
-    inner class FullExternalImageName {
-        private val imageTag = "4.1.8"
-        private val username = "myusername"
-        private val password = "mypassword"
-        private val project = "docker-test"
-        private val namespace = "io.ktor.plugin"
-        private val hostname = "registry.example.com"
+    @Test
+    fun `jib and shadow tasks are NOT marked as not compatible with configuration cache if gradle version is lesser than 7_4`() {
+        mockkStatic(GradleVersion::class) {
+            val project = ProjectBuilder.builder().build()
+            every { GradleVersion.current() } returns GradleVersion.version("7.3")
+            project.applyPlugin()
 
-        private lateinit var dockerExtension: DockerExtension
-
-        @BeforeEach
-        fun setUp() {
-            dockerExtension = ProjectBuilder.builder().build()
-                .also { it.plugins.apply("io.ktor.plugin") }
-                .getKtorExtension()
+            val jibTask = project.tasks.named("jib", DefaultTask::class.java).get()
+            assertTrue { jibTask.isCompatibleWithConfigurationCache }
+            val runShadowTask = project.tasks.named("runShadow", DefaultTask::class.java).get()
+            assertTrue { runShadowTask.isCompatibleWithConfigurationCache }
         }
+    }
 
-        @Test
-        fun `combines external registry project with image tag`() {
-            dockerExtension.imageTag.set(imageTag)
-            dockerExtension.externalRegistry.set(
-                externalRegistry(
-                    username = Providers.of(username),
-                    password = Providers.of(password),
-                    project = Providers.of(project)
-                )
-            )
+    @ParameterizedTest
+    @MethodSource("dataForTestingTasks")
+    fun `has a task that depends on jib tasks`(data: Pair<String, List<String>>) {
+        val (taskName, dependentTasks) = data
+        val project = ProjectBuilder.builder().build()
+        project.plugins.apply(KtorGradlePlugin::class.java)
+        val task = project.tasks.named(taskName).get()
+        assertEquals("Ktor", task.group)
+        assertFalse { task.description.isNullOrEmpty() }
 
-            assertEquals("$project:$imageTag", dockerExtension.fullExternalImageName.get())
-        }
+        val dependencies = task.taskDependencies.getDependencies(task)
+        assertEquals(2, dependencies.size)
+        assertTrue { dependencies.contains(project.tasks.named(dependentTasks[0]).get()) }
+        assertTrue { dependencies.contains(project.tasks.named(dependentTasks[1]).get()) }
+    }
 
-        @Test
-        fun `combines external registry project and namespace with image tag`() {
-            dockerExtension.imageTag.set(imageTag)
-            dockerExtension.externalRegistry.set(
-                externalRegistry(
-                    username = Providers.of(username),
-                    password = Providers.of(password),
-                    project = Providers.of(project),
-                    namespace = Providers.of(namespace),
-                )
-            )
-
-            assertEquals("$namespace/$project:$imageTag", dockerExtension.fullExternalImageName.get())
-        }
-
-        @Test
-        fun `combines external registry project and hostname with image tag`() {
-            dockerExtension.imageTag.set(imageTag)
-            dockerExtension.externalRegistry.set(
-                externalRegistry(
-                    username = Providers.of(username),
-                    password = Providers.of(password),
-                    project = Providers.of(project),
-                    hostname = Providers.of(hostname)
-                )
-            )
-
-            assertEquals("$hostname/$project:$imageTag", dockerExtension.fullExternalImageName.get())
-        }
-
-        @Test
-        fun `combines external registry project, namespace and hostname with image tag`() {
-            dockerExtension.imageTag.set(imageTag)
-            dockerExtension.externalRegistry.set(
-                externalRegistry(
-                    username = Providers.of(username),
-                    password = Providers.of(password),
-                    project = Providers.of(project),
-                    namespace = Providers.of(namespace),
-                    hostname = Providers.of(hostname)
-                )
-            )
-
-            assertEquals("$hostname/$namespace/$project:$imageTag", dockerExtension.fullExternalImageName.get())
-        }
+    companion object {
+        @JvmStatic
+        fun dataForTestingTasks() = listOf (
+            "runDocker" to listOf("jibDockerBuild", "setupJibLocal"),
+            "publishImageToLocalRegistry" to listOf("jibDockerBuild", "setupJibLocal"),
+            "publishImage" to listOf("setupJibExternal", "jib"),
+            "buildImage" to listOf("setupJibLocal", "jibBuildTar"),
+        )
     }
 }
