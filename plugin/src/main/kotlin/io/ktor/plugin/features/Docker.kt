@@ -53,6 +53,11 @@ abstract class DockerExtension(project: Project) {
     val localImageName = project.property(defaultValue = "ktor-docker-image")
 
     /**
+     * Specifies a custom base image to use in the image. Defaults to `null`.
+     */
+    val customBaseImage = project.property<String>(defaultValue = null)
+
+    /**
      * Specifies an external registry to push the image into. Default is not set.
      */
     val externalRegistry = project.property<DockerImageRegistry>(defaultValue = null)
@@ -208,7 +213,9 @@ internal abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean)
     fun execute() {
         val jibExtension = project.extensions.getByType(JibExtension::class.java)
         val dockerExtension = project.getKtorExtension<DockerExtension>()
-        jibExtension.from.setImage(dockerExtension.jreVersion.map { "eclipse-temurin:${it.majorVersion}-jre" })
+
+        val baseImage = dockerExtension.customBaseImage.orElse(dockerExtension.jreVersion.map { "eclipse-temurin:${it.majorVersion}-jre" })
+        jibExtension.from.setImage(baseImage)
 
         if (isExternal) {
             val externalRegistry = dockerExtension.externalRegistry
