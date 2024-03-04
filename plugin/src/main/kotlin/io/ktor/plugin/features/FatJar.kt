@@ -4,6 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.TaskProvider
 
 abstract class FatJarExtension(project: Project) {
     /**
@@ -48,7 +49,7 @@ fun configureFatJar(project: Project) {
     markShadowTasksAsNotCompatibleWithConfigurationCache(tasks)
 
     val fatJarExtension = project.createKtorExtension<FatJarExtension>(FAT_JAR_EXTENSION_NAME)
-    val shadowJar = tasks.named(SHADOW_JAR_TASK_NAME, ShadowJar::class.java) {
+    val shadowJar: TaskProvider<ShadowJar> = tasks.named(SHADOW_JAR_TASK_NAME, ShadowJar::class.java) {
         it.archiveFileName.set(fatJarExtension.archiveFileName)
     }
 
