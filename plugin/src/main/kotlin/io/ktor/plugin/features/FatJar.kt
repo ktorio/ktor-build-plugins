@@ -11,6 +11,7 @@ abstract class FatJarExtension(project: Project) {
      * Specifies the fat jar archive name. Defaults to `"${project.name}-all.jar"`.
      */
     val archiveFileName = project.property(defaultValue = "${project.name}-all.jar")
+    val allowZip64 = false
 }
 
 const val FAT_JAR_EXTENSION_NAME = "fatJar"
@@ -51,6 +52,7 @@ fun configureFatJar(project: Project) {
     val fatJarExtension = project.createKtorExtension<FatJarExtension>(FAT_JAR_EXTENSION_NAME)
     val shadowJar: TaskProvider<ShadowJar> = tasks.named(SHADOW_JAR_TASK_NAME, ShadowJar::class.java) {
         it.archiveFileName.set(fatJarExtension.archiveFileName)
+        it.isZip64 = fatJarExtension.allowZip64
     }
 
     val buildFatJar = tasks.registerKtorTask(BUILD_FAT_JAR_TASK_NAME, BUILD_FAT_JAR_TASK_DESCRIPTION) {
