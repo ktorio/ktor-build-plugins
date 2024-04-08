@@ -1,6 +1,6 @@
 [versions]
 kotlin = "1.9.22"
-ktor-plugin = "2.3.9"
+ktor-plugin = "2.3.10"
 logback = "1.2.11"
 gradle-plugin-publish = "1.2.1"
 shadow-gradle-plugin = "7.1.2"
