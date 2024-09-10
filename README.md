@@ -14,7 +14,7 @@ To install the plugin, add it to the `plugins` block of your `build.gradle.kts`:
 
 ```kotlin
 plugins {
-    id("io.ktor.plugin") version "3.0.0-beta-2"
+    id("io.ktor.plugin") version "3.0.0-rc-1"
 }
 ```
 
@@ -22,7 +22,7 @@ or `build.gradle` file:
 
 ```groovy
 plugins {
-    id "io.ktor.plugin" version "3.0.0-beta-2"
+    id "io.ktor.plugin" version "3.0.0-rc-1"
 }
 ```
 
