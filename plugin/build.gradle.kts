@@ -2,7 +2,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 configurations.all {
     resolutionStrategy {
-        force("com.fasterxml.jackson:jackson-bom:2.14.3") // To prevent https://github.com/gradle/gradle/issues/24390
+        force("com.fasterxml.jackson:jackson-bom:2.18.0") // To prevent https://github.com/gradle/gradle/issues/24390
     }
 }
 
