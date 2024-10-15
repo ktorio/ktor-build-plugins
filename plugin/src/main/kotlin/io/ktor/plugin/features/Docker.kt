@@ -38,9 +38,9 @@ abstract class DockerExtension(project: Project) {
     }
 
     /**
-     * Specifies the JRE version to use in the image. Defaults to [JavaVersion.VERSION_19].
+     * Specifies the JRE version to use in the image. Defaults to [JavaVersion.VERSION_21].
      */
-    val jreVersion = project.property(defaultValue = JavaVersion.VERSION_19)
+    val jreVersion = project.property(defaultValue = JavaVersion.VERSION_21)
 
     /**
      * Specifies a tag to use in the image. Defaults to `"latest"`.
