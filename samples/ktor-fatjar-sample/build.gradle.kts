@@ -5,11 +5,11 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
 }
 
-application.mainClass.set("io.ktor.samples.fatjar.ApplicationKt")
+application.mainClass = "io.ktor.samples.fatjar.ApplicationKt"
 
 ktor {
     fatJar {
-        archiveFileName.set("fat.jar")
+        archiveFileName = "fat.jar"
     }
 }
 

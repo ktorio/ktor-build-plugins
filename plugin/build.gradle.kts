@@ -1,11 +1,5 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
-configurations.all {
-    resolutionStrategy {
-        force("com.fasterxml.jackson:jackson-bom:2.14.3") // To prevent https://github.com/gradle/gradle/issues/24390
-    }
-}
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.pluginPublish)
@@ -38,8 +32,8 @@ java {
 }
 
 gradlePlugin {
-    website.set("https://ktor.io")
-    vcsUrl.set("https://github.com/ktorio/ktor")
+    website = "https://ktor.io"
+    vcsUrl = "https://github.com/ktorio/ktor"
 
     plugins {
         create("ktor") {
@@ -47,7 +41,7 @@ gradlePlugin {
             displayName = "Ktor Gradle Plugin"
             implementationClass = "io.ktor.plugin.KtorGradlePlugin"
             description = "Ktor Gradle Plugin configures deployment and version management for Ktor applications"
-            tags.set(setOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework", "fatjar", "docker", "jib", "graalvm"))
+            tags = setOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework", "fatjar", "docker", "jib", "graalvm")
         }
     }
 }
