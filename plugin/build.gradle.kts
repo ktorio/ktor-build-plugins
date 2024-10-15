@@ -6,10 +6,9 @@ configurations.all {
     }
 }
 
-@Suppress("DSL_SCOPE_VIOLATION") // "libs" produces a false-positive warning, see https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.gradle.plugin.publish)
+    alias(libs.plugins.pluginPublish)
 }
 
 group = libs.plugins.ktor.get().pluginId
@@ -23,9 +22,9 @@ if (hasProperty("versionSuffix")) {
 dependencies {
     implementation(gradleApi())
 
-    implementation(libs.shadow.gradle.plugin)
-    implementation(libs.jib.gradle.plugin)
-    implementation(libs.graalvm.gradle.plugin)
+    implementation(libs.gradlePlugin.shadow)
+    implementation(libs.gradlePlugin.jib)
+    implementation(libs.gradlePlugin.graalvm)
 
     testImplementation(libs.mockk)
     testImplementation(libs.kotlin.test.junit5)
