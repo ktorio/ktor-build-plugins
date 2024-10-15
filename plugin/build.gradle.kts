@@ -20,11 +20,6 @@ if (hasProperty("versionSuffix")) {
     version = "$version-$suffix"
 }
 
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
-
 dependencies {
     implementation(gradleApi())
 

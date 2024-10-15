@@ -1,12 +1,28 @@
 [versions]
 kotlin = "1.9.24"
+ktor-plugin = "3.0.0"
 logback = "1.5.1"
+gradle-plugin-publish = "1.2.1"
+shadow-gradle-plugin = "7.1.2"
+jib-gradle-plugin = "3.4.1"
+graalvm-gradle-plugin = "0.9.25"
+junit = "5.10.2"
+mockk = "1.13.11"
 
 [libraries]
+kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
+shadow-gradle-plugin = { module = "com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin", version.ref = "shadow-gradle-plugin" }
+jib-gradle-plugin = { module = "com.google.cloud.tools:jib-gradle-plugin", version.ref = "jib-gradle-plugin" }
+graalvm-gradle-plugin = { module = "org.graalvm.buildtools.native:org.graalvm.buildtools.native.gradle.plugin", version.ref = "graalvm-gradle-plugin" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+
+# Dependencies for samples
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm" }
 ktor-server-cio = { module = "io.ktor:ktor-server-cio-jvm" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-ktor = { id = "io.ktor.plugin" } # The published plugin
+gradle-plugin-publish = { id = "com.gradle.plugin-publish", version.ref = "gradle-plugin-publish" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor-plugin" } # The published plugin
