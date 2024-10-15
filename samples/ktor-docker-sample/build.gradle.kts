@@ -1,5 +1,4 @@
 import io.ktor.plugin.features.*
-import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     alias(libs.plugins.ktor)
@@ -22,11 +21,6 @@ ktor {
 
         environmentVariable("NAME", "\"Container\"")
     }
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-    testLogging.events(*TestLogEvent.values())
 }
 
 dependencies {

@@ -1,5 +1,3 @@
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-
 plugins {
     alias(libs.plugins.ktor)
     alias(libs.plugins.kotlin.jvm)
@@ -11,11 +9,6 @@ ktor {
     fatJar {
         archiveFileName = "fat.jar"
     }
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-    testLogging.events(*TestLogEvent.values())
 }
 
 dependencies {
