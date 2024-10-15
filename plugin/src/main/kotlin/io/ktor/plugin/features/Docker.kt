@@ -81,8 +81,8 @@ abstract class DockerExtension(project: Project) {
     /**
      * Specifies environment variable mappings for a `runDocker` command.
      */
-    val environmentVariables: ListProperty<DockerEnvironmentVariable> = project.objects.listProperty(DockerEnvironmentVariable::class.java)
-        .convention(emptyList())
+    val environmentVariables: ListProperty<DockerEnvironmentVariable> =
+        project.objects.listProperty(DockerEnvironmentVariable::class.java).convention(emptyList())
 
     fun environmentVariable(name: String, value: String) {
         environmentVariables.add(DockerEnvironmentVariable(name, value))
@@ -198,10 +198,12 @@ const val RUN_DOCKER_TASK_NAME = "runDocker"
 private const val SETUP_JIB_LOCAL_TASK_NAME = "setupJibLocal"
 private const val SETUP_JIB_EXTERNAL_TASK_NAME = "setupJibExternal"
 
-private fun markJibTaskNotCompatible(task: Task) = task.markNotCompatibleWithConfigurationCache(
-    "JIB plugin is not compatible with the configuration cache. " +
-            "See https://github.com/GoogleContainerTools/jib/issues/3132"
-)
+private fun markJibTaskNotCompatible(task: Task) {
+    task.notCompatibleWithConfigurationCache(
+        "JIB plugin is not compatible with the configuration cache. " +
+                "See https://github.com/GoogleContainerTools/jib/issues/3132"
+    )
+}
 
 internal abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean) : DefaultTask() {
     init {
@@ -214,7 +216,8 @@ internal abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean)
         val jibExtension = project.extensions.getByType(JibExtension::class.java)
         val dockerExtension = project.getKtorExtension<DockerExtension>()
 
-        val baseImage = dockerExtension.customBaseImage.orElse(dockerExtension.jreVersion.map { "eclipse-temurin:${it.majorVersion}-jre" })
+        val baseImage = dockerExtension.customBaseImage
+            .orElse(dockerExtension.jreVersion.map { "eclipse-temurin:${it.majorVersion}-jre" })
         jibExtension.from.setImage(baseImage)
 
         if (isExternal) {

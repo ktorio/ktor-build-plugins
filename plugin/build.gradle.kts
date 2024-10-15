@@ -1,4 +1,5 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -25,9 +26,13 @@ dependencies {
     testImplementation(libs.junit.jupiter.params)
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
+kotlin {
+    jvmToolchain(11)
+
+    compilerOptions {
+        // See https://docs.gradle.org/current/userguide/compatibility.html#kotlin
+        languageVersion = KotlinVersion.KOTLIN_1_8
+        apiVersion = KotlinVersion.KOTLIN_1_8
     }
 }
 
