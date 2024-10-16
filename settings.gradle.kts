@@ -1,6 +1,15 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
-    @Suppress("UnstableApiUsage")
     includeBuild("plugin")
+}
+
+dependencyResolutionManagement {
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+
+    repositories {
+        mavenCentral()
+    }
 }
 
 include("samples:ktor-fatjar-sample")

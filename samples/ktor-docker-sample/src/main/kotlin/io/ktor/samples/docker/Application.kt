@@ -1,6 +1,5 @@
 package io.ktor.samples.docker
 
-import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.response.*
@@ -10,7 +9,7 @@ fun main() {
     embeddedServer(CIO, port = 8080) {
         routing {
             get("/") {
-                call.respondText("Hello ${System.getenv()["NAME"]?:"World"}!")
+                call.respondText("Hello ${System.getenv()["NAME"] ?: "World"}!")
             }
         }
     }.start(wait = true)
