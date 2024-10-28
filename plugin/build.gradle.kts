@@ -1,15 +1,9 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
-configurations.all {
-    resolutionStrategy {
-        force("com.fasterxml.jackson:jackson-bom:2.14.3") // To prevent https://github.com/gradle/gradle/issues/24390
-    }
-}
-
-@Suppress("DSL_SCOPE_VIOLATION") // "libs" produces a false-positive warning, see https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.gradle.plugin.publish)
+    alias(libs.plugins.pluginPublish)
 }
 
 group = libs.plugins.ktor.get().pluginId
@@ -20,32 +14,31 @@ if (hasProperty("versionSuffix")) {
     version = "$version-$suffix"
 }
 
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
-
 dependencies {
     implementation(gradleApi())
 
-    implementation(libs.shadow.gradle.plugin)
-    implementation(libs.jib.gradle.plugin)
-    implementation(libs.graalvm.gradle.plugin)
+    implementation(libs.gradlePlugin.shadow)
+    implementation(libs.gradlePlugin.jib)
+    implementation(libs.gradlePlugin.graalvm)
 
     testImplementation(libs.mockk)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(libs.junit.jupiter.params)
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
+kotlin {
+    jvmToolchain(11)
+
+    compilerOptions {
+        // See https://docs.gradle.org/current/userguide/compatibility.html#kotlin
+        languageVersion = KotlinVersion.KOTLIN_1_8
+        apiVersion = KotlinVersion.KOTLIN_1_8
     }
 }
 
 gradlePlugin {
-    website.set("https://ktor.io")
-    vcsUrl.set("https://github.com/ktorio/ktor")
+    website = "https://ktor.io"
+    vcsUrl = "https://github.com/ktorio/ktor"
 
     plugins {
         create("ktor") {
@@ -53,7 +46,7 @@ gradlePlugin {
             displayName = "Ktor Gradle Plugin"
             implementationClass = "io.ktor.plugin.KtorGradlePlugin"
             description = "Ktor Gradle Plugin configures deployment and version management for Ktor applications"
-            tags.set(setOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework", "fatjar", "docker", "jib", "graalvm"))
+            tags = setOf("ktor", "kotlin", "web", "async", "asynchronous", "web-framework", "fatjar", "docker", "jib", "graalvm")
         }
     }
 }

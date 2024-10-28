@@ -1,12 +1,11 @@
 plugins {
-    @Suppress("DSL_SCOPE_VIOLATION") // "libs" produces a false-positive warning, see https://youtrack.jetbrains.com/issue/KTIJ-19369
-    id(libs.plugins.ktor.get().pluginId)
+    alias(libs.plugins.ktor)
 }
 
-application.mainClass.set("io.ktor.samples.native.ApplicationKt")
+application.mainClass = "io.ktor.samples.native.ApplicationKt"
 
 ktor {
     nativeImage {
-        imageName.set("native-image-sample")
+        imageName = "native-image-sample"
     }
 }

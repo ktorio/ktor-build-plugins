@@ -3,7 +3,6 @@ package io.ktor.plugin
 import com.google.cloud.tools.jib.gradle.JibExtension
 import io.ktor.plugin.features.*
 import io.ktor.plugin.features.DockerImageRegistry.Companion.externalRegistry
-import io.mockk.every
 import io.mockk.mockkStatic
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -136,10 +135,9 @@ class DockerTest {
     }
 
     @Test
-    fun `jib and shadow tasks are marked as not compatible with configuration cache if gradle version is greater than 7_4`() {
+    fun `jib tasks are marked as not compatible with configuration cache`() {
         mockkStatic(GradleVersion::class) {
             val project = ProjectBuilder.builder().build()
-            every { GradleVersion.current() } returns GradleVersion.version("7.4")
             project.applyPlugin()
 
             val jibTask = project.tasks.named("jib", DefaultTask::class.java).get()
@@ -148,28 +146,6 @@ class DockerTest {
                 "JIB plugin is not compatible with the configuration cache. See https://github.com/GoogleContainerTools/jib/issues/3132",
                 jibTask.reasonTaskIsIncompatibleWithConfigurationCache.get()
             )
-
-            val runShadowTask = project.tasks.named("runShadow", DefaultTask::class.java).get()
-            assertFalse { runShadowTask.isCompatibleWithConfigurationCache }
-
-            assertEquals(
-                "`runShadow` is not compatible with Gradle Configuration Cache yet: https://github.com/johnrengelman/shadow/issues/775",
-                runShadowTask.reasonTaskIsIncompatibleWithConfigurationCache.get()
-            )
-        }
-    }
-
-    @Test
-    fun `jib and shadow tasks are NOT marked as not compatible with configuration cache if gradle version is lesser than 7_4`() {
-        mockkStatic(GradleVersion::class) {
-            val project = ProjectBuilder.builder().build()
-            every { GradleVersion.current() } returns GradleVersion.version("7.3")
-            project.applyPlugin()
-
-            val jibTask = project.tasks.named("jib", DefaultTask::class.java).get()
-            assertTrue { jibTask.isCompatibleWithConfigurationCache }
-            val runShadowTask = project.tasks.named("runShadow", DefaultTask::class.java).get()
-            assertTrue { runShadowTask.isCompatibleWithConfigurationCache }
         }
     }
 
