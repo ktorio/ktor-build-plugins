@@ -1,5 +1,14 @@
 {
   "extends": [
     "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "description": "Disable changelogs fetching for Ktor dependencies",
+      "matchPackageNames": [
+        "io.ktor:*"
+      ],
+      "fetchChangeLogs": "off"
+    }
   ]
 }
