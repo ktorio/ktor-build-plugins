@@ -86,7 +86,7 @@ A sample configuration for Docker-related tasks might look as follows:
 // build.gradle.kts
 ktor {
     docker {
-        jreVersion.set(JreVersion.JRE_17)
+        jreVersion.set(JreVersion.JRE_21)
         localImageName.set("sample-docker-image")
         imageTag.set("0.0.1-preview")
 
