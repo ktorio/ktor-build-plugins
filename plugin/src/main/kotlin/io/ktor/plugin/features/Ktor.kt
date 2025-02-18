@@ -1,15 +1,19 @@
 package io.ktor.plugin.features
 
+import io.ktor.plugin.internal.*
 import org.gradle.api.DefaultTask
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
+import javax.inject.Inject
 
 const val KTOR_TASK_GROUP_NAME = "Ktor"
 
@@ -36,11 +40,33 @@ inline fun <reified T : Task> TaskContainer.registerKtorTask(
     }
 }
 
-abstract class KtorExtension
+abstract class KtorExtension @Inject internal constructor(
+    objects: ObjectFactory,
+    providers: ProviderFactory,
+) {
+
+    /**
+     * Enables a special mode targeted for development.
+     *
+     * By default, development mode is enabled if Gradle property or system property with the name "io.ktor.development"
+     * is set to `true`.
+     *
+     * [Documentation](https://ktor.io/docs/server-development-mode.html)
+     */
+    val development: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(providers.gradleProperty(DEVELOPMENT_MODE_PROPERTY).toBoolean())
+        .convention(providers.systemProperty(DEVELOPMENT_MODE_PROPERTY).toBoolean())
+        .finalizedOnRead()
+
+    companion object {
+        const val NAME: String = "ktor"
+
+        internal const val DEVELOPMENT_MODE_PROPERTY = "io.ktor.development"
+    }
+}
 
 private val Project.ktorExtension: KtorExtension
-    get() = extensions.findByType(KtorExtension::class.java)
-        ?: project.extensions.create("ktor", KtorExtension::class.java)
+    get() = extensions.getByType(KtorExtension::class.java)
 
 inline fun <reified T> Any.getExtension(): T =
     (this as ExtensionAware).extensions.getByType(T::class.java)

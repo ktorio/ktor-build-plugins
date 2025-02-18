@@ -1,17 +1,21 @@
 package io.ktor.plugin
 
+import io.ktor.plugin.internal.*
 import org.gradle.api.plugins.ApplicationPlugin
 import org.gradle.testfixtures.ProjectBuilder
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class PluginTest {
+
+    private val project = ProjectBuilder.builder().build()
+
+    @BeforeTest
+    fun setup() {
+        project.plugins.apply(KtorGradlePlugin::class.java)
+    }
+
     @Test
     fun `plugin creates all public tasks`() {
-        val project = ProjectBuilder.builder().build()
-        project.plugins.apply(KtorGradlePlugin::class.java)
         val expectedTasks = listOf(
             "buildFatJar",
             "publishImageToLocalRegistry", "publishImage", "buildImage", "runDocker",
@@ -25,15 +29,64 @@ class PluginTest {
 
     @Test
     fun `plugin applies application plugin`() {
-        val project = ProjectBuilder.builder().build()
-        project.plugins.apply(KtorGradlePlugin::class.java)
         assertTrue(project.plugins.hasPlugin(ApplicationPlugin::class.java))
     }
 
     @Test
+    fun `plugin adds development mode in application args`() = with(project) {
+        ktor {
+            development.set(true)
+        }
+
+        application {
+            applicationDefaultJvmArgs = listOf("-Dsome.prop=value")
+        }
+
+        evaluate()
+        assertContentEquals(
+            listOf("-Dsome.prop=value", "-Dio.ktor.development=true"),
+            application.applicationDefaultJvmArgs
+        )
+    }
+
+    @Test
+    fun `plugin uses system property as the default value for development mode`() = with(project) {
+        System.setProperty("io.ktor.development", "true")
+
+        evaluate()
+        assertEquals("-Dio.ktor.development=true", application.applicationDefaultJvmArgs.single())
+    }
+
+    @Test
+    fun `plugin doesn't override development mode if it was specified manually before`() = with(project) {
+        application {
+            applicationDefaultJvmArgs = listOf("-Dio.ktor.development=false")
+        }
+
+        ktor {
+            development.set(true)
+        }
+
+        evaluate()
+        assertEquals("-Dio.ktor.development=false", application.applicationDefaultJvmArgs.single())
+    }
+
+    @Test
+    fun `plugin doesn't override development mode if it was specified manually after`() = with(project) {
+        ktor {
+            development.set(true)
+        }
+
+        application {
+            applicationDefaultJvmArgs = listOf("-Dio.ktor.development=false")
+        }
+
+        evaluate()
+        assertEquals("-Dio.ktor.development=false", application.applicationDefaultJvmArgs.single())
+    }
+
+    @Test
     fun `plugin does not add any dependencies except the bom file`() {
-        val project = ProjectBuilder.builder().build()
-        project.plugins.apply(KtorGradlePlugin::class.java)
         val deps = project.configurations.flatMap { it.dependencies }
         assertEquals(1, deps.size)
         val bom = deps.single()
