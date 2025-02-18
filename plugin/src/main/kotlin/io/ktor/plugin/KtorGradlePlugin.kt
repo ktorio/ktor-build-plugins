@@ -9,13 +9,18 @@ const val KTOR_VERSION = "3.1.0"
 
 @Suppress("unused") // Gradle Plugin is not used directly
 abstract class KtorGradlePlugin : Plugin<Project> {
-    override fun apply(project: Project) {
-        project.plugins.apply(ApplicationPlugin::class.java)
-        configureFatJar(project)
-        configureDocker(project)
-        configureBomFile(project)
+    override fun apply(project: Project) = with(project) {
+        extensions.create(KtorExtension.NAME, KtorExtension::class.java)
+        configureApplication()
+        configureFatJar()
+        configureDocker()
+        configureBomFile()
         // Disabled until the native image generation is not possible with a single task with default configs
         // See https://youtrack.jetbrains.com/issue/KTOR-4596/Disable-Native-image-related-tasks
-        // configureNativeImage(project)
+        // configureNativeImage()
+    }
+
+    private fun Project.configureApplication() {
+        plugins.apply(ApplicationPlugin::class.java)
     }
 }

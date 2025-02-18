@@ -284,10 +284,9 @@ private abstract class RunDockerTask : DefaultTask() {
     }
 }
 
-fun configureDocker(project: Project) {
-    project.plugins.apply(JibPlugin::class.java)
-    val dockerExtension = project.createKtorExtension<DockerExtension>(DOCKER_EXTENSION_NAME)
-    val tasks = project.tasks
+internal fun Project.configureDocker() {
+    plugins.apply(JibPlugin::class.java)
+    val dockerExtension = createKtorExtension<DockerExtension>(DOCKER_EXTENSION_NAME)
 
     tasks.withType(JibTask::class.java).configureEach { markJibTaskNotCompatible(it) }
 
