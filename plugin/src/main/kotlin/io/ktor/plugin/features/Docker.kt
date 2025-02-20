@@ -285,7 +285,7 @@ private abstract class RunDockerTask : DefaultTask() {
     }
 }
 
-fun configureDocker(project: Project) = with(project) {
+internal fun Project.configureDocker() {
     val dockerExtension = createKtorExtension<DockerExtension>(DOCKER_EXTENSION_NAME)
 
     // Apply JIB plugin only when the Kotlin JVM plugin is applied.

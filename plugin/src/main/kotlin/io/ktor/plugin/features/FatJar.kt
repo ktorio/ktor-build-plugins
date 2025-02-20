@@ -27,7 +27,7 @@ private const val RUN_FAT_JAR_TASK_DESCRIPTION =
 private const val SHADOW_RUN_TASK_NAME = "runShadow"
 private const val SHADOW_JAR_TASK_NAME = "shadowJar"
 
-fun configureFatJar(project: Project) = with(project) {
+internal fun Project.configureFatJar() {
     val fatJarExtension = createKtorExtension<FatJarExtension>(FAT_JAR_EXTENSION_NAME)
 
     // Apply Shadow plugin only when the application plugin is applied.

@@ -5,6 +5,7 @@ import org.graalvm.buildtools.gradle.NativeImagePlugin
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension
 import org.graalvm.buildtools.gradle.dsl.GraalVMReachabilityMetadataRepositoryExtension
 import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.SetProperty
 
@@ -57,10 +58,10 @@ private val PACKAGES_TO_INITIALIZE_AT_BUILD_TIME = setOf("io.ktor", "kotlin", "c
 
 private const val CONFIGURE_GRAALVM_TASK_NAME = "configureGraalVM"
 
-private fun configureGraalVM(project: Project, nativeImageExtension: NativeImageExtension) {
-    project.extensions.configure(GraalVMExtension::class.java) { graalVMExtension ->
-        graalVMExtension.getExtension<GraalVMReachabilityMetadataRepositoryExtension>().enabled.set(true)
-        graalVMExtension.binaries.named("main") { nativeImageOptions ->
+private fun Project.configureGraalVM(nativeImageExtension: NativeImageExtension) {
+    graalvmNative {
+        metadataRepository.enabled.set(true)
+        binaries.named("main") { nativeImageOptions ->
             nativeImageOptions.apply {
                 verbose.set(nativeImageExtension.verbose)
                 agent.enabled.set(nativeImageExtension.attachAgent)
@@ -85,21 +86,28 @@ private fun configureGraalVM(project: Project, nativeImageExtension: NativeImage
     }
 }
 
-fun configureNativeImage(project: Project) = with(project) {
+internal fun Project.configureNativeImage() {
     apply<JavaPlugin>() // required for NativeImagePlugin
     apply<NativeImagePlugin>()
 
-    val nativeImageExtension = project.createKtorExtension<NativeImageExtension>(NATIVE_IMAGE_EXTENSION_NAME)
-    val configureGraalVMTask = project.tasks.register(CONFIGURE_GRAALVM_TASK_NAME) {
+    val nativeImageExtension = createKtorExtension<NativeImageExtension>(NATIVE_IMAGE_EXTENSION_NAME)
+    val configureGraalVMTask = tasks.register(CONFIGURE_GRAALVM_TASK_NAME) {
         // This configuration has to be done in the configuration phase.
-        configureGraalVM(project, nativeImageExtension)
+        configureGraalVM(nativeImageExtension)
     }
 
-    val nativeCompileTask = project.tasks.named(NativeImagePlugin.NATIVE_COMPILE_TASK_NAME) {
+    val nativeCompileTask = tasks.named(NativeImagePlugin.NATIVE_COMPILE_TASK_NAME) {
         it.dependsOn(configureGraalVMTask)
     }
 
-    project.tasks.registerKtorTask(BUILD_NATIVE_IMAGE_TASK_NAME, BUILD_NATIVE_IMAGE_TASK_DESCRIPTION) {
+    tasks.registerKtorTask(BUILD_NATIVE_IMAGE_TASK_NAME, BUILD_NATIVE_IMAGE_TASK_DESCRIPTION) {
         dependsOn(nativeCompileTask)
     }
 }
+
+private fun Project.graalvmNative(configure: GraalVMExtension.() -> Unit) {
+    extensions.configure(GraalVMExtension::class.java, configure)
+}
+
+private val GraalVMExtension.metadataRepository: GraalVMReachabilityMetadataRepositoryExtension
+    get() = (this as ExtensionAware).extensions.getByType(GraalVMReachabilityMetadataRepositoryExtension::class.java)

@@ -8,28 +8,25 @@ import org.gradle.api.Project
 
 const val KTOR_VERSION = "3.1.3"
 
-@Suppress("unused") // Gradle Plugin is not used directly
 abstract class KtorGradlePlugin : Plugin<Project> {
-    override fun apply(project: Project) {
-        val extension = project.extensions.create(KtorExtension.NAME, KtorExtension::class.java)
-        project.configureApplication(extension)
-        configureFatJar(project)
-        configureDocker(project)
-        configureBomFile(project)
+    override fun apply(project: Project) = with(project) {
+        val extension = extensions.create(KtorExtension.NAME, KtorExtension::class.java)
+        configureApplication(extension)
+        configureFatJar()
+        configureDocker()
+        configureBomFile()
         // Disabled until the native image generation is not possible with a single task with default configs
         // See https://youtrack.jetbrains.com/issue/KTOR-4596/Disable-Native-image-related-tasks
-        // configureNativeImage(project)
+        // configureNativeImage()
 
-        with(project) {
-            var kotlinPluginApplied = false
-            whenKotlinPluginApplied { pluginType ->
-                if (pluginType == Multiplatform) reportKmpCompatibilityWarning()
-                kotlinPluginApplied = true
-            }
+        var kotlinPluginApplied = false
+        whenKotlinPluginApplied { pluginType ->
+            if (pluginType == Multiplatform) reportKmpCompatibilityWarning()
+            kotlinPluginApplied = true
+        }
 
-            afterEvaluate {
-                if (!kotlinPluginApplied) reportKotlinPluginMissingWarning()
-            }
+        afterEvaluate {
+            if (!kotlinPluginApplied) reportKotlinPluginMissingWarning()
         }
     }
 
