@@ -25,10 +25,11 @@ private const val RUN_FAT_JAR_TASK_DESCRIPTION =
 private const val SHADOW_RUN_TASK_NAME = "runShadow"
 private const val SHADOW_JAR_TASK_NAME = "shadowJar"
 
-internal fun Project.configureFatJar() {
-    plugins.apply(ShadowPlugin::class.java)
+fun configureFatJar(project: Project) {
+    project.plugins.apply(ShadowPlugin::class.java)
+    val tasks = project.tasks
 
-    val fatJarExtension = createKtorExtension<FatJarExtension>(FAT_JAR_EXTENSION_NAME)
+    val fatJarExtension = project.createKtorExtension<FatJarExtension>(FAT_JAR_EXTENSION_NAME)
     val shadowJar: TaskProvider<ShadowJar> = tasks.named(SHADOW_JAR_TASK_NAME, ShadowJar::class.java) {
         it.archiveFileName.set(fatJarExtension.archiveFileName)
         it.isZip64 = fatJarExtension.allowZip64.get()
