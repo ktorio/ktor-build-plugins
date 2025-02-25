@@ -4,6 +4,11 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+_No changes yet_
+
+## [3.1.1] - 2025-02-25
+
+- Update Ktor to [v3.1.1](https://github.com/ktorio/ktor/releases/tag/3.1.1)
 - [KTOR-8173] Add property `ktor.development` to simplify development mode enabling
 
 [KTOR-8173]: https://youtrack.jetbrains.com/issue/KTOR-8173/
@@ -35,7 +40,8 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 - Bump default JRE in Docker to 21 (current LTS version)
 - Set Kotlin API and language level to 1.8 for compatibility with Gradle 8.0+
 
-[unreleased]: https://github.com/ktorio/ktor-build-plugins/compare/v3.1.0...main
+[unreleased]: https://github.com/ktorio/ktor-build-plugins/compare/v3.1.1...main
+[3.1.1]: https://github.com/ktorio/ktor-build-plugins/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/ktorio/ktor-build-plugins/compare/v3.0.3...v3.1.0
 [3.0.3]: https://github.com/ktorio/ktor-build-plugins/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/ktorio/ktor-build-plugins/compare/v3.0.1...v3.0.2
