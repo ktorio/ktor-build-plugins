@@ -8,7 +8,7 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.ApplicationPlugin
 import org.gradle.api.plugins.JavaApplication
 
-const val KTOR_VERSION = "3.1.1"
+const val KTOR_VERSION = "3.1.2"
 
 @Suppress("unused") // Gradle Plugin is not used directly
 abstract class KtorGradlePlugin : Plugin<Project> {
