@@ -10,8 +10,8 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
 
 internal fun Project.applyKtorPlugin(configureExt: KtorExtension.() -> Unit = {}) {
-    project.plugins.apply<KotlinPluginWrapper>()
-    project.plugins.apply<KtorGradlePlugin>()
+    apply<KotlinPluginWrapper>()
+    apply<KtorGradlePlugin>()
     project.extensions.configure(KtorExtension::class.java) { ext ->
         ext.configureExt()
     }

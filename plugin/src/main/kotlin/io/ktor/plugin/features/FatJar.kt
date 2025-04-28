@@ -33,12 +33,12 @@ fun configureFatJar(project: Project) = with(project) {
     // Apply Shadow plugin only when the application plugin is applied.
     // TODO: KMP support will be added in Shadow 9.0.0
     //   https://github.com/GradleUp/shadow/pull/1333
-    plugins.withId(ApplicationPlugin.APPLICATION_PLUGIN_NAME) {
-        plugins.apply<ShadowPlugin>()
+    pluginManager.withPlugin(ApplicationPlugin.APPLICATION_PLUGIN_NAME) {
+        apply<ShadowPlugin>()
     }
 
-    // By using `withId` we handle the case when a user explicitly applies Shadow plugin.
-    plugins.withId(SHADOW_PLUGIN_ID) {
+    // By using `withPlugin` we handle the case when a user explicitly applies Shadow plugin.
+    pluginManager.withPlugin(SHADOW_PLUGIN_ID) {
         configureShadowPlugin(fatJarExtension)
     }
 }

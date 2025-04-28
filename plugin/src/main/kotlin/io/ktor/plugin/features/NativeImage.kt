@@ -1,5 +1,6 @@
 package io.ktor.plugin.features
 
+import io.ktor.plugin.internal.*
 import org.graalvm.buildtools.gradle.NativeImagePlugin
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension
 import org.graalvm.buildtools.gradle.dsl.GraalVMReachabilityMetadataRepositoryExtension
@@ -84,9 +85,9 @@ private fun configureGraalVM(project: Project, nativeImageExtension: NativeImage
     }
 }
 
-fun configureNativeImage(project: Project) {
-    project.plugins.apply(JavaPlugin::class.java) // required for NativeImagePlugin
-    project.plugins.apply(NativeImagePlugin::class.java)
+fun configureNativeImage(project: Project) = with(project) {
+    apply<JavaPlugin>() // required for NativeImagePlugin
+    apply<NativeImagePlugin>()
 
     val nativeImageExtension = project.createKtorExtension<NativeImageExtension>(NATIVE_IMAGE_EXTENSION_NAME)
     val configureGraalVMTask = project.tasks.register(CONFIGURE_GRAALVM_TASK_NAME) {
