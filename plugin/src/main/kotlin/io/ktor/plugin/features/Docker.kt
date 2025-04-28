@@ -292,11 +292,11 @@ fun configureDocker(project: Project) = with(project) {
     // TODO: JIB uses hardcoded "main" source set, it makes it incompatible with KMP
     //   https://github.com/GoogleContainerTools/jib/issues/4316
     whenKotlinJvmApplied {
-        plugins.apply<JibPlugin>()
+        apply<JibPlugin>()
     }
 
     // By using `withPlugin` we handle the case when a user explicitly applies JIB plugin in a KMP project.
-    plugins.withId(JIB_PLUGIN_ID) {
+    pluginManager.withPlugin(JIB_PLUGIN_ID) {
         configureJibPlugin(dockerExtension)
     }
 }

@@ -23,7 +23,7 @@ internal fun Project.configureApplication(extension: KtorExtension) {
 }
 
 private fun Project.configureJvmApplication(extension: KtorExtension) {
-    plugins.apply<ApplicationPlugin>()
+    apply<ApplicationPlugin>()
 
     afterEvaluate {
         if (extension.development.get()) {
