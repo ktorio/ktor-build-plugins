@@ -2,7 +2,6 @@ package io.ktor.plugin
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import io.ktor.plugin.features.*
-import org.gradle.testfixtures.ProjectBuilder
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -11,18 +10,18 @@ import kotlin.test.assertNotNull
 class FatJarTest {
     @Test
     fun `output filename is built from the project name by default`() {
-        val project = ProjectBuilder.builder().apply {
-            withName("fat-example")
-        }.build()
-        project.plugins.apply(KtorGradlePlugin::class.java)
+        val project = createProject { withName("fat-example") }
+        project.applyKtorPlugin()
+
         val shadowJarTask = project.tasks.named("shadowJar", ShadowJar::class.java)
         assertEquals("fat-example-all.jar", shadowJarTask.get().archiveFileName.get())
     }
 
     @Test
     fun `output filename is overridden by the extension`() {
-        val project = ProjectBuilder.builder().build()
-        project.plugins.apply(KtorGradlePlugin::class.java)
+        val project = createProject()
+        project.applyKtorPlugin()
+
         project.extensions.configure(KtorExtension::class.java) {
             it.getExtension<FatJarExtension>().archiveFileName.set("fat.jar")
         }
@@ -32,8 +31,9 @@ class FatJarTest {
 
     @Test
     fun `has buildFatJar task that just depends on shadowJar task`() {
-        val project = ProjectBuilder.builder().build()
-        project.plugins.apply(KtorGradlePlugin::class.java)
+        val project = createProject()
+        project.applyKtorPlugin()
+
         val buildTask = project.tasks.named("buildFatJar").get()
         val dependencies = buildTask.taskDependencies.getDependencies(buildTask)
         assertEquals(1, dependencies.size)
@@ -42,8 +42,9 @@ class FatJarTest {
 
     @Test
     fun `runShadow task depends on buildFatJar task`() {
-        val project = ProjectBuilder.builder().build()
-        project.plugins.apply(KtorGradlePlugin::class.java)
+        val project = createProject()
+        project.applyKtorPlugin()
+
         val runTask = project.tasks.named("runShadow").get()
         val dependencies = runTask.taskDependencies.getDependencies(runTask)
         assertNotNull(dependencies.find { it.name == "buildFatJar" }, "runShadow task should depend on buildFatJar")
@@ -51,8 +52,9 @@ class FatJarTest {
 
     @Test
     fun `has runFatJar task that depends on runShadow task`() {
-        val project = ProjectBuilder.builder().build()
-        project.plugins.apply(KtorGradlePlugin::class.java)
+        val project = createProject()
+        project.applyKtorPlugin()
+
         val runTask = project.tasks.named("runFatJar").get()
         assertEquals("Ktor", runTask.group)
         assertFalse { runTask.description.isNullOrEmpty() }
