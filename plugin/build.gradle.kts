@@ -17,10 +17,12 @@ if (hasProperty("versionSuffix")) {
 dependencies {
     implementation(gradleApi())
 
+    compileOnly(libs.gradlePlugin.kotlin)
     implementation(libs.gradlePlugin.shadow)
     implementation(libs.gradlePlugin.jib)
     implementation(libs.gradlePlugin.graalvm)
 
+    testImplementation(libs.gradlePlugin.kotlin)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(libs.junit.jupiter.params)

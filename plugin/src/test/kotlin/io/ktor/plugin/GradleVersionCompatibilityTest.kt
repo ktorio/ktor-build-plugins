@@ -7,9 +7,16 @@ import java.io.File
 
 class GradleVersionCompatibilityTest {
     @ParameterizedTest
-    @ValueSource(strings = ["8.3", "8.10.2"])
+    @ValueSource(strings = ["8.3", "8.14"])
     fun testProjectBuild(gradleVersion: String, @TempDir projectDir: File) {
-        projectDir.resolve("build.gradle.kts").writeText("""plugins { id("io.ktor.plugin") }""")
+        projectDir.resolve("build.gradle.kts").writeText(
+            """
+            plugins {
+                kotlin("jvm") version "2.1.20"
+                id("io.ktor.plugin")
+            }
+            """.trimIndent()
+        )
         createGradleRunner(projectDir)
             .withGradleVersion(gradleVersion)
             .build()
