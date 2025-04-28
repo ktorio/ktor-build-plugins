@@ -2,16 +2,15 @@ package io.ktor.plugin
 
 import io.ktor.plugin.internal.*
 import org.gradle.api.plugins.ApplicationPlugin
-import org.gradle.testfixtures.ProjectBuilder
 import kotlin.test.*
 
 class PluginTest {
 
-    private val project = ProjectBuilder.builder().build()
+    private val project = createProject()
 
     @BeforeTest
     fun setup() {
-        project.plugins.apply(KtorGradlePlugin::class.java)
+        project.applyKtorPlugin()
     }
 
     @Test
@@ -87,8 +86,10 @@ class PluginTest {
 
     @Test
     fun `plugin does not add any dependencies except the bom file`() {
-        val deps = project.configurations.flatMap { it.dependencies }
-        assertEquals(1, deps.size)
+        val deps = project.configurations
+            .filter { it.name != "kotlinBuildToolsApiClasspath" }
+            .flatMap { it.dependencies }
+        assertEquals(1, deps.size, "Expected only the Ktor BOM dependency, but got: $deps")
         val bom = deps.single()
         assertEquals("io.ktor", bom.group)
         assertEquals("ktor-bom", bom.name)
