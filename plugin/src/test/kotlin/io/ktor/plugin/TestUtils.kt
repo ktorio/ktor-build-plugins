@@ -22,7 +22,11 @@ internal fun Project.evaluate() {
 }
 
 internal fun createGradleRunner(projectDir: File): GradleRunner =
-    GradleRunner.create().withProjectDir(projectDir).withPluginClasspath().withArguments("--stacktrace")
+    GradleRunner.create().withProjectDir(projectDir).withArguments("--stacktrace")
 
 internal fun createProject(configure: ProjectBuilder.() -> Unit = {}): Project =
     ProjectBuilder.builder().apply(configure).build()
+
+internal fun File.writeCode(vararg codeBlocks: String) {
+    writeText(codeBlocks.joinToString("\n\n") { it.trimIndent() })
+}
