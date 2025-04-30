@@ -16,7 +16,7 @@ abstract class IntegrationTest {
 
     @BeforeTest
     open fun setup() {
-        settingsFile.writeCode(
+        settingsFile.writeGradle(
             """
             pluginManagement {
                 repositories {
@@ -30,7 +30,7 @@ abstract class IntegrationTest {
             rootProject.name = "test"
             """
         )
-        buildFile.writeCode(APPLY_KOTLIN_JVM_AND_KTOR)
+        buildFile.writeGradle(APPLY_KOTLIN_JVM_AND_KTOR)
     }
 
     private val runner by lazy {
@@ -40,6 +40,12 @@ abstract class IntegrationTest {
 
     protected fun runBuild(vararg args: String, configure: GradleRunner.() -> Unit = {}): BuildResult {
         return runner.apply(configure).withArguments(args.asList() + "--stacktrace").build()
+    }
+
+    protected fun file(path: String): File {
+        return projectDir.resolve(path).apply {
+            parentFile.mkdirs()
+        }
     }
 
     companion object {
