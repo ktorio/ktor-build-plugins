@@ -1,6 +1,8 @@
 package io.ktor.plugin
 
 import io.ktor.plugin.features.*
+import io.ktor.plugin.internal.*
+import io.ktor.plugin.internal.KotlinPluginType.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -17,5 +19,44 @@ abstract class KtorGradlePlugin : Plugin<Project> {
         // Disabled until the native image generation is not possible with a single task with default configs
         // See https://youtrack.jetbrains.com/issue/KTOR-4596/Disable-Native-image-related-tasks
         // configureNativeImage(project)
+
+        with(project) {
+            var kotlinPluginApplied = false
+            whenKotlinPluginApplied { pluginType ->
+                if (pluginType == Multiplatform) reportKmpCompatibilityWarning()
+                kotlinPluginApplied = true
+            }
+
+            afterEvaluate {
+                if (!kotlinPluginApplied) reportKotlinPluginMissingWarning()
+            }
+        }
+    }
+
+    private fun Project.reportKmpCompatibilityWarning() {
+        logger.warn("warning: Ktor Gradle plugin is not fully compatible with Kotlin Multiplatform plugin.")
+        logger.lifecycle(
+            """
+            |
+            |Building fat JAR and Docker image for Ktor application is not supported when the plugin applied to a multiplatform project.
+            |As a workaround, create a JVM-only project with Ktor plugin applied and add the multiplatform project as a dependency to it.
+            |Let us know about your use case in the issue: https://youtrack.jetbrains.com/issue/KTOR-8464
+            |
+            """.trimMargin()
+        )
+    }
+
+    private fun Project.reportKotlinPluginMissingWarning() {
+        logger.warn("warning: Ktor Gradle plugin cannot be used without Kotlin Gradle plugin.")
+        logger.lifecycle(
+            """
+            |Please, apply Kotlin Gradle plugin to the project:
+            |
+            |  plugins {
+            |      kotlin("jvm")
+            |  }
+            |
+            """.trimMargin()
+        )
     }
 }
