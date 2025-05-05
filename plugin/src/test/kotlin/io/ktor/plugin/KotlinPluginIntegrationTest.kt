@@ -9,6 +9,22 @@ import kotlin.test.assertContains
 class KotlinPluginIntegrationTest : IntegrationTest() {
 
     @Test
+    fun `kotlin plugin is not applied`() {
+        buildFile.writeGradle(
+            """
+            plugins {
+                id("io.ktor.plugin") version "$KTOR_VERSION"
+            }
+            """,
+            PRINT_KTOR_TASKS,
+        )
+
+        val result = runBuild()
+        result.assertNoKtorTasksAdded()
+        assertContains(result.output, "warning: Ktor Gradle plugin cannot be used without Kotlin Gradle plugin.")
+    }
+
+    @Test
     fun `applied after kotlin-jvm plugin`() {
         buildFile.writeGradle(
             APPLY_KOTLIN_JVM_AND_KTOR,
@@ -68,7 +84,9 @@ class KotlinPluginIntegrationTest : IntegrationTest() {
             PRINT_KTOR_TASKS,
         )
 
-        runBuild().assertKtorTasksAdded(emptySet())
+        val result = runBuild()
+        result.assertNoKtorTasksAdded()
+        assertContains(result.output, "warning: Ktor Gradle plugin is not fully compatible with Kotlin Multiplatform plugin.")
     }
 
     @ParameterizedTest
@@ -133,6 +151,10 @@ class KotlinPluginIntegrationTest : IntegrationTest() {
         val fatJarTasks = setOf("buildFatJar", "runFatJar")
         val jibTasks = setOf("buildImage", "publishImage", "publishImageToLocalRegistry", "runDocker")
         val allTasks = fatJarTasks + jibTasks
+
+        fun BuildResult.assertNoKtorTasksAdded() {
+            assertKtorTasksAdded(emptySet())
+        }
 
         /** Should be used together with [PRINT_KTOR_TASKS]. */
         fun BuildResult.assertKtorTasksAdded(tasks: Set<String>) {
