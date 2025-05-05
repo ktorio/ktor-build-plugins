@@ -2,6 +2,7 @@ package io.ktor.plugin.features
 
 import io.ktor.plugin.features.KtorExtension.Companion.DEVELOPMENT_MODE_PROPERTY
 import io.ktor.plugin.internal.*
+import io.ktor.plugin.internal.KotlinPluginType.*
 import org.gradle.api.Project
 import org.gradle.api.plugins.ApplicationPlugin
 import org.gradle.api.plugins.ApplicationPlugin.APPLICATION_GROUP
@@ -9,15 +10,18 @@ import org.gradle.api.tasks.JavaExec
 import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 
 internal fun Project.configureApplication(extension: KtorExtension) {
-    whenKotlinJvmApplied {
-        configureJvmApplication(extension)
-    }
+    whenKotlinPluginApplied { pluginType ->
+        when (pluginType) {
+            JVM -> configureJvmApplication(extension)
 
-    whenKotlinMultiplatformApplied {
-        if (KotlinVersion.parse(getKotlinPluginVersion()) < KotlinVersion.V2_1_20) {
-            configureJvmApplication(extension)
-        } else {
-            configureMultiplatformApplication(extension)
+            // A new DSL replacing Gradle's Application plugin was introduced in KMP 2.1.20,
+            // making it incompatible with the Application plugin.
+            // https://kotlinlang.org/docs/whatsnew2120.html#kotlin-multiplatform-new-dsl-to-replace-gradle-s-application-plugin
+            Multiplatform -> if (KotlinVersion.parse(getKotlinPluginVersion()) >= KotlinVersion.V2_1_20) {
+                configureMultiplatformApplication(extension)
+            } else {
+                configureJvmApplication(extension)
+            }
         }
     }
 }
