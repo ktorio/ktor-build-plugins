@@ -21,7 +21,7 @@ class KotlinPluginIntegrationTest : IntegrationTest() {
 
         val result = runBuild()
         result.assertNoKtorTasksAdded()
-        assertContains(result.output, "warning: Ktor Gradle plugin cannot be used without Kotlin Gradle plugin.")
+        assertContains(result.output, "warning: The Ktor Gradle plugin requires the Kotlin Gradle plugin.")
     }
 
     @Test
@@ -86,7 +86,7 @@ class KotlinPluginIntegrationTest : IntegrationTest() {
 
         val result = runBuild()
         result.assertNoKtorTasksAdded()
-        assertContains(result.output, "warning: Ktor Gradle plugin is not fully compatible with Kotlin Multiplatform plugin.")
+        assertContains(result.output, "warning: The Ktor Gradle plugin is not fully compatible with the Kotlin Multiplatform plugin.")
     }
 
     @ParameterizedTest
