@@ -34,23 +34,23 @@ abstract class KtorGradlePlugin : Plugin<Project> {
     }
 
     private fun Project.reportKmpCompatibilityWarning() {
-        logger.warn("warning: Ktor Gradle plugin is not fully compatible with Kotlin Multiplatform plugin.")
+        logger.warn("warning: The Ktor Gradle plugin is not fully compatible with the Kotlin Multiplatform plugin.")
         logger.lifecycle(
             """
             |
-            |Building fat JAR and Docker image for Ktor application is not supported when the plugin applied to a multiplatform project.
-            |As a workaround, create a JVM-only project with Ktor plugin applied and add the multiplatform project as a dependency to it.
-            |Let us know about your use case in the issue: https://youtrack.jetbrains.com/issue/KTOR-8464
+            |Building a fat JAR or a Docker image for a Ktor application is not supported when the plugin is applied to a multiplatform project.
+            |As a workaround, create a JVM-only project with the Ktor plugin applied and add the multiplatform project as a dependency.
+            |If this limitation affects your use case, let us know by commenting on the issue: https://youtrack.jetbrains.com/issue/KTOR-8464
             |
             """.trimMargin()
         )
     }
 
     private fun Project.reportKotlinPluginMissingWarning() {
-        logger.warn("warning: Ktor Gradle plugin cannot be used without Kotlin Gradle plugin.")
+        logger.warn("warning: The Ktor Gradle plugin requires the Kotlin Gradle plugin.")
         logger.lifecycle(
             """
-            |Please, apply Kotlin Gradle plugin to the project:
+            |To fix this, apply the Kotlin Gradle plugin to your project:
             |
             |  plugins {
             |      kotlin("jvm")
