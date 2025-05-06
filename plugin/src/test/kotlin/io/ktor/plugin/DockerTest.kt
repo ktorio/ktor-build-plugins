@@ -9,17 +9,17 @@ import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
 import org.gradle.api.internal.provider.Providers
 import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.util.GradleVersion
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import kotlin.test.*
 
 class DockerTest {
+    private val project = createProject()
+
     @Test
     fun `cannot build an image when the target java version is greater than the image's jre version`() {
-        val project = ProjectBuilder.builder().build()
-        project.applyPlugin {
+        project.applyKtorPlugin {
             getExtension<DockerExtension>().jreVersion.set(JavaVersion.VERSION_11)
         }
         project.extensions.configure(JavaPluginExtension::class.java) {
@@ -42,9 +42,7 @@ class DockerTest {
 
     @Test
     fun `name of the source image considers set image's jre version`() {
-        val project = ProjectBuilder.builder().build()
-
-        project.applyPlugin {
+        project.applyKtorPlugin {
             getExtension<DockerExtension>().jreVersion.set(JavaVersion.VERSION_17)
         }
 
@@ -58,8 +56,7 @@ class DockerTest {
 
     @Test
     fun `name of the target image has a default value`() {
-        val project = ProjectBuilder.builder().build()
-        project.applyPlugin()
+        project.applyKtorPlugin()
 
         val task = project.tasks.named("setupJibLocal", ConfigureJibLocalTask::class.java).get()
         task.execute()
@@ -68,8 +65,7 @@ class DockerTest {
     }
     @Test
     fun `name of the target image is determined by the docker extension`() {
-        val project = ProjectBuilder.builder().build()
-        project.applyPlugin {
+        project.applyKtorPlugin {
             getExtension<DockerExtension>().localImageName.set("target-image")
         }
 
@@ -81,8 +77,7 @@ class DockerTest {
 
     @Test
     fun `docker extension configures target image name and registry auth`() {
-        val project = ProjectBuilder.builder().build()
-        project.applyPlugin {
+        project.applyKtorPlugin {
             getExtension<DockerExtension>().apply {
                 externalRegistry.set(
                     externalRegistry(
@@ -106,8 +101,7 @@ class DockerTest {
 
     @Test
     fun `docker extension configures tag of the target image`() {
-        val project = ProjectBuilder.builder().build()
-        project.applyPlugin {
+        project.applyKtorPlugin {
             getExtension<DockerExtension>().imageTag.set("1.2.3")
         }
 
@@ -119,8 +113,7 @@ class DockerTest {
 
     @Test
     fun `docker extension adds a tag to the target image tags`() {
-        val project = ProjectBuilder.builder().build()
-        project.applyPlugin {
+        project.applyKtorPlugin {
             getExtension<DockerExtension>().imageTag.set("1.2.3")
         }
 
@@ -137,8 +130,7 @@ class DockerTest {
     @Test
     fun `jib tasks are marked as not compatible with configuration cache`() {
         mockkStatic(GradleVersion::class) {
-            val project = ProjectBuilder.builder().build()
-            project.applyPlugin()
+            project.applyKtorPlugin()
 
             val jibTask = project.tasks.named("jib", DefaultTask::class.java).get()
             assertFalse { jibTask.isCompatibleWithConfigurationCache }
@@ -153,8 +145,8 @@ class DockerTest {
     @MethodSource("dataForTestingTasks")
     fun `has a task that depends on jib tasks`(data: Pair<String, List<String>>) {
         val (taskName, dependentTasks) = data
-        val project = ProjectBuilder.builder().build()
-        project.plugins.apply(KtorGradlePlugin::class.java)
+        project.applyKtorPlugin()
+
         val task = project.tasks.named(taskName).get()
         assertEquals("Ktor", task.group)
         assertFalse { task.description.isNullOrEmpty() }

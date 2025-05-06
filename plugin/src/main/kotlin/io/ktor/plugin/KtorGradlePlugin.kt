@@ -1,12 +1,10 @@
 package io.ktor.plugin
 
 import io.ktor.plugin.features.*
-import io.ktor.plugin.features.KtorExtension.Companion.DEVELOPMENT_MODE_PROPERTY
 import io.ktor.plugin.internal.*
+import io.ktor.plugin.internal.KotlinPluginType.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.plugins.ApplicationPlugin
-import org.gradle.api.plugins.JavaApplication
 
 const val KTOR_VERSION = "3.1.3"
 
@@ -14,27 +12,51 @@ const val KTOR_VERSION = "3.1.3"
 abstract class KtorGradlePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val extension = project.extensions.create(KtorExtension.NAME, KtorExtension::class.java)
-        configureApplication(project, extension)
+        project.configureApplication(extension)
         configureFatJar(project)
         configureDocker(project)
         configureBomFile(project)
         // Disabled until the native image generation is not possible with a single task with default configs
         // See https://youtrack.jetbrains.com/issue/KTOR-4596/Disable-Native-image-related-tasks
         // configureNativeImage(project)
-    }
 
-    private fun configureApplication(project: Project, extension: KtorExtension) = with(project) {
-        plugins.apply(ApplicationPlugin::class.java)
+        with(project) {
+            var kotlinPluginApplied = false
+            whenKotlinPluginApplied { pluginType ->
+                if (pluginType == Multiplatform) reportKmpCompatibilityWarning()
+                kotlinPluginApplied = true
+            }
 
-        afterEvaluate {
-            if (extension.development.get()) application.enableDevelopmentMode()
+            afterEvaluate {
+                if (!kotlinPluginApplied) reportKotlinPluginMissingWarning()
+            }
         }
     }
-}
 
-private fun JavaApplication.enableDevelopmentMode() {
-    val prefix = "-D$DEVELOPMENT_MODE_PROPERTY="
-    if (applicationDefaultJvmArgs.none { it.startsWith(prefix) }) {
-        applicationDefaultJvmArgs += "${prefix}true"
+    private fun Project.reportKmpCompatibilityWarning() {
+        logger.warn("warning: The Ktor Gradle plugin is not fully compatible with the Kotlin Multiplatform plugin.")
+        logger.lifecycle(
+            """
+            |
+            |Building a fat JAR or a Docker image for a Ktor application is not supported when the plugin is applied to a multiplatform project.
+            |As a workaround, create a JVM-only project with the Ktor plugin applied and add the multiplatform project as a dependency.
+            |If this limitation affects your use case, let us know by commenting on the issue: https://youtrack.jetbrains.com/issue/KTOR-8464
+            |
+            """.trimMargin()
+        )
+    }
+
+    private fun Project.reportKotlinPluginMissingWarning() {
+        logger.warn("warning: The Ktor Gradle plugin requires the Kotlin Gradle plugin.")
+        logger.lifecycle(
+            """
+            |To fix this, apply the Kotlin Gradle plugin to your project:
+            |
+            |  plugins {
+            |      kotlin("jvm")
+            |  }
+            |
+            """.trimMargin()
+        )
     }
 }
