@@ -11,6 +11,7 @@ mockk = "1.14.2"
 
 [libraries]
 kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
+gradlePlugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 gradlePlugin-shadow = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "gradlePlugin-shadow" }
 gradlePlugin-jib = { module = "com.google.cloud.tools:jib-gradle-plugin", version.ref = "gradlePlugin-jib" }
 gradlePlugin-graalvm = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "gradlePlugin-graalvm" }

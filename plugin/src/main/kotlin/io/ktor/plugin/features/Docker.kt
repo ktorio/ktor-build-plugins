@@ -4,6 +4,7 @@ import com.google.cloud.tools.jib.gradle.JibExtension
 import com.google.cloud.tools.jib.gradle.JibPlugin
 import com.google.cloud.tools.jib.gradle.JibTask
 import com.google.cloud.tools.jib.gradle.TargetImageParameters
+import io.ktor.plugin.internal.*
 import org.gradle.api.*
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -284,12 +285,24 @@ private abstract class RunDockerTask : DefaultTask() {
     }
 }
 
-fun configureDocker(project: Project) {
-    project.plugins.apply(JibPlugin::class.java)
-    val dockerExtension = project.createKtorExtension<DockerExtension>(DOCKER_EXTENSION_NAME)
-    val tasks = project.tasks
+fun configureDocker(project: Project) = with(project) {
+    val dockerExtension = createKtorExtension<DockerExtension>(DOCKER_EXTENSION_NAME)
 
-    tasks.withType(JibTask::class.java).configureEach { markJibTaskNotCompatible(it) }
+    // Apply JIB plugin only when the Kotlin JVM plugin is applied.
+    // TODO: JIB uses hardcoded "main" source set, it makes it incompatible with KMP
+    //   https://github.com/GoogleContainerTools/jib/issues/4316
+    whenKotlinJvmApplied {
+        apply<JibPlugin>()
+    }
+
+    // By using `withPlugin` we handle the case when a user explicitly applies JIB plugin in a KMP project.
+    pluginManager.withPlugin(JIB_PLUGIN_ID) {
+        configureJibPlugin(dockerExtension)
+    }
+}
+
+private fun Project.configureJibPlugin(dockerExtension: DockerExtension) {
+    tasks.configureEach<JibTask> { markJibTaskNotCompatible(it) }
 
     val configureJibLocalTask = tasks.register(SETUP_JIB_LOCAL_TASK_NAME, ConfigureJibLocalTask::class.java)
     val configureJibExternalTask = tasks.register(SETUP_JIB_EXTERNAL_TASK_NAME, ConfigureJibExternalTask::class.java)

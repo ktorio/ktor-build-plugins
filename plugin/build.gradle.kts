@@ -17,10 +17,12 @@ if (hasProperty("versionSuffix")) {
 dependencies {
     implementation(gradleApi())
 
+    compileOnly(libs.gradlePlugin.kotlin)
     implementation(libs.gradlePlugin.shadow)
     implementation(libs.gradlePlugin.jib)
     implementation(libs.gradlePlugin.graalvm)
 
+    testImplementation(libs.gradlePlugin.kotlin)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(libs.junit.jupiter.params)
@@ -77,9 +79,14 @@ tasks.named("publishPlugins") {
     dependsOn("test", setupPluginUploadFromEnvironment)
 }
 
-tasks.withType<Test> {
+val publishToMavenLocal = tasks.named("publishToMavenLocal")
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     testLogging.events(*TestLogEvent.values())
+
+    // The plugin should be published to MavenLocal to be available in integration tests
+    // We can't use GradleRunner.withPluginClasspath() because of https://github.com/gradle/gradle/issues/22466
+    dependsOn(publishToMavenLocal)
 }
 
 if (hasProperty("space")) {
