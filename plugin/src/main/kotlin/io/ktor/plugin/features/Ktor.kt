@@ -15,9 +15,9 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import javax.inject.Inject
 
-const val KTOR_TASK_GROUP_NAME = "Ktor"
+public const val KTOR_TASK_GROUP_NAME: String = "ktor"
 
-inline fun TaskContainer.registerKtorTask(
+internal inline fun TaskContainer.registerKtorTask(
     name: String,
     description: String,
     crossinline configure: Task.() -> Unit = {}
@@ -27,7 +27,7 @@ inline fun TaskContainer.registerKtorTask(
     configure = configure
 )
 
-inline fun <reified T : Task> TaskContainer.registerKtorTask(
+internal inline fun <reified T : Task> TaskContainer.registerKtorTask(
     name: String,
     description: String,
     vararg constructorArgs: Any?,
@@ -40,7 +40,7 @@ inline fun <reified T : Task> TaskContainer.registerKtorTask(
     }
 }
 
-abstract class KtorExtension @Inject internal constructor(
+public abstract class KtorExtension @Inject internal constructor(
     objects: ObjectFactory,
     providers: ProviderFactory,
 ) {
@@ -53,13 +53,13 @@ abstract class KtorExtension @Inject internal constructor(
      *
      * [Documentation](https://ktor.io/docs/server-development-mode.html)
      */
-    val development: Property<Boolean> = objects.property(Boolean::class.java)
+    public val development: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(providers.gradleProperty(DEVELOPMENT_MODE_PROPERTY).toBoolean())
         .convention(providers.systemProperty(DEVELOPMENT_MODE_PROPERTY).toBoolean())
         .finalizedOnRead()
 
-    companion object {
-        const val NAME: String = "ktor"
+    public companion object {
+        public const val NAME: String = "ktor"
 
         internal const val DEVELOPMENT_MODE_PROPERTY = "io.ktor.development"
     }
@@ -68,19 +68,19 @@ abstract class KtorExtension @Inject internal constructor(
 private val Project.ktorExtension: KtorExtension
     get() = extensions.getByType(KtorExtension::class.java)
 
-inline fun <reified T> Any.getExtension(): T =
+internal inline fun <reified T> Any.getExtension(): T =
     (this as ExtensionAware).extensions.getByType(T::class.java)
 
-val Project.ktorExtensions: ExtensionContainer
+internal val Project.ktorExtensions: ExtensionContainer
     get() = (ktorExtension as ExtensionAware).extensions
 
-inline fun <reified T> Project.createKtorExtension(name: String): T =
+internal inline fun <reified T> Project.createKtorExtension(name: String): T =
     ktorExtensions.create(name, T::class.java, project)
 
-inline fun <reified T> Project.getKtorExtension(): T =
+internal inline fun <reified T> Project.getKtorExtension(): T =
     ktorExtensions.getByType(T::class.java)
 
-inline fun <reified T> Project.property(defaultValue: T?): Property<T> =
+internal inline fun <reified T> Project.property(defaultValue: T?): Property<T> =
     objects.property(T::class.java).convention(defaultValue)
 
-val Project.javaVersion: JavaVersion get() = extensions.getByType(JavaPluginExtension::class.java).targetCompatibility
+internal val Project.javaVersion: JavaVersion get() = extensions.getByType(JavaPluginExtension::class.java).targetCompatibility

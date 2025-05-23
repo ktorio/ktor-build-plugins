@@ -7,21 +7,22 @@ import org.graalvm.buildtools.gradle.dsl.GraalVMReachabilityMetadataRepositoryEx
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
 
 /**
  * Configuration for GraalVM native image generation.
  */
-abstract class NativeImageExtension(project: Project) {
+public abstract class NativeImageExtension(project: Project) {
     /**
      * Specifies whether to enable verbose output. Defaults to `true`.
      */
-    val verbose = project.property(defaultValue = true)
+    public val verbose: Property<Boolean> = project.property(defaultValue = true)
 
     /**
      * Specifies a name of executable file. Defaults to `"native-image"`.
      */
-    val imageName = project.property(defaultValue = "native-image")
+    public val imageName: Property<String> = project.property(defaultValue = "native-image")
 
     /**
      * Specifies whether to attach a GraalVM agent on an image building or not.
@@ -34,24 +35,26 @@ abstract class NativeImageExtension(project: Project) {
      *
      * Defaults to `false`.
      */
-    val attachAgent = project.property(defaultValue = false)
+    public val attachAgent: Property<Boolean> = project.property(defaultValue = false)
 
     /**
      * Specifies packages or classes to be initialized at build time.
      */
-    val initializeAtBuildTime: SetProperty<String> = project.objects.setProperty(String::class.java)
+    public val initializeAtBuildTime: SetProperty<String> = project.objects.setProperty(String::class.java)
 
     /**
      * Specifies packages or classes to be initialized at run time.
      * Useful when some class or package has to be initialized at run time,
      * but it's included in [initializeAtBuildTime].
      */
-    val initializeAtRunTime: SetProperty<String> = project.objects.setProperty(String::class.java)
+    public val initializeAtRunTime: SetProperty<String> = project.objects.setProperty(String::class.java)
+
+    public companion object {
+        public const val NAME: String = "nativeImage"
+    }
 }
 
-private const val NATIVE_IMAGE_EXTENSION_NAME = "nativeImage"
-
-const val BUILD_NATIVE_IMAGE_TASK_NAME = "buildNativeImage"
+public const val BUILD_NATIVE_IMAGE_TASK_NAME: String = "buildNativeImage"
 private const val BUILD_NATIVE_IMAGE_TASK_DESCRIPTION = "Builds a GraalVM native image."
 
 private val PACKAGES_TO_INITIALIZE_AT_BUILD_TIME = setOf("io.ktor", "kotlin", "ch.qos.logback", "kotlinx")
@@ -90,7 +93,7 @@ internal fun Project.configureNativeImage() {
     apply<JavaPlugin>() // required for NativeImagePlugin
     apply<NativeImagePlugin>()
 
-    val nativeImageExtension = createKtorExtension<NativeImageExtension>(NATIVE_IMAGE_EXTENSION_NAME)
+    val nativeImageExtension = createKtorExtension<NativeImageExtension>(NativeImageExtension.NAME)
     val configureGraalVMTask = tasks.register(CONFIGURE_GRAALVM_TASK_NAME) {
         // This configuration has to be done in the configuration phase.
         configureGraalVM(nativeImageExtension)

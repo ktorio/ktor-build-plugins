@@ -6,10 +6,10 @@ import io.ktor.plugin.internal.KotlinPluginType.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-const val KTOR_VERSION = "3.1.3"
+public const val KTOR_VERSION: String = "3.1.3"
 
-abstract class KtorGradlePlugin : Plugin<Project> {
-    override fun apply(project: Project) = with(project) {
+public abstract class KtorGradlePlugin : Plugin<Project> {
+    override fun apply(project: Project): Unit = with(project) {
         val extension = extensions.create(KtorExtension.NAME, KtorExtension::class.java)
         configureApplication(extension)
         configureFatJar()

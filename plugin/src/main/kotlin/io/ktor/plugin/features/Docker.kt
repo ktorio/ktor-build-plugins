@@ -14,23 +14,22 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
 import javax.inject.Inject
 
-enum class DockerPortMappingProtocol {
+public enum class DockerPortMappingProtocol {
     TCP, UDP
 }
 
-data class DockerPortMapping(
+public data class DockerPortMapping(
     val outsideDocker: Int,
     val insideDocker: Int = outsideDocker,
     val protocol: DockerPortMappingProtocol = DockerPortMappingProtocol.TCP
 )
 
-data class DockerEnvironmentVariable(
+public data class DockerEnvironmentVariable(
     val variable: String,
     val value: String? = null
 )
 
-@Suppress("MemberVisibilityCanBePrivate") // Provides a public API
-abstract class DockerExtension(project: Project) {
+public abstract class DockerExtension internal constructor(project: Project) {
     private companion object {
         private fun Provider<String>.zipWithTag(tag: Provider<String>): Provider<String> =
             zip(tag) { imageName, imageTag ->
@@ -41,78 +40,79 @@ abstract class DockerExtension(project: Project) {
     /**
      * Specifies the JRE version to use in the image. Defaults to [JavaVersion.VERSION_21].
      */
-    val jreVersion = project.property(defaultValue = JavaVersion.VERSION_21)
+    public val jreVersion: Property<JavaVersion> = project.property(defaultValue = JavaVersion.VERSION_21)
 
     /**
      * Specifies a tag to use in the image. Defaults to `"latest"`.
      */
-    val imageTag = project.property(defaultValue = "latest")
+    public val imageTag: Property<String> = project.property(defaultValue = "latest")
 
     /**
      * Specifies an image name for local builds. Defaults to `"ktor-docker-image"`.
      */
-    val localImageName = project.property(defaultValue = "ktor-docker-image")
+    public val localImageName: Property<String> = project.property(defaultValue = "ktor-docker-image")
 
     /**
      * Specifies a custom base image to use in the image. Defaults to `null`.
      */
-    val customBaseImage = project.property<String>(defaultValue = null)
+    public val customBaseImage: Property<String> = project.property<String>(defaultValue = null)
 
     /**
      * Specifies an external registry to push the image into. Default is not set.
      */
-    val externalRegistry = project.property<DockerImageRegistry>(defaultValue = null)
+    public val externalRegistry: Property<DockerImageRegistry> =
+        project.property<DockerImageRegistry>(defaultValue = null)
 
     /**
      * Specifies an image name in form `"imageName:tag"` for a local registry.
      */
-    val fullLocalImageName = localImageName.zipWithTag(imageTag)
+    public val fullLocalImageName: Provider<String> = localImageName.zipWithTag(imageTag)
 
     /**
      * Specifies an image name in form `"imageName:tag"` for an external registry.
      */
-    val fullExternalImageName = externalRegistry.flatMap { it.toImage }.zipWithTag(imageTag)
+    public val fullExternalImageName: Provider<String> = externalRegistry.flatMap { it.toImage }.zipWithTag(imageTag)
 
     /**
      * Specifies port mappings for a `runDocker` command.
      */
-    val portMappings: ListProperty<DockerPortMapping> = project.objects.listProperty(DockerPortMapping::class.java)
-        .convention(listOf(DockerPortMapping(8080, 8080, DockerPortMappingProtocol.TCP)))
+    public val portMappings: ListProperty<DockerPortMapping> =
+        project.objects.listProperty(DockerPortMapping::class.java)
+            .convention(listOf(DockerPortMapping(8080, 8080, DockerPortMappingProtocol.TCP)))
 
     /**
      * Specifies environment variable mappings for a `runDocker` command.
      */
-    val environmentVariables: ListProperty<DockerEnvironmentVariable> =
+    public val environmentVariables: ListProperty<DockerEnvironmentVariable> =
         project.objects.listProperty(DockerEnvironmentVariable::class.java).convention(emptyList())
 
-    fun environmentVariable(name: String, value: String) {
+    public fun environmentVariable(name: String, value: String) {
         environmentVariables.add(DockerEnvironmentVariable(name, value))
     }
 }
 
-interface DockerImageRegistry {
+public interface DockerImageRegistry {
     /**
      * Specifies a link for [JibExtension.to.image][TargetImageParameters.image].
      */
-    val toImage: Provider<String>
+    public val toImage: Provider<String>
 
     /**
      * Specifies a username for a given registry.
      */
-    val username: Provider<String>
+    public val username: Provider<String>
 
     /**
      * Specifies a password for a given registry.
      */
-    val password: Provider<String>
+    public val password: Provider<String>
 
-    companion object {
+    public companion object {
         /**
          * Creates a [DockerImageRegistry] for [DockerHub](https://hub.docker.com/)
          * from a given [appName], [username] and [password].
          */
-        @Suppress("unused")
-        fun dockerHub(
+        public fun dockerHub(
             appName: Provider<String>,
             username: Provider<String>,
             password: Provider<String>
@@ -128,8 +128,7 @@ interface DockerImageRegistry {
          * - hostname/project
          * - project
          */
-        @Suppress("unused")
-        fun externalRegistry(
+        public fun externalRegistry(
             username: Provider<String>,
             password: Provider<String>,
             project: Provider<String>,
@@ -141,8 +140,7 @@ interface DockerImageRegistry {
          * Creates a [DockerImageRegistry] for [Google Container Registry](https://cloud.google.com/container-registry)
          * from a given [appName] and [username].
          */
-        @Suppress("unused")
-        fun googleContainerRegistry(
+        public fun googleContainerRegistry(
             projectName: Provider<String>,
             appName: Provider<String>,
             username: Provider<String>,
@@ -190,10 +188,10 @@ private const val JIB_BUILD_INTO_TAR_TASK_NAME = JibPlugin.BUILD_TAR_TASK_NAME
 private const val JIB_BUILD_IMAGE_AND_PUBLISH_TASK_NAME = JibPlugin.BUILD_IMAGE_TASK_NAME
 
 // Ktor related tasks
-const val PUBLISH_IMAGE_TO_LOCAL_REGISTRY_TASK_NAME = "publishImageToLocalRegistry"
-const val PUBLISH_IMAGE_TO_EXTERNAL_REGISTRY_TASK_NAME = "publishImage"
-const val BUILD_IMAGE_TASK_NAME = "buildImage"
-const val RUN_DOCKER_TASK_NAME = "runDocker"
+public const val PUBLISH_IMAGE_TO_LOCAL_REGISTRY_TASK_NAME: String = "publishImageToLocalRegistry"
+public const val PUBLISH_IMAGE_TO_EXTERNAL_REGISTRY_TASK_NAME: String = "publishImage"
+public const val BUILD_IMAGE_TASK_NAME: String = "buildImage"
+public const val RUN_DOCKER_TASK_NAME: String = "runDocker"
 
 // Ktor configuration tasks
 private const val SETUP_JIB_LOCAL_TASK_NAME = "setupJibLocal"

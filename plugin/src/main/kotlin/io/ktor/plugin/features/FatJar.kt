@@ -5,22 +5,34 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import io.ktor.plugin.internal.*
 import org.gradle.api.Project
 import org.gradle.api.plugins.ApplicationPlugin
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.TaskProvider
 
-abstract class FatJarExtension(project: Project) {
+public abstract class FatJarExtension internal constructor(project: Project) {
     /**
      * Specifies the fat jar archive name. Defaults to `"${project.name}-all.jar"`.
      */
-    val archiveFileName = project.property(defaultValue = "${project.name}-all.jar")
-    val allowZip64 = project.property(defaultValue = false)
+    public val archiveFileName: Property<String> = project.property(defaultValue = "${project.name}-all.jar")
+    public val allowZip64: Property<Boolean> = project.property(defaultValue = false)
+
+    public companion object {
+        public const val NAME: String = "fatJar"
+    }
 }
 
-const val FAT_JAR_EXTENSION_NAME = "fatJar"
+@Deprecated(
+    "Use FatJarExtension.NAME instead",
+    ReplaceWith(
+        "FatJarExtension.NAME",
+        "io.ktor.plugin.features.FatJarExtension"
+    ),
+)
+public const val FAT_JAR_EXTENSION_NAME: String = FatJarExtension.NAME
 
-const val BUILD_FAT_JAR_TASK_NAME = "buildFatJar"
+public const val BUILD_FAT_JAR_TASK_NAME: String = "buildFatJar"
 private const val BUILD_FAT_JAR_TASK_DESCRIPTION = "Builds a combined JAR of project and runtime dependencies."
 
-const val RUN_FAT_JAR_TASK_NAME = "runFatJar"
+public const val RUN_FAT_JAR_TASK_NAME: String = "runFatJar"
 private const val RUN_FAT_JAR_TASK_DESCRIPTION =
     "Builds a combined JAR of project and runtime dependencies and runs it."
 
@@ -28,7 +40,7 @@ private const val SHADOW_RUN_TASK_NAME = "runShadow"
 private const val SHADOW_JAR_TASK_NAME = "shadowJar"
 
 internal fun Project.configureFatJar() {
-    val fatJarExtension = createKtorExtension<FatJarExtension>(FAT_JAR_EXTENSION_NAME)
+    val fatJarExtension = createKtorExtension<FatJarExtension>(FatJarExtension.NAME)
 
     // Apply Shadow plugin only when the application plugin is applied.
     // TODO: KMP support will be added in Shadow 9.0.0
