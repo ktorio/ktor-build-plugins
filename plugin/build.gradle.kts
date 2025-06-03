@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.pluginPublish)
+    alias(libs.plugins.binaryCompatibilityValidator)
 }
 
 group = libs.plugins.ktor.get().pluginId
