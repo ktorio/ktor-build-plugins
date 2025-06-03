@@ -30,12 +30,6 @@ public data class DockerEnvironmentVariable(
 )
 
 public abstract class DockerExtension internal constructor(project: Project) {
-    private companion object {
-        private fun Provider<String>.zipWithTag(tag: Provider<String>): Provider<String> =
-            zip(tag) { imageName, imageTag ->
-                "$imageName:$imageTag"
-            }
-    }
 
     /**
      * Specifies the JRE version to use in the image. Defaults to [JavaVersion.VERSION_21].
@@ -89,6 +83,15 @@ public abstract class DockerExtension internal constructor(project: Project) {
     public fun environmentVariable(name: String, value: String) {
         environmentVariables.add(DockerEnvironmentVariable(name, value))
     }
+
+    public companion object {
+        public const val NAME: String = "docker"
+
+        private fun Provider<String>.zipWithTag(tag: Provider<String>): Provider<String> =
+            zip(tag) { imageName, imageTag ->
+                "$imageName:$imageTag"
+            }
+    }
 }
 
 public interface DockerImageRegistry {
@@ -112,6 +115,7 @@ public interface DockerImageRegistry {
          * Creates a [DockerImageRegistry] for [DockerHub](https://hub.docker.com/)
          * from a given [appName], [username] and [password].
          */
+        @JvmStatic
         public fun dockerHub(
             appName: Provider<String>,
             username: Provider<String>,
@@ -128,6 +132,7 @@ public interface DockerImageRegistry {
          * - hostname/project
          * - project
          */
+        @JvmStatic
         public fun externalRegistry(
             username: Provider<String>,
             password: Provider<String>,
@@ -140,6 +145,7 @@ public interface DockerImageRegistry {
          * Creates a [DockerImageRegistry] for [Google Container Registry](https://cloud.google.com/container-registry)
          * from a given [appName] and [username].
          */
+        @JvmStatic
         public fun googleContainerRegistry(
             projectName: Provider<String>,
             appName: Provider<String>,
@@ -179,8 +185,6 @@ private class GoogleContainerRegistry(
 ) : DockerImageRegistry {
     override val toImage: Provider<String> = projectName.zip(appName) { project, app -> "gcr.io/$project/$app" }
 }
-
-private const val DOCKER_EXTENSION_NAME = "docker"
 
 // JIB related tasks
 private const val JIB_BUILD_INTO_LOCAL_DOCKER_TASK_NAME = JibPlugin.BUILD_DOCKER_TASK_NAME
@@ -284,7 +288,7 @@ private abstract class RunDockerTask : DefaultTask() {
 }
 
 internal fun Project.configureDocker() {
-    val dockerExtension = createKtorExtension<DockerExtension>(DOCKER_EXTENSION_NAME)
+    val dockerExtension = createKtorExtension<DockerExtension>(DockerExtension.NAME)
 
     // Apply JIB plugin only when the Kotlin JVM plugin is applied.
     // TODO: JIB uses hardcoded "main" source set, it makes it incompatible with KMP

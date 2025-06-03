@@ -1,5 +1,6 @@
 package io.ktor.plugin.features
 
+import io.ktor.plugin.*
 import io.ktor.plugin.internal.*
 import org.gradle.api.DefaultTask
 import org.gradle.api.JavaVersion
@@ -15,7 +16,14 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import javax.inject.Inject
 
-public const val KTOR_TASK_GROUP_NAME: String = "ktor"
+@Deprecated(
+    "Use KtorGradlePlugin.TASK_GROUP instead",
+    ReplaceWith(
+        "KtorGradlePlugin.TASK_GROUP",
+        "io.ktor.plugin.KtorGradlePlugin",
+    )
+)
+public const val KTOR_TASK_GROUP_NAME: String = KtorGradlePlugin.TASK_GROUP
 
 internal inline fun TaskContainer.registerKtorTask(
     name: String,
@@ -34,7 +42,7 @@ internal inline fun <reified T : Task> TaskContainer.registerKtorTask(
     crossinline configure: T.() -> Unit = {}
 ): TaskProvider<T> = register(name, T::class.java, *constructorArgs).also { taskProvider ->
     taskProvider.configure { task ->
-        task.group = KTOR_TASK_GROUP_NAME
+        task.group = KtorGradlePlugin.TASK_GROUP
         task.description = description
         task.configure()
     }

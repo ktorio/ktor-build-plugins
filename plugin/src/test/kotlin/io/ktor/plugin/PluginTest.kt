@@ -3,6 +3,7 @@ package io.ktor.plugin
 import io.ktor.plugin.internal.*
 import org.gradle.api.plugins.ApplicationPlugin
 import kotlin.test.*
+import io.ktor.plugin.KtorGradlePlugin.Companion.VERSION as KTOR_VERSION
 
 class PluginTest {
 

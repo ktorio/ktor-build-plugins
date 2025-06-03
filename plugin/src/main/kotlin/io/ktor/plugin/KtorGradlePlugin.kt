@@ -6,8 +6,6 @@ import io.ktor.plugin.internal.KotlinPluginType.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-public const val KTOR_VERSION: String = "3.1.3"
-
 public abstract class KtorGradlePlugin : Plugin<Project> {
     override fun apply(project: Project): Unit = with(project) {
         val extension = extensions.create(KtorExtension.NAME, KtorExtension::class.java)
@@ -56,4 +54,21 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
             """.trimMargin()
         )
     }
+
+    public companion object {
+        /** The Ktor plugin version. Usually it is equal to the Ktor version used in a project. */
+        public const val VERSION: String = "3.1.3"
+
+        /** The group name used for Ktor tasks. */
+        public const val TASK_GROUP: String = "Ktor"
+    }
 }
+
+@Deprecated(
+    "Use KtorGradlePlugin.VERSION instead",
+    ReplaceWith(
+        "KtorGradlePlugin.VERSION",
+        "io.ktor.plugin.KtorGradlePlugin",
+    )
+)
+public const val KTOR_VERSION: String = KtorGradlePlugin.VERSION
