@@ -1,0 +1,147 @@
+public abstract class io/ktor/plugin/KtorGradlePlugin : org/gradle/api/Plugin {
+	public static final field Companion Lio/ktor/plugin/KtorGradlePlugin$Companion;
+	public static final field TASK_GROUP Ljava/lang/String;
+	public static final field VERSION Ljava/lang/String;
+	public fun <init> ()V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/Project;)V
+}
+
+public final class io/ktor/plugin/KtorGradlePlugin$Companion {
+}
+
+public final class io/ktor/plugin/KtorGradlePluginKt {
+	public static final field KTOR_VERSION Ljava/lang/String;
+}
+
+public final class io/ktor/plugin/features/DockerEnvironmentVariable {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lio/ktor/plugin/features/DockerEnvironmentVariable;
+	public static synthetic fun copy$default (Lio/ktor/plugin/features/DockerEnvironmentVariable;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/ktor/plugin/features/DockerEnvironmentVariable;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public final fun getVariable ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class io/ktor/plugin/features/DockerExtension {
+	public static final field Companion Lio/ktor/plugin/features/DockerExtension$Companion;
+	public static final field NAME Ljava/lang/String;
+	public final fun environmentVariable (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getCustomBaseImage ()Lorg/gradle/api/provider/Property;
+	public final fun getEnvironmentVariables ()Lorg/gradle/api/provider/ListProperty;
+	public final fun getExternalRegistry ()Lorg/gradle/api/provider/Property;
+	public final fun getFullExternalImageName ()Lorg/gradle/api/provider/Provider;
+	public final fun getFullLocalImageName ()Lorg/gradle/api/provider/Provider;
+	public final fun getImageTag ()Lorg/gradle/api/provider/Property;
+	public final fun getJreVersion ()Lorg/gradle/api/provider/Property;
+	public final fun getLocalImageName ()Lorg/gradle/api/provider/Property;
+	public final fun getPortMappings ()Lorg/gradle/api/provider/ListProperty;
+}
+
+public final class io/ktor/plugin/features/DockerExtension$Companion {
+}
+
+public abstract interface class io/ktor/plugin/features/DockerImageRegistry {
+	public static final field Companion Lio/ktor/plugin/features/DockerImageRegistry$Companion;
+	public static fun dockerHub (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;)Lio/ktor/plugin/features/DockerImageRegistry;
+	public static fun externalRegistry (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;)Lio/ktor/plugin/features/DockerImageRegistry;
+	public abstract fun getPassword ()Lorg/gradle/api/provider/Provider;
+	public abstract fun getToImage ()Lorg/gradle/api/provider/Provider;
+	public abstract fun getUsername ()Lorg/gradle/api/provider/Provider;
+	public static fun googleContainerRegistry (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;)Lio/ktor/plugin/features/DockerImageRegistry;
+}
+
+public final class io/ktor/plugin/features/DockerImageRegistry$Companion {
+	public final fun dockerHub (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;)Lio/ktor/plugin/features/DockerImageRegistry;
+	public final fun externalRegistry (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;)Lio/ktor/plugin/features/DockerImageRegistry;
+	public static synthetic fun externalRegistry$default (Lio/ktor/plugin/features/DockerImageRegistry$Companion;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;ILjava/lang/Object;)Lio/ktor/plugin/features/DockerImageRegistry;
+	public final fun googleContainerRegistry (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;)Lio/ktor/plugin/features/DockerImageRegistry;
+}
+
+public final class io/ktor/plugin/features/DockerKt {
+	public static final field BUILD_IMAGE_TASK_NAME Ljava/lang/String;
+	public static final field PUBLISH_IMAGE_TO_EXTERNAL_REGISTRY_TASK_NAME Ljava/lang/String;
+	public static final field PUBLISH_IMAGE_TO_LOCAL_REGISTRY_TASK_NAME Ljava/lang/String;
+	public static final field RUN_DOCKER_TASK_NAME Ljava/lang/String;
+}
+
+public final class io/ktor/plugin/features/DockerPortMapping {
+	public fun <init> (IILio/ktor/plugin/features/DockerPortMappingProtocol;)V
+	public synthetic fun <init> (IILio/ktor/plugin/features/DockerPortMappingProtocol;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()Lio/ktor/plugin/features/DockerPortMappingProtocol;
+	public final fun copy (IILio/ktor/plugin/features/DockerPortMappingProtocol;)Lio/ktor/plugin/features/DockerPortMapping;
+	public static synthetic fun copy$default (Lio/ktor/plugin/features/DockerPortMapping;IILio/ktor/plugin/features/DockerPortMappingProtocol;ILjava/lang/Object;)Lio/ktor/plugin/features/DockerPortMapping;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInsideDocker ()I
+	public final fun getOutsideDocker ()I
+	public final fun getProtocol ()Lio/ktor/plugin/features/DockerPortMappingProtocol;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/ktor/plugin/features/DockerPortMappingProtocol : java/lang/Enum {
+	public static final field TCP Lio/ktor/plugin/features/DockerPortMappingProtocol;
+	public static final field UDP Lio/ktor/plugin/features/DockerPortMappingProtocol;
+	public static fun valueOf (Ljava/lang/String;)Lio/ktor/plugin/features/DockerPortMappingProtocol;
+	public static fun values ()[Lio/ktor/plugin/features/DockerPortMappingProtocol;
+}
+
+public abstract class io/ktor/plugin/features/FatJarExtension {
+	public static final field Companion Lio/ktor/plugin/features/FatJarExtension$Companion;
+	public static final field NAME Ljava/lang/String;
+	public final fun getAllowZip64 ()Lorg/gradle/api/provider/Property;
+	public final fun getArchiveFileName ()Lorg/gradle/api/provider/Property;
+}
+
+public final class io/ktor/plugin/features/FatJarExtension$Companion {
+}
+
+public final class io/ktor/plugin/features/FatJarKt {
+	public static final field BUILD_FAT_JAR_TASK_NAME Ljava/lang/String;
+	public static final field FAT_JAR_EXTENSION_NAME Ljava/lang/String;
+	public static final field RUN_FAT_JAR_TASK_NAME Ljava/lang/String;
+}
+
+public abstract class io/ktor/plugin/features/KtorExtension {
+	public static final field Companion Lio/ktor/plugin/features/KtorExtension$Companion;
+	public static final field NAME Ljava/lang/String;
+	public final fun getDevelopment ()Lorg/gradle/api/provider/Property;
+}
+
+public final class io/ktor/plugin/features/KtorExtension$Companion {
+}
+
+public final class io/ktor/plugin/features/KtorKt {
+	public static final field KTOR_TASK_GROUP_NAME Ljava/lang/String;
+}
+
+public final class io/ktor/plugin/features/KtorKt$sam$i$org_gradle_api_Action$0 : org/gradle/api/Action {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public final synthetic fun execute (Ljava/lang/Object;)V
+}
+
+public abstract class io/ktor/plugin/features/NativeImageExtension {
+	public static final field Companion Lio/ktor/plugin/features/NativeImageExtension$Companion;
+	public static final field NAME Ljava/lang/String;
+	public fun <init> (Lorg/gradle/api/Project;)V
+	public final fun getAttachAgent ()Lorg/gradle/api/provider/Property;
+	public final fun getImageName ()Lorg/gradle/api/provider/Property;
+	public final fun getInitializeAtBuildTime ()Lorg/gradle/api/provider/SetProperty;
+	public final fun getInitializeAtRunTime ()Lorg/gradle/api/provider/SetProperty;
+	public final fun getVerbose ()Lorg/gradle/api/provider/Property;
+}
+
+public final class io/ktor/plugin/features/NativeImageExtension$Companion {
+}
+
+public final class io/ktor/plugin/features/NativeImageKt {
+	public static final field BUILD_NATIVE_IMAGE_TASK_NAME Ljava/lang/String;
+}
+

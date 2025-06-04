@@ -9,7 +9,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 
-fun configureBomFile(project: Project) = with(project) {
+internal fun Project.configureBomFile() {
     whenKotlinPluginApplied { pluginType ->
         when (pluginType) {
             JVM -> configureJvmDependency()
@@ -31,4 +31,4 @@ private fun Project.configureMultiplatformDependency() {
 }
 
 private val DependencyHandler.ktorBom: Dependency
-    get() = platform("io.ktor:ktor-bom:$KTOR_VERSION")
+    get() = platform("io.ktor:ktor-bom:${KtorGradlePlugin.VERSION}")

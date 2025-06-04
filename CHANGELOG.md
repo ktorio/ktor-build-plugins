@@ -6,6 +6,8 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 
 - [KTOR-8444] Basic compatibility with the Kotlin Multiplatform Gradle plugin
 - [KTOR-8419] Do not apply Gradle's Application plugin for KMP projects
+- Make the plugin Groovy-friendly (#178)
+- Add `internal` to all internal APIs
 
 [KTOR-8444]: https://youtrack.jetbrains.com/issue/KTOR-8444/
 [KTOR-8419]: https://youtrack.jetbrains.com/issue/KTOR-8419/

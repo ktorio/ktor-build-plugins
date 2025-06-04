@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import kotlin.test.assertContains
+import io.ktor.plugin.KtorGradlePlugin.Companion.VERSION as KTOR_VERSION
 
 class KotlinPluginIntegrationTest : IntegrationTest() {
 

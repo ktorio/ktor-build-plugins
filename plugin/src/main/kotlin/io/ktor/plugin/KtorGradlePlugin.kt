@@ -6,30 +6,25 @@ import io.ktor.plugin.internal.KotlinPluginType.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-const val KTOR_VERSION = "3.1.3"
-
-@Suppress("unused") // Gradle Plugin is not used directly
-abstract class KtorGradlePlugin : Plugin<Project> {
-    override fun apply(project: Project) {
-        val extension = project.extensions.create(KtorExtension.NAME, KtorExtension::class.java)
-        project.configureApplication(extension)
-        configureFatJar(project)
-        configureDocker(project)
-        configureBomFile(project)
+public abstract class KtorGradlePlugin : Plugin<Project> {
+    override fun apply(project: Project): Unit = with(project) {
+        val extension = extensions.create(KtorExtension.NAME, KtorExtension::class.java)
+        configureApplication(extension)
+        configureFatJar()
+        configureDocker()
+        configureBomFile()
         // Disabled until the native image generation is not possible with a single task with default configs
         // See https://youtrack.jetbrains.com/issue/KTOR-4596/Disable-Native-image-related-tasks
-        // configureNativeImage(project)
+        // configureNativeImage()
 
-        with(project) {
-            var kotlinPluginApplied = false
-            whenKotlinPluginApplied { pluginType ->
-                if (pluginType == Multiplatform) reportKmpCompatibilityWarning()
-                kotlinPluginApplied = true
-            }
+        var kotlinPluginApplied = false
+        whenKotlinPluginApplied { pluginType ->
+            if (pluginType == Multiplatform) reportKmpCompatibilityWarning()
+            kotlinPluginApplied = true
+        }
 
-            afterEvaluate {
-                if (!kotlinPluginApplied) reportKotlinPluginMissingWarning()
-            }
+        afterEvaluate {
+            if (!kotlinPluginApplied) reportKotlinPluginMissingWarning()
         }
     }
 
@@ -59,4 +54,21 @@ abstract class KtorGradlePlugin : Plugin<Project> {
             """.trimMargin()
         )
     }
+
+    public companion object {
+        /** The Ktor plugin version. Usually it is equal to the Ktor version used in a project. */
+        public const val VERSION: String = "3.1.3"
+
+        /** The group name used for Ktor tasks. */
+        public const val TASK_GROUP: String = "Ktor"
+    }
 }
+
+@Deprecated(
+    "Use KtorGradlePlugin.VERSION instead",
+    ReplaceWith(
+        "KtorGradlePlugin.VERSION",
+        "io.ktor.plugin.KtorGradlePlugin",
+    )
+)
+public const val KTOR_VERSION: String = KtorGradlePlugin.VERSION
