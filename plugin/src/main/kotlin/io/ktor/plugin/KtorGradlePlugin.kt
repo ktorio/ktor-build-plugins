@@ -57,7 +57,7 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
 
     public companion object {
         /** The Ktor plugin version. Usually it is equal to the Ktor version used in a project. */
-        public const val VERSION: String = "3.1.3"
+        public const val VERSION: String = "3.2.0"
 
         /** The group name used for Ktor tasks. */
         public const val TASK_GROUP: String = "Ktor"
