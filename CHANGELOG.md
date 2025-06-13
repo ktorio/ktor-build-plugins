@@ -4,6 +4,11 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+*No changes yet*
+
+## [3.2.0] - 2025-06-13
+
+- Update Ktor to [v3.2.0](https://github.com/ktorio/ktor/releases/tag/3.2.0)
 - [KTOR-8444] Basic compatibility with the Kotlin Multiplatform Gradle plugin
 - [KTOR-8419] Do not apply Gradle's Application plugin for KMP projects
 - Make the plugin Groovy-friendly (#178)
@@ -58,7 +63,8 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 - Bump default JRE in Docker to 21 (current LTS version)
 - Set Kotlin API and language level to 1.8 for compatibility with Gradle 8.0+
 
-[unreleased]: https://github.com/ktorio/ktor-build-plugins/compare/v3.1.3...main
+[unreleased]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.0...main
+[3.2.0]: https://github.com/ktorio/ktor-build-plugins/compare/v3.1.3...v3.2.0
 [3.1.3]: https://github.com/ktorio/ktor-build-plugins/compare/v3.1.2...v3.1.3
 [3.1.2]: https://github.com/ktorio/ktor-build-plugins/compare/v3.1.1...v3.1.2
 [3.1.1]: https://github.com/ktorio/ktor-build-plugins/compare/v3.1.0...v3.1.1
