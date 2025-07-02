@@ -8,7 +8,7 @@ gradlePlugin-jib = "3.4.5"
 gradlePlugin-graalvm = "0.10.6"
 binaryCompatibilityValidator = "0.17.0"
 junit = "5.13.2"
-mockk = "1.14.2"
+mockk = "1.14.4"
 
 [libraries]
 kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
