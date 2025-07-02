@@ -7,7 +7,7 @@ gradlePlugin-shadow = "8.3.8"
 gradlePlugin-jib = "3.4.5"
 gradlePlugin-graalvm = "0.10.6"
 binaryCompatibilityValidator = "0.17.0"
-junit = "5.13.0"
+junit = "5.13.2"
 mockk = "1.14.2"
 
 [libraries]
