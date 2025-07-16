@@ -27,6 +27,13 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(libs.junit.jupiter.params)
+
+    constraints {
+        // TODO: Check if this constraint is still needed after each JIB update
+        implementation("org.apache.commons:commons-lang3:[3.18.0,)") {
+            because("Versions 3.0..<3.18.0 are affected by CVE-2025-48924")
+        }
+    }
 }
 
 kotlin {
