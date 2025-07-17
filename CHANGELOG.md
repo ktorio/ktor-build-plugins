@@ -6,6 +6,17 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 
 *No changes yet*
 
+## [3.2.2] - 2025-07-14
+
+- Update Ktor to [v3.2.2](https://github.com/ktorio/ktor/releases/tag/3.2.2)
+- Update Gradle to v8.14.3
+
+## [3.2.1] - 2025-07-04
+
+- Update Ktor to [v3.2.1](https://github.com/ktorio/ktor/releases/tag/3.2.1)
+- Update Shadow plugin to v8.3.8
+- Update Gradle to v8.14.2
+
 ## [3.2.0] - 2025-06-13
 
 - Update Ktor to [v3.2.0](https://github.com/ktorio/ktor/releases/tag/3.2.0)
@@ -63,7 +74,9 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 - Bump default JRE in Docker to 21 (current LTS version)
 - Set Kotlin API and language level to 1.8 for compatibility with Gradle 8.0+
 
-[unreleased]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.0...main
+[unreleased]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.2...main
+[3.2.2]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.1...v3.2.2
+[3.2.1]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/ktorio/ktor-build-plugins/compare/v3.1.3...v3.2.0
 [3.1.3]: https://github.com/ktorio/ktor-build-plugins/compare/v3.1.2...v3.1.3
 [3.1.2]: https://github.com/ktorio/ktor-build-plugins/compare/v3.1.1...v3.1.2
