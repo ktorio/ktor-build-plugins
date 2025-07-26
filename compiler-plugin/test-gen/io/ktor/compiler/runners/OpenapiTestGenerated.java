@@ -22,8 +22,14 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
-  @TestMetadata("simple.kt")
-  public void testSimple() {
-    runTest("compiler-plugin/testData/openapi/simple.kt");
+  @TestMetadata("Extracted.kt")
+  public void testExtracted() {
+    runTest("compiler-plugin/testData/openapi/Extracted.kt");
+  }
+
+  @Test
+  @TestMetadata("SimpleNested.kt")
+  public void testSimpleNested() {
+    runTest("compiler-plugin/testData/openapi/SimpleNested.kt");
   }
 }
