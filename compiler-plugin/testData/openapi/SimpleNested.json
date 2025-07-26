@@ -1,0 +1,68 @@
+{
+    "openapi": "3.1.1",
+    "info": {
+        "title": "Open API Document",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/users": {
+            "get": {
+                "summary": "Get a list of users.\n",
+                "responses": {
+                    "200": {
+                        "description": "A list of users.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "[List<User>]"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Save a new user.\n",
+                "requestBody": {
+                    "description": "the user to save.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "[User0]"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{id}": {
+            "get": {
+                "summary": "Get a single user\n",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the user",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "The user was not found"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a user.\n",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the user",
+                        "required": true
+                    }
+                ]
+            }
+        }
+    }
+}
