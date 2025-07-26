@@ -11,10 +11,6 @@ import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
 
 @OptIn(ExperimentalSerializationApi::class)
 class KtorCompilerPluginRegistrar : CompilerPluginRegistrar() {
-    private val json = Json {
-        prettyPrint = true
-        prettyPrintIndent = "    "
-    }
 
     override val supportsK2: Boolean = true
 

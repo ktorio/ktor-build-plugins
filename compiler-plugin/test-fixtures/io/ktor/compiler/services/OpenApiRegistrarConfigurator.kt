@@ -21,7 +21,7 @@ class OpenApiRegistrarConfigurator(
         module: TestModule,
         configuration: CompilerConfiguration,
     ) {
-        val testCase = testServices.testInfo.methodName.removePrefix("test").lowercase()
+        val testCase = testServices.testInfo.methodName.removePrefix("test")
         val openApiConfig = OpenApiProcessorConfig(
             enabled = true,
             outputFile = "$testSamplesLocation/openapi/$testCase.json",
