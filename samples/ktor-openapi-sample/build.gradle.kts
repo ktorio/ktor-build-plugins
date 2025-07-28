@@ -16,7 +16,7 @@ ktor {
         title = "OpenAPI example"
         version = "2.1"
         summary = "This is a sample API"
-        output = layout.buildDirectory.file("api.json")
+        output = layout.projectDirectory.file("api.json")
     }
 }
 
@@ -35,7 +35,9 @@ configurations.all {
 dependencies {
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cio)
-    implementation(libs.kotlinx.json)
+    implementation(libs.ktor.server.openApi)
+    implementation(libs.ktor.server.contentNegotiation)
+    implementation(libs.ktor.json)
     implementation(libs.logback)
 }
 
