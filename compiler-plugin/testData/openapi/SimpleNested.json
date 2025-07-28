@@ -14,7 +14,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "[List<User>]"
+                                    "$ref": "#/components/schemas/List<User>"
                                 }
                             }
                         }
@@ -28,7 +28,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "[User0]"
+                                "$ref": "#/components/schemas/User0"
                             }
                         }
                     }
@@ -43,12 +43,18 @@
                         "name": "id",
                         "in": "path",
                         "description": "The ID of the user",
-                        "required": true
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
                     "404": {
-                        "description": "The user was not found"
+                        "description": "The user was not found",
+                        "content": {
+                            "application/json": {}
+                        }
                     }
                 }
             },
@@ -59,9 +65,27 @@
                         "name": "id",
                         "in": "path",
                         "description": "The ID of the user",
-                        "required": true
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "User0": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
             }
         }
     }

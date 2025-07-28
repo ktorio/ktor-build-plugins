@@ -1,6 +1,11 @@
 package io.ktor.openapi
 
-import io.ktor.openapi.model.RouteKDocParam
+import io.ktor.openapi.model.*
+import io.ktor.openapi.model.RouteKDocParam.*
+import io.ktor.openapi.model.RouteKDocParam.Deprecated
+
+fun SourceCoordinates.parseKDoc(): List<RouteKDocParam> =
+    parsePrecedingComment(file.text, range.first)
 
 /**
  * Parses the comment that precedes a given offset in the source text.
@@ -88,13 +93,45 @@ private fun List<String>.parseParameters(): List<RouteKDocParam> =
         for (line in this@parseParameters) {
             if (line.startsWith("@")) {
                 if (current.isNotEmpty()) {
-                    add(RouteKDocParam.parse(current.toString()))
+                    add(parseParameter(current.toString()))
                     current.clear()
                 }
             }
             current.appendLine(line)
         }
         if (current.isNotEmpty()) {
-            add(RouteKDocParam.parse(current.toString()))
+            add(parseParameter(current.toString()))
         }
     }
+
+val schemaArg = Regex("^\\[(.*)]$")
+
+fun parseParameter(text: String): RouteKDocParam {
+    if (!text.startsWith('@'))
+        return Summary(text)
+    var i = 0
+    val words = text.trim().removePrefix("@").split(" ")
+    val next = { words[i++] }
+//    val maybeNext: ((String) -> Boolean) -> String? = { predicate ->
+//        words.getOrNull(i)?.takeIf(predicate)?.also { i++ }
+//    }
+    val tryMatchNext: Regex.() -> String? = {
+        words.getOrNull(i)?.let { word ->
+            matchEntire(word)?.let { match ->
+                match.groupValues[1].also { i++ }
+            }
+        }
+    }
+    val remaining = { words.drop(i).joinToString(" ").trim() }
+
+    return when (next()) {
+        "tag" -> Tag(next())
+        "param" -> Param(next(), remaining())
+        "header" -> Header(next(), remaining())
+        "cookie" -> Cookie(next(), remaining())
+        "body" -> Body(schemaArg.tryMatchNext(), remaining())
+        "response" -> Response(next(), schemaArg.tryMatchNext(), remaining())
+        "deprecated" -> Deprecated(remaining())
+        else -> throw IllegalArgumentException("Invalid KDoc parameter: $text")
+    }
+}
