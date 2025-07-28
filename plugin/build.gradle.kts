@@ -102,7 +102,7 @@ if (hasProperty("space")) {
     publishing {
         repositories {
             maven {
-                name = "SpacePackages"
+                name = "space"
                 url = uri(System.getenv("PUBLISHING_URL"))
                 credentials {
                     username = System.getenv("PUBLISHING_USER")
