@@ -1,5 +1,6 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.gradle.kotlin.dsl.maven
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -52,7 +53,7 @@ gradlePlugin {
     vcsUrl = "https://github.com/ktorio/ktor"
 
     plugins {
-        create("ktor") {
+        create("ktor").apply {
             id = "io.ktor.plugin"
             displayName = "Ktor Gradle Plugin"
             implementationClass = "io.ktor.plugin.KtorGradlePlugin"
@@ -99,13 +100,17 @@ tasks.withType<Test>().configureEach {
 }
 
 if (hasProperty("space")) {
+    val publishingUrl = System.getenv("PUBLISHING_URL")
+    val publishingUser = System.getenv("PUBLISHING_USER")
+    if (publishingUrl == null || publishingUser == null) {
+        throw GradleException("Missing publishing credentials")
+    }
     publishing {
         repositories {
-            maven {
+            maven(url = publishingUrl) {
                 name = "space"
-                url = uri(System.getenv("PUBLISHING_URL"))
                 credentials {
-                    username = System.getenv("PUBLISHING_USER")
+                    username = publishingUser
                     password = System.getenv("PUBLISHING_PASSWORD")
                 }
             }
