@@ -1,16 +1,6 @@
-package io.ktor.openapi
+package io.ktor.openapi.model
 
-import io.ktor.openapi.model.RouteKDocParam
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonObjectBuilder
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.put
-import kotlinx.serialization.json.putJsonObject
+import kotlinx.serialization.json.*
 
 internal fun MutableMap<String, JsonElement>.put(key: String, value: String) =
     put(key, JsonPrimitive(value))
@@ -35,18 +25,4 @@ internal fun MutableMap<String, JsonElement>.appendObject(key: String, subKey: S
         oldValue?.jsonObject?.let { JsonObject(it + newValue) }
             ?: JsonObject(newValue)
     }
-
-internal fun RouteKDocParam.Data.jsonObject() = buildJsonObject {
-    put("description", description)
-    type?.let { type ->
-        putJsonObject("content") {
-            // TODO supply from content negotiation or call response
-            putJsonObject("application/json") {
-                putJsonObject("schema") {
-                    put("type", type)
-                }
-            }
-        }
-    }
-}
 
