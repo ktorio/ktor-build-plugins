@@ -43,7 +43,7 @@ private fun Route.modificationEndpoints(repository: Repository1<User1>) {
 
     /**
      * Delete a user.
-     * @param id The ID of the user
+     * @path id The ID of the user
      */
     delete("{id}") {
         repository.delete(call.parameters["id"]!!)
@@ -66,7 +66,7 @@ private fun Route.readEndpoints(repository: Repository1<User1>) {
     /**
      * Get a single user
      *
-     * @param id The ID of the user
+     * @path id The ID of the user
      * @response 404 The user was not found
      */
     get("{id}") {
