@@ -4,12 +4,15 @@ import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.fakeElement
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.resolve.SupertypeSupplier
-import org.jetbrains.kotlin.fir.resolve.transformers.ScopeClassDeclaration
+import org.jetbrains.kotlin.fir.resolve.TypeResolutionConfiguration
+import org.jetbrains.kotlin.fir.resolve.transformers.FirTypeResolveTransformer
 import org.jetbrains.kotlin.fir.resolve.typeResolver
 import org.jetbrains.kotlin.fir.scopes.FirScope
+import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.FirUserTypeRef
 import org.jetbrains.kotlin.fir.types.builder.buildUserTypeRef
+import org.jetbrains.kotlin.fir.types.coneTypeSafe
 import org.jetbrains.kotlin.fir.types.hasError
 import org.jetbrains.kotlin.fir.types.impl.FirQualifierPartImpl
 import org.jetbrains.kotlin.fir.types.impl.FirTypeArgumentListImpl
@@ -23,7 +26,7 @@ import org.jetbrains.kotlin.util.PrivateForInline
  * @param typeString The string representation of the type to resolve (e.g., "kotlin.String", "List<Int>")
  * @return A ConeKotlinType for the resolved type, or null if the type couldn't be resolved
  */
-@OptIn(PrivateForInline::class)
+@OptIn(PrivateForInline::class, SymbolInternals::class)
 fun resolveTypeFromString(
     context: CheckerContext,
     typeString: String,
@@ -32,23 +35,24 @@ fun resolveTypeFromString(
         // For resolving, we still need to go through type resolver
         val firTypeRef = createUserTypeRefFromString(context, typeString) ?: return null
 
-        val scopeClassDeclaration = ScopeClassDeclaration(
-            scopes = context.scopeSession.scopes().values.flatMap { it.values }.filterIsInstance<FirScope>(),
-            containingDeclarations = context.containingDeclarations,
-            topContainer = null,
-            containerDeclaration = null,
+//        val scopeClassDeclaration = ScopeClassDeclaration(
+//            scopes = context.scopeSession.scopes().values.flatMap { it.values }.filterIsInstance<FirScope>(),
+//            containingDeclarations = context.containingDeclarations,
+//            topContainer = null,
+//            containerDeclaration = null,
+//        )
+
+        val resolveTypeTransformer = FirTypeResolveTransformer(
+            session = context.session,
+            scopeSession = context.scopeSession,
+            initialScopes = context.scopeSession.scopes().values.flatMap { it.values }.filterIsInstance<FirScope>(),
+            initialCurrentFile = context.containingFile,
+            classDeclarationsStack = context.containingDeclarations.filterIsInstanceTo(ArrayDeque()),
         )
-        return context.session.typeResolver.resolveType(
-            typeRef = firTypeRef,
-            scopeClassDeclaration = scopeClassDeclaration,
-            areBareTypesAllowed = true,
-            isOperandOfIsOperator = false,
-            resolveDeprecations = true,
-            useSiteFile = context.containingFile,
-            supertypeSupplier = SupertypeSupplier.Default,
-        ).type.takeUnless {
-            it.hasError()
-        }
+
+        val resolvedTypeRef = resolveTypeTransformer.transformTypeRef(firTypeRef, data = null)
+
+        return resolvedTypeRef.coneType
     } catch (e: Exception) {
         return null
     }

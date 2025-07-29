@@ -76,6 +76,10 @@
     },
     "components": {
         "schemas": {
+            "List<User>": {
+                "type": "object",
+                "properties": {}
+            },
             "User0": {
                 "type": "object",
                 "properties": {

@@ -9,7 +9,7 @@
             "post": {
                 "summary": "Save a new user.\n",
                 "requestBody": {
-                    "description": "the user to save.",
+                    "description": "The user to save.",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -86,6 +86,10 @@
                         "type": "string"
                     }
                 }
+            },
+            "List<User>": {
+                "type": "object",
+                "properties": {}
             }
         }
     }

@@ -34,7 +34,7 @@ private fun Route.modificationEndpoints(repository: Repository1<User1>) {
     /**
      * Save a new user.
      *
-     * @body [User1] the user to save.
+     * @body [User1] The user to save.
      */
     post {
         repository.save(call.receive())

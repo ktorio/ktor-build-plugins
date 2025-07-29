@@ -127,10 +127,10 @@ fun parseParameter(text: String): KDocField? {
 
     return when (next()) {
         "tag" -> Tag(next())
-        "path" -> PathParam(next(), remaining())
-        "query" -> PathParam(next(), remaining())
-        "header" -> Header(next(), remaining())
-        "cookie" -> Cookie(next(), remaining())
+        "path" -> PathParam(next(), schemaArg.tryMatchNext(), remaining())
+        "query" -> PathParam(next(), schemaArg.tryMatchNext(), remaining())
+        "header" -> Header(next(), schemaArg.tryMatchNext(), remaining())
+        "cookie" -> Cookie(next(), schemaArg.tryMatchNext(), remaining())
         "body" -> Body(contentTypeArg.tryMatchNext(), schemaArg.tryMatchNext(), remaining())
         "response" -> Response(next(), contentTypeArg.tryMatchNext(), schemaArg.tryMatchNext(), remaining())
         "deprecated" -> Deprecated(remaining())

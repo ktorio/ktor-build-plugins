@@ -8,6 +8,7 @@ import io.ktor.openapi.OpenApiKtorSchema.isInstallContentNegotiation
 import io.ktor.openapi.model.*
 import io.ktor.openapi.model.JsonSchema.Companion.schemaFromConeType
 import kotlinx.serialization.json.Json
+import org.jetbrains.kotlin.DeprecatedForRemovalCompilerApi
 import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.fir.FirSession
@@ -96,11 +97,8 @@ class OpenApiRouteCallReader(
     val onSchemaReference: (String, JsonSchema) -> Unit,
 ) : FirFunctionCallChecker(MppCheckerKind.Common) {
 
-    override fun check(
-        expression: FirFunctionCall,
-        context: CheckerContext,
-        reporter: DiagnosticReporter
-    ) {
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    override fun check(expression: FirFunctionCall) {
         when {
             expression.isKtorRoutingCall() -> {
                 val sourceFile = context.getSourceFile() ?: return
