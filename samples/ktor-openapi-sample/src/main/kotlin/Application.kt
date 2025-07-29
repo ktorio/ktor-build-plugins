@@ -58,7 +58,7 @@ fun Routing.userCrud(repository: Repository<User>) {
             /**
              * Get a single user
              *
-             * @param id The ID of the user
+             * @path id The ID of the user
              * @response 404 The user was not found
              * @response 200 [User] The user.
              */
@@ -80,7 +80,7 @@ fun Routing.userCrud(repository: Repository<User>) {
 
             /**
              * Delete a user.
-             * @param id The ID of the user
+             * @path id The ID of the user
              * @response 204 The user was deleted
              */
             delete("{id}") {

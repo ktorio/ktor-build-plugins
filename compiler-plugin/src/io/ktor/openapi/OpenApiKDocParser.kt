@@ -1,10 +1,10 @@
 package io.ktor.openapi
 
 import io.ktor.openapi.model.*
-import io.ktor.openapi.model.RouteKDocParam.*
-import io.ktor.openapi.model.RouteKDocParam.Deprecated
+import io.ktor.openapi.model.KDocField.*
+import io.ktor.openapi.model.KDocField.Deprecated
 
-fun SourceCoordinates.parseKDoc(): List<RouteKDocParam> =
+fun SourceCoordinates.parseKDoc(): List<KDocField> =
     parsePrecedingComment(file.text, range.first)
 
 /**
@@ -15,7 +15,7 @@ fun SourceCoordinates.parseKDoc(): List<RouteKDocParam> =
  * @param beforeOffset The offset before which to look for comments
  * @return The extracted comment text or empty string if no comment is found
  */
-fun parsePrecedingComment(text: CharSequence, beforeOffset: Int): List<RouteKDocParam> {
+fun parsePrecedingComment(text: CharSequence, beforeOffset: Int): List<KDocField> {
     // Ensure offset is within bounds
     val offset = beforeOffset.coerceIn(0, text.length)
 
@@ -87,26 +87,27 @@ fun parsePrecedingComment(text: CharSequence, beforeOffset: Int): List<RouteKDoc
     return emptyList()
 }
 
-private fun List<String>.parseParameters(): List<RouteKDocParam> =
+private fun List<String>.parseParameters(): List<KDocField> =
     buildList {
         val current = StringBuilder()
         for (line in this@parseParameters) {
             if (line.startsWith("@")) {
                 if (current.isNotEmpty()) {
-                    add(parseParameter(current.toString()))
+                    parseParameter(current.toString())?.let(::add)
                     current.clear()
                 }
             }
             current.appendLine(line)
         }
         if (current.isNotEmpty()) {
-            add(parseParameter(current.toString()))
+            parseParameter(current.toString())?.let(::add)
         }
     }
 
+val contentTypeArg = Regex("^(\\w+/\\S+)$")
 val schemaArg = Regex("^\\[(.*)]$")
 
-fun parseParameter(text: String): RouteKDocParam {
+fun parseParameter(text: String): KDocField? {
     if (!text.startsWith('@'))
         return Summary(text)
     var i = 0
@@ -126,12 +127,13 @@ fun parseParameter(text: String): RouteKDocParam {
 
     return when (next()) {
         "tag" -> Tag(next())
-        "param" -> Param(next(), remaining())
+        "path" -> PathParam(next(), remaining())
+        "query" -> PathParam(next(), remaining())
         "header" -> Header(next(), remaining())
         "cookie" -> Cookie(next(), remaining())
-        "body" -> Body(schemaArg.tryMatchNext(), remaining())
-        "response" -> Response(next(), schemaArg.tryMatchNext(), remaining())
+        "body" -> Body(contentTypeArg.tryMatchNext(), schemaArg.tryMatchNext(), remaining())
+        "response" -> Response(next(), contentTypeArg.tryMatchNext(), schemaArg.tryMatchNext(), remaining())
         "deprecated" -> Deprecated(remaining())
-        else -> throw IllegalArgumentException("Invalid KDoc parameter: $text")
+        else -> null // ignore unknown tags
     }
 }

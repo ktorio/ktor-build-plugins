@@ -1,16 +1,14 @@
 package io.ktor.openapi
 
 import io.ktor.openapi.model.JsonSchema
-import io.ktor.openapi.model.RouteKDocParam
-import io.ktor.openapi.model.RouteKDocParam.Body
-import io.ktor.openapi.model.RouteKDocParam.Cookie
-import io.ktor.openapi.model.RouteKDocParam.Description
-import io.ktor.openapi.model.RouteKDocParam.Header
-import io.ktor.openapi.model.RouteKDocParam.Param
-import io.ktor.openapi.model.RouteKDocParam.Response
-import io.ktor.openapi.model.RouteKDocParam.Security
-import io.ktor.openapi.model.RouteKDocParam.Summary
-import io.ktor.openapi.model.RouteKDocParam.Tag
+import io.ktor.openapi.model.KDocField
+import io.ktor.openapi.model.KDocField.Body
+import io.ktor.openapi.model.KDocField.Description
+import io.ktor.openapi.model.KDocField.Parameter
+import io.ktor.openapi.model.KDocField.Response
+import io.ktor.openapi.model.KDocField.Security
+import io.ktor.openapi.model.KDocField.Summary
+import io.ktor.openapi.model.KDocField.Tag
 import io.ktor.openapi.model.RoutingCall
 import io.ktor.openapi.model.SpecInfo
 import io.ktor.openapi.model.append
@@ -40,7 +38,7 @@ object OpenApiSchemaGenerator {
     ): JsonObject {
         val actualCalls = routingCalls
             .mergeNested()
-            .filterIsInstance<RoutingCall.Ktor>()
+            .filterIsInstance<RoutingCall.Route>()
             .groupBy { it.path }
 
         val paths = buildJsonObject {
@@ -66,9 +64,9 @@ object OpenApiSchemaGenerator {
         }
     }
 
-    fun collectSchema(calls: List<RouteKDocParam>): Map<String, JsonObject> =
-        calls.filterIsInstance<RouteKDocParam.Content>()
-            .mapNotNull { it.type }
+    fun collectSchema(calls: List<KDocField>): Map<String, JsonObject> =
+        calls.filterIsInstance<KDocField.Content>()
+            .mapNotNull { it.typeRef }
             .associate { type ->
                 type to buildJsonObject {}
             }
@@ -84,7 +82,7 @@ object OpenApiSchemaGenerator {
         for (i in 0 ..< lastIndex) {
             when(val current = get(i)) {
                 // only subsequent invocations can be children
-                is RoutingCall.Ktor -> {
+                is RoutingCall.Route -> {
                     for (j in i + 1 ..< size) {
                         if (get(j) in current)
                             childParentMap[get(j)] = current
@@ -92,7 +90,7 @@ object OpenApiSchemaGenerator {
                     }
                 }
                 // body can occur anywhere, so we need to check the whole array
-                is RoutingCall.Custom -> {
+                is RoutingCall.Extension -> {
                     for (other in this) {
                         if (other in current && other !in childParentMap)
                             childParentMap[other] = current
@@ -103,7 +101,7 @@ object OpenApiSchemaGenerator {
         val parents = childParentMap.values.toSet()
         return mapNotNull { route ->
             when(route) {
-                in parents, !is RoutingCall.Ktor -> null
+                in parents, !is RoutingCall.Route -> null
                 !in childParentMap -> route
                 else -> {
                     val ancestry = sequence {
@@ -115,7 +113,7 @@ object OpenApiSchemaGenerator {
                     }
                     route.copy(
                         path = ancestry.toList().reversed()
-                            .filterIsInstance<RoutingCall.Ktor>()
+                            .filterIsInstance<RoutingCall.Route>()
                             .mapNotNull { it.path?.takeIf(String::isNotEmpty) }
                             .joinToString("/")
                             .replace("//", "/"),
@@ -125,10 +123,10 @@ object OpenApiSchemaGenerator {
         }
     }
 
-    fun List<RouteKDocParam>.toSpecObject(defaultContentType: String) =
+    fun List<KDocField>.toSpecObject(defaultContentType: String) =
         JsonObject(toSpecParametersMap(defaultContentType))
 
-    fun List<RouteKDocParam>.toSpecParametersMap(
+    fun List<KDocField>.toSpecParametersMap(
         defaultContentType: String
     ): Map<String, JsonElement> = buildMap {
         for (param in this@toSpecParametersMap) {
@@ -138,41 +136,24 @@ object OpenApiSchemaGenerator {
                 is Body -> {
                     put("requestBody", param.jsonObject(defaultContentType))
                 }
-                is Cookie -> {
+                is Parameter -> {
                     append("parameters", buildJsonObject {
                         put("name", param.name)
-                        put("in", "cookie")
+                        put("in", param.`in`)
                         put("description", param.description)
                         put("required", true)
+                        // TODO use type for primitives
                         putJsonObject("schema") {
-                            put("type", "string")
+                            param.typeRef?.let {
+                                put("\$ref", "#/components/schemas/$it")
+                            } ?: run {
+                                put("type", "string")
+                            }
                         }
                     })
                 }
-                is RouteKDocParam.Deprecated -> {
+                is KDocField.Deprecated -> {
                     put("deprecated", JsonPrimitive(true))
-                }
-                is Header -> {
-                    append("parameters", buildJsonObject {
-                        put("name", param.name)
-                        put("in", "header")
-                        put("description", param.description)
-                        put("required", false)
-                        putJsonObject("schema") {
-                            put("type", "string")
-                        }
-                    })
-                }
-                is Param -> {
-                    append("parameters", buildJsonObject {
-                        put("name", param.name)
-                        put("in", "path") // Default to path, could be refined based on route analysis
-                        put("description", param.description)
-                        put("required", true)
-                        putJsonObject("schema") {
-                            put("type", "string")
-                        }
-                    })
                 }
                 is Response -> {
                     appendObject("responses", param.code, param.jsonObject(defaultContentType))
@@ -189,11 +170,11 @@ object OpenApiSchemaGenerator {
         }
     }
 
-    private fun RouteKDocParam.Content.jsonObject(contentType: String) = buildJsonObject {
+    private fun KDocField.Content.jsonObject(contentType: String) = buildJsonObject {
         put("description", description)
         putJsonObject("content") {
-            put(contentType, buildJsonObject {
-                type?.let {
+            put(this@jsonObject.contentType ?: contentType, buildJsonObject {
+                typeRef?.let {
                     // TODO handle list / arrays
                     putJsonObject("schema") {
                         put("\$ref", "#/components/schemas/$it")

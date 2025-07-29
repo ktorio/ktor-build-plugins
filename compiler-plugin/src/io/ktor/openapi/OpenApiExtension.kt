@@ -108,15 +108,15 @@ class OpenApiRouteCallReader(
                 val kdocParams = coordinates.parseKDoc()
                 val functionName = expression.calleeReference.name.asString()
                 val path = expression.arguments.getOrNull(0)?.resolveToString()
-                for (content in kdocParams.filterIsInstance<RouteKDocParam.Content>()) {
-                    if (content.type == null) continue
-                    val typeString = content.type ?: continue
+                for (content in kdocParams.filterIsInstance<KDocField.Content>()) {
+                    if (content.typeRef == null) continue
+                    val typeString = content.typeRef ?: continue
                     val coneType = resolveTypeFromString(context, typeString) ?: continue
 
                     onSchemaReference(typeString, context.schemaFromConeType(coneType))
                 }
 
-                onRoutingCall(RoutingCall.Ktor(
+                onRoutingCall(RoutingCall.Route(
                     functionName,
                     kdocParams,
                     coordinates,
@@ -130,7 +130,7 @@ class OpenApiRouteCallReader(
                 val functionName = expression.calleeReference.name.asString()
                 val kdocParams = invocation.parseKDoc() + body.parseKDoc()
 
-                onRoutingCall(RoutingCall.Custom(
+                onRoutingCall(RoutingCall.Extension(
                     functionName,
                     kdocParams,
                     invocation,
