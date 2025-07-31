@@ -24,7 +24,7 @@ fun Application.simpleNested(repository: Repository0<User0>) {
                 /**
                  * Get a list of users.
                  *
-                 * @response 200 [List<User>] A list of users.
+                 * @response 200 [User0]+ A list of users.
                  */
                 get {
                     val query = call.request.queryParameters.toMap()
@@ -35,11 +35,14 @@ fun Application.simpleNested(repository: Repository0<User0>) {
                 /**
                  * Get a single user
                  *
-                 * @path id The ID of the user
+                 * @path id [Int] The ID of the user
+                 * @response 400 Bad ID argument
                  * @response 404 The user was not found
                  */
                 get("{id}") {
-                    val user = repository.get(call.parameters["id"]!!)
+                    val id = call.parameters["id"]?.toIntOrNull()
+                        ?: return@get call.respond(HttpStatusCode.BadRequest)
+                    val user = repository.get(id)
                         ?: return@get call.respond(HttpStatusCode.NotFound)
                     call.respond(user)
                 }
@@ -56,10 +59,14 @@ fun Application.simpleNested(repository: Repository0<User0>) {
 
                 /**
                  * Delete a user.
-                 * @path id The ID of the user
+                 * @path id [Int] The ID of the user
+                 * @response 400 Bad ID argument
+                 * @response 204 The user was deleted
                  */
                 delete("{id}") {
-                    repository.delete(call.parameters["id"]!!)
+                    val id = call.parameters["id"]?.toIntOrNull()
+                        ?: return@delete call.respond(HttpStatusCode.BadRequest)
+                    repository.delete(id)
                     call.respond(HttpStatusCode.NoContent)
                 }
             }
@@ -68,10 +75,10 @@ fun Application.simpleNested(repository: Repository0<User0>) {
 }
 
 interface Repository0<E> {
-    fun get(id: String): E?
+    fun get(id: Int): E?
     fun save(entity: E)
-    fun delete(id: String)
+    fun delete(id: Int)
     fun list(query: Map<String, List<String>>): List<E>
 }
 
-data class User0(val id: String, val name: String)
+data class User0(val id: Int, val name: String)

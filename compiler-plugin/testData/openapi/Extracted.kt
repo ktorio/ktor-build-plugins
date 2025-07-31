@@ -55,7 +55,7 @@ private fun Route.readEndpoints(repository: Repository1<User1>) {
     /**
      * Get a list of users.
      *
-     * @response 200 [List<User>] A list of users.
+     * @response 200 [User1]+ A list of users.
      */
     get {
         val query = call.request.queryParameters.toMap()
