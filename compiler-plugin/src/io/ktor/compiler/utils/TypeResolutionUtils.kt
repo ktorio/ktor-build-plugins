@@ -1,19 +1,18 @@
 package io.ktor.compiler.utils
 
+import io.ktor.openapi.model.*
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.fakeElement
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
+import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.resolve.SupertypeSupplier
 import org.jetbrains.kotlin.fir.resolve.TypeResolutionConfiguration
-import org.jetbrains.kotlin.fir.resolve.transformers.FirTypeResolveTransformer
 import org.jetbrains.kotlin.fir.resolve.typeResolver
 import org.jetbrains.kotlin.fir.scopes.FirScope
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.FirUserTypeRef
 import org.jetbrains.kotlin.fir.types.builder.buildUserTypeRef
-import org.jetbrains.kotlin.fir.types.coneTypeSafe
-import org.jetbrains.kotlin.fir.types.hasError
 import org.jetbrains.kotlin.fir.types.impl.FirQualifierPartImpl
 import org.jetbrains.kotlin.fir.types.impl.FirTypeArgumentListImpl
 import org.jetbrains.kotlin.name.Name
@@ -23,36 +22,33 @@ import org.jetbrains.kotlin.util.PrivateForInline
  * Resolves a type from its string representation.
  *
  * @param context The checker context to use for type resolution
- * @param typeString The string representation of the type to resolve (e.g., "kotlin.String", "List<Int>")
+ * @param typeLink The string representation of the type to resolve (e.g., "kotlin.String", "List<Int>")
  * @return A ConeKotlinType for the resolved type, or null if the type couldn't be resolved
  */
 @OptIn(PrivateForInline::class, SymbolInternals::class)
-fun resolveTypeFromString(
+fun resolveTypeLink(
     context: CheckerContext,
-    typeString: String,
+    typeLink: TypeLink,
 ): ConeKotlinType? {
     try {
         // For resolving, we still need to go through type resolver
-        val firTypeRef = createUserTypeRefFromString(context, typeString) ?: return null
+        val firTypeRef = createUserTypeRefFromLink(context, typeLink) ?: return null
 
-//        val scopeClassDeclaration = ScopeClassDeclaration(
-//            scopes = context.scopeSession.scopes().values.flatMap { it.values }.filterIsInstance<FirScope>(),
-//            containingDeclarations = context.containingDeclarations,
-//            topContainer = null,
-//            containerDeclaration = null,
-//        )
-
-        val resolveTypeTransformer = FirTypeResolveTransformer(
-            session = context.session,
-            scopeSession = context.scopeSession,
-            initialScopes = context.scopeSession.scopes().values.flatMap { it.values }.filterIsInstance<FirScope>(),
-            initialCurrentFile = context.containingFile,
-            classDeclarationsStack = context.containingDeclarations.filterIsInstanceTo(ArrayDeque()),
+        val configuration = TypeResolutionConfiguration(
+            scopes = context.scopeSession.scopes().values.flatMap { it.values }.filterIsInstance<FirScope>(),
+            containingClassDeclarations = context.containingDeclarations.filterIsInstance<FirClass>(),
+            useSiteFile = context.containingFile,
         )
 
-        val resolvedTypeRef = resolveTypeTransformer.transformTypeRef(firTypeRef, data = null)
-
-        return resolvedTypeRef.coneType
+        val resolvedTypeRefResult = context.session.typeResolver.resolveType(
+            typeRef = firTypeRef,
+            configuration = configuration,
+            areBareTypesAllowed = true,
+            isOperandOfIsOperator = false,
+            resolveDeprecations = true,
+            supertypeSupplier = SupertypeSupplier.Default,
+        )
+        return resolvedTypeRefResult.type
     } catch (e: Exception) {
         return null
     }
@@ -62,9 +58,9 @@ fun resolveTypeFromString(
 /**
  * Creates a FirUserTypeRef from a string representation of a type.
  */
-private fun createUserTypeRefFromString(
+private fun createUserTypeRefFromLink(
     context: CheckerContext,
-    typeString: String,
+    typeLink: TypeLink,
 ): FirUserTypeRef? {
     // TODO generics
 //    val parts = typeString.split(".")
@@ -108,7 +104,7 @@ private fun createUserTypeRefFromString(
         isMarkedNullable = false
         qualifier += FirQualifierPartImpl(
             source = null,
-            name = Name.identifier(typeString),
+            name = Name.identifier(typeLink.name),
             typeArgumentList = FirTypeArgumentListImpl(null)
         )
     }

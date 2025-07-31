@@ -1,14 +1,17 @@
 package io.ktor.openapi
 
 import io.ktor.compiler.utils.*
-import io.ktor.openapi.OpenApiKtorRouting.isCustomRoutingCall
-import io.ktor.openapi.OpenApiKtorRouting.isKtorRoutingCall
+import io.ktor.openapi.OpenApiKtorRouting.isCustomExtension
+import io.ktor.openapi.OpenApiKtorRouting.isRoute
+import io.ktor.openapi.OpenApiKtorRouting.isCallRespond
+import io.ktor.openapi.OpenApiKtorRouting.isCallReceive
+import io.ktor.openapi.OpenApiKtorRouting.isParameterGet
+import io.ktor.openapi.OpenApiKtorRouting.isQueryParameterGet
 import io.ktor.openapi.OpenApiKtorSchema.classifyContentNegotiationBody
 import io.ktor.openapi.OpenApiKtorSchema.isInstallContentNegotiation
 import io.ktor.openapi.model.*
 import io.ktor.openapi.model.JsonSchema.Companion.schemaFromConeType
 import kotlinx.serialization.json.Json
-import org.jetbrains.kotlin.DeprecatedForRemovalCompilerApi
 import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.fir.FirSession
@@ -29,6 +32,7 @@ import org.jetbrains.kotlin.fir.references.resolved
 import org.jetbrains.kotlin.fir.references.symbol
 import org.jetbrains.kotlin.fir.references.toResolvedFunctionSymbol
 import org.jetbrains.kotlin.fir.resolve.providers.firProvider
+import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.resolvedType
 import org.jetbrains.kotlin.text
 import java.nio.file.Files
@@ -40,7 +44,7 @@ class OpenApiExtension(
     private val config: OpenApiProcessorConfig,
 ) : FirExtensionRegistrar() {
 
-    private val routingCalls = mutableListOf<RoutingCall>()
+    private val routeElements = mutableListOf<RouteElement>()
     private val schemas = mutableMapOf<String, JsonSchema>()
     private var defaultContentType: String = ContentType.OTHER.value
 
@@ -48,7 +52,7 @@ class OpenApiExtension(
         +::OpenApiFirAdditionalChecksExtension
     }
 
-    fun isEmpty() = routingCalls.isEmpty()
+    fun isEmpty() = routeElements.isEmpty()
 
     fun saveSpecification(json: Json) {
         // skip if there are no paths
@@ -60,7 +64,7 @@ class OpenApiExtension(
         }
         val openApiSpec = OpenApiSchemaGenerator.buildSchema(
             config.info,
-            routingCalls,
+            routeElements,
             schemas,
             defaultContentType,
             json
@@ -77,7 +81,7 @@ class OpenApiExtension(
                 override val functionCallCheckers = setOf(
                     OpenApiRouteCallReader(
                         session = session,
-                        onRoutingCall = routingCalls::add,
+                        onRoutingCall = routeElements::add,
                         onSchemaReference = schemas::put, // TODO
                         onContentNegotiation = { defaultContentType = it.value }
                     ),
@@ -92,45 +96,92 @@ val KtSourceElement.range: IntRange get() =
 
 class OpenApiRouteCallReader(
     val session: FirSession,
-    val onRoutingCall: (RoutingCall) -> Unit,
+    val onRoutingCall: (RouteElement) -> Unit,
     val onContentNegotiation: (ContentType) -> Unit,
     val onSchemaReference: (String, JsonSchema) -> Unit,
 ) : FirFunctionCallChecker(MppCheckerKind.Common) {
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(expression: FirFunctionCall) {
-        when {
-            expression.isKtorRoutingCall() -> {
-                val sourceFile = context.getSourceFile() ?: return
-                val coordinates = SourceCoordinates(sourceFile, expression.source?.range ?: return)
-                val kdocParams = coordinates.parseKDoc()
-                val functionName = expression.calleeReference.name.asString()
-                val path = expression.arguments.getOrNull(0)?.resolveToString()
-                for (content in kdocParams.filterIsInstance<KDocField.Content>()) {
-                    if (content.typeRef == null) continue
-                    val typeString = content.typeRef ?: continue
-                    val coneType = resolveTypeFromString(context, typeString) ?: continue
+        val sourceFile = context.getSourceFile() ?: return
+        val invocation = SourceCoordinates(sourceFile, expression.source?.range ?: return)
+        val functionName = expression.calleeReference.name.asString()
 
-                    onSchemaReference(typeString, context.schemaFromConeType(coneType))
+        when {
+            expression.isRoute() -> {
+                val routeFields = invocation.parseKDoc()
+                val path = expression.arguments.getOrNull(0)?.resolveToString()
+                for (content in routeFields.filterIsInstance<RouteField.Content>()) {
+                    if (content.typeLink == null) continue
+                    val typeLink = content.typeLink ?: continue
+                    val coneType = resolveTypeLink(context, typeLink) ?: continue
+                    if (!typeLink.hasReference()) continue
+
+                    onSchemaReference(typeLink.name, context.schemaFromConeType(coneType))
                 }
 
-                onRoutingCall(RoutingCall.Route(
+                onRoutingCall(RouteElement.Route(
                     functionName,
-                    kdocParams,
-                    coordinates,
+                    routeFields,
+                    invocation,
                     path,
                 ))
             }
-            expression.isCustomRoutingCall(session) -> {
-                val sourceFile = context.getSourceFile() ?: return
-                val invocation = SourceCoordinates(sourceFile, expression.source?.range ?: return)
-                val body = expression.calleeReference.getCoordinates() ?: return
-                val functionName = expression.calleeReference.name.asString()
-                val kdocParams = invocation.parseKDoc() + body.parseKDoc()
+            expression.isCallRespond() -> {
+                val coneType = expression.arguments.getOrNull(0)?.resolvedType ?: return
+                val className = coneType.classId?.shortClassName?.asString() ?: return
 
-                onRoutingCall(RoutingCall.Extension(
+                // TODO handle this better
+                if (className == "HttpStatusCode") return
+
+                onSchemaReference(className, context.schemaFromConeType(coneType))
+
+                // TODO optionals, arrays
+                onRoutingCall(RouteElement.CallFeature(
                     functionName,
-                    kdocParams,
+                    listOf(RouteField.Response(code = "200", typeLink = getTypeLink(className))),
+                    invocation
+                ))
+            }
+            expression.isCallReceive() -> {
+                val coneType = expression.resolvedType
+                val className = coneType.classId?.shortClassName?.asString() ?: return
+
+                onSchemaReference(className, context.schemaFromConeType(coneType))
+
+                // TODO optionals, arrays
+                onRoutingCall(RouteElement.CallFeature(
+                    functionName,
+                    listOf(RouteField.Body(typeLink = getTypeLink(className))),
+                    invocation
+                ))
+            }
+            expression.isParameterGet() -> {
+                val key = expression.arguments.getOrNull(0)?.resolveToString() ?: return
+
+                onRoutingCall(RouteElement.CallFeature(
+                    functionName,
+                    listOf(RouteField.PathParam(key)),
+                    invocation,
+                ))
+
+            }
+            expression.isQueryParameterGet() -> {
+                val key = expression.arguments.getOrNull(0)?.resolveToString() ?: return
+
+                onRoutingCall(RouteElement.CallFeature(
+                    functionName,
+                    listOf(RouteField.QueryParam(key)),
+                    invocation,
+                ))
+            }
+            expression.isCustomExtension(session) -> {
+                val body = expression.calleeReference.getCoordinates() ?: return
+                val routeFields = invocation.parseKDoc() + body.parseKDoc()
+
+                onRoutingCall(RouteElement.Extension(
+                    functionName,
+                    routeFields,
                     invocation,
                     body,
                 ))
@@ -143,6 +194,7 @@ class OpenApiRouteCallReader(
         }
     }
 
+    // TODO only supports string literals atm, should handle constants and possibly trace up the stack for variables
     private fun FirExpression.resolveToString(): String? =
         when(this) {
             is FirLiteralExpression -> this.value?.toString()
@@ -194,15 +246,47 @@ object OpenApiKtorRouting {
     /**
      * Checks if the function is one of the standard Ktor routing functions.
      */
-    fun FirFunctionCall.isKtorRoutingCall(): Boolean = with(calleeReference) {
+    fun FirFunctionCall.isRoute(): Boolean = with(calleeReference) {
         symbol?.packageFqName()?.asString() == ROUTING_PACKAGE &&
                 name.asString() in ROUTING_FUNCTION_NAMES
     }
 
     /**
+     * Checks if this is a reference to `call.respond()`
+     */
+    fun FirFunctionCall.isCallRespond(): Boolean =
+        calleeReference.name.asString() == "respond" &&
+            calleeReference.symbol?.packageFqName()?.asString()?.startsWith("io.ktor.server.response") == true &&
+            extensionReceiver?.source?.text == "call"
+
+    /**
+     * Checks if this is a reference to `call.receive()`
+     */
+    fun FirFunctionCall.isCallReceive(): Boolean =
+        calleeReference.name.asString() == "receive" &&
+                calleeReference.symbol?.packageFqName()?.asString()?.startsWith("io.ktor.server.request") == true &&
+                extensionReceiver?.source?.text == "call"
+
+
+    /**
+     * Checks if this is a reference to `call.parameters["key"]`
+     */
+    fun FirFunctionCall.isParameterGet(): Boolean =
+        calleeReference.name.asString() == "get" &&
+                explicitReceiver?.source?.text == "call.parameters"
+
+
+    /**
+     * Checks if this is a reference to `call.queryParameters["key"]`
+     */
+    fun FirFunctionCall.isQueryParameterGet(): Boolean =
+        calleeReference.name.asString() == "get" &&
+                explicitReceiver?.source?.text == "call.queryParameters"
+
+    /**
      * Checks if the function has `io.ktor.server.routing.Route` as its receiver type.
      */
-    fun FirFunctionCall.isCustomRoutingCall(session: FirSession): Boolean {
+    fun FirFunctionCall.isCustomExtension(session: FirSession): Boolean {
         val receiverFqName = extensionReceiver?.resolvedType
             ?.fullyExpandedClassId(session)
             ?.asFqNameString()

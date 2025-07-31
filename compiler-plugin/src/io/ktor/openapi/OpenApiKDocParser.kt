@@ -1,10 +1,10 @@
 package io.ktor.openapi
 
 import io.ktor.openapi.model.*
-import io.ktor.openapi.model.KDocField.*
-import io.ktor.openapi.model.KDocField.Deprecated
+import io.ktor.openapi.model.RouteField.*
+import io.ktor.openapi.model.RouteField.Deprecated
 
-fun SourceCoordinates.parseKDoc(): List<KDocField> =
+fun SourceCoordinates.parseKDoc(): RouteFieldList =
     parsePrecedingComment(file.text, range.first)
 
 /**
@@ -15,7 +15,7 @@ fun SourceCoordinates.parseKDoc(): List<KDocField> =
  * @param beforeOffset The offset before which to look for comments
  * @return The extracted comment text or empty string if no comment is found
  */
-fun parsePrecedingComment(text: CharSequence, beforeOffset: Int): List<KDocField> {
+fun parsePrecedingComment(text: CharSequence, beforeOffset: Int): RouteFieldList {
     // Ensure offset is within bounds
     val offset = beforeOffset.coerceIn(0, text.length)
 
@@ -87,7 +87,7 @@ fun parsePrecedingComment(text: CharSequence, beforeOffset: Int): List<KDocField
     return emptyList()
 }
 
-private fun List<String>.parseParameters(): List<KDocField> =
+private fun List<String>.parseParameters(): List<RouteField> =
     buildList {
         val current = StringBuilder()
         for (line in this@parseParameters) {
@@ -105,9 +105,9 @@ private fun List<String>.parseParameters(): List<KDocField> =
     }
 
 val contentTypeArg = Regex("^(\\w+/\\S+)$")
-val schemaArg = Regex("^\\[(.*)]$")
+val schemaArg = Regex("^\\[(.*)]([?+]?)$")
 
-fun parseParameter(text: String): KDocField? {
+fun parseParameter(text: String): RouteField? {
     if (!text.startsWith('@'))
         return Summary(text)
     var i = 0
@@ -116,10 +116,10 @@ fun parseParameter(text: String): KDocField? {
 //    val maybeNext: ((String) -> Boolean) -> String? = { predicate ->
 //        words.getOrNull(i)?.takeIf(predicate)?.also { i++ }
 //    }
-    val tryMatchNext: Regex.() -> String? = {
+    val tryMatchNext: Regex.() -> MatchResult? = {
         words.getOrNull(i)?.let { word ->
             matchEntire(word)?.let { match ->
-                match.groupValues[1].also { i++ }
+                match.also { i++ }
             }
         }
     }
@@ -127,13 +127,31 @@ fun parseParameter(text: String): KDocField? {
 
     return when (next()) {
         "tag" -> Tag(next())
-        "path" -> PathParam(next(), schemaArg.tryMatchNext(), remaining())
-        "query" -> PathParam(next(), schemaArg.tryMatchNext(), remaining())
-        "header" -> Header(next(), schemaArg.tryMatchNext(), remaining())
-        "cookie" -> Cookie(next(), schemaArg.tryMatchNext(), remaining())
-        "body" -> Body(contentTypeArg.tryMatchNext(), schemaArg.tryMatchNext(), remaining())
-        "response" -> Response(next(), contentTypeArg.tryMatchNext(), schemaArg.tryMatchNext(), remaining())
+        "path" -> PathParam(next(), schemaArg.tryMatchNext()?.getTypeLink(), remaining())
+        "query" -> PathParam(next(), schemaArg.tryMatchNext()?.getTypeLink(), remaining())
+        "header" -> Header(next(), schemaArg.tryMatchNext()?.getTypeLink(), remaining())
+        "cookie" -> Cookie(next(), schemaArg.tryMatchNext()?.getTypeLink(), remaining())
+        "body" -> Body(contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getTypeLink(), remaining())
+        "response" -> Response(next(), contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getTypeLink(), remaining())
         "deprecated" -> Deprecated(remaining())
         else -> null // ignore unknown tags
+    }
+}
+
+// TODO support ?+ and +?, maps
+private fun MatchResult.getTypeLink(): TypeLink? {
+    val (name, qualifier) = destructured
+    return getTypeLink(name, qualifier)
+}
+
+fun getTypeLink(name: String, qualifier: String? = null): TypeLink? {
+    val base = when (val jsonType = findJsonPrimitiveType(name)) {
+        null -> TypeLink.Reference(name)
+        else -> TypeLink.Simple(name, jsonType)
+    }
+    return when (qualifier) {
+        "?" -> TypeLink.Optional(base)
+        "+" -> TypeLink.Array(base)
+        else -> base
     }
 }
