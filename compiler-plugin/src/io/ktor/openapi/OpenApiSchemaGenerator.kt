@@ -1,19 +1,23 @@
 package io.ktor.openapi
 
 import io.ktor.openapi.model.JsonSchema
-import io.ktor.openapi.model.KDocField
-import io.ktor.openapi.model.KDocField.Body
-import io.ktor.openapi.model.KDocField.Description
-import io.ktor.openapi.model.KDocField.Parameter
-import io.ktor.openapi.model.KDocField.Response
-import io.ktor.openapi.model.KDocField.Security
-import io.ktor.openapi.model.KDocField.Summary
-import io.ktor.openapi.model.KDocField.Tag
-import io.ktor.openapi.model.RoutingCall
+import io.ktor.openapi.model.JsonType
+import io.ktor.openapi.model.RouteField
+import io.ktor.openapi.model.RouteField.Body
+import io.ktor.openapi.model.RouteField.Description
+import io.ktor.openapi.model.RouteField.Parameter
+import io.ktor.openapi.model.RouteField.Response
+import io.ktor.openapi.model.RouteField.Security
+import io.ktor.openapi.model.RouteField.Summary
+import io.ktor.openapi.model.RouteField.Tag
+import io.ktor.openapi.model.RouteElement
+import io.ktor.openapi.model.RouteFieldList
 import io.ktor.openapi.model.SpecInfo
+import io.ktor.openapi.model.TypeLink
 import io.ktor.openapi.model.append
 import io.ktor.openapi.model.appendObject
 import io.ktor.openapi.model.put
+import io.ktor.openapi.model.takeCompatible
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -31,14 +35,14 @@ object OpenApiSchemaGenerator {
 
     fun buildSchema(
         specInfo: SpecInfo,
-        routingCalls: List<RoutingCall>,
+        routeElements: List<RouteElement>,
         schemas: Map<String, JsonSchema>,
         defaultContentType: String,
         json: Json,
     ): JsonObject {
-        val actualCalls = routingCalls
+        val actualCalls = routeElements
             .mergeNested()
-            .filterIsInstance<RoutingCall.Route>()
+            .filterIsInstance<RouteElement.Route>()
             .groupBy { it.path }
 
         val paths = buildJsonObject {
@@ -64,69 +68,77 @@ object OpenApiSchemaGenerator {
         }
     }
 
-    fun collectSchema(calls: List<KDocField>): Map<String, JsonObject> =
-        calls.filterIsInstance<KDocField.Content>()
-            .mapNotNull { it.typeRef }
-            .associate { type ->
-                type to buildJsonObject {}
-            }
-
 
     /**
      * Merges nested routing calls into a single call by merging their paths and parameters.
      */
-    fun List<RoutingCall>.mergeNested(): List<RoutingCall> {
-        val childParentMap = mutableMapOf<RoutingCall, RoutingCall>()
+    fun List<RouteElement>.mergeNested(): List<RouteElement> {
+        val parentChildMap = mutableMapOf<RouteElement, List<RouteElement>>()
+        val childParentMap = mutableMapOf<RouteElement, RouteElement>()
 
-        // because the source tree is traversed top-down, we assume calls are ordered
+        fun RouteElement.addChild(child: RouteElement) {
+            parentChildMap[this] = parentChildMap.getOrDefault(this, emptyList()) + child
+            childParentMap[child] = this
+        }
+
+        // 1. Build the call tree. We assume calls are ordered by location.
         for (i in 0 ..< lastIndex) {
             when(val current = get(i)) {
                 // only subsequent invocations can be children
-                is RoutingCall.Route -> {
+                is RouteElement.Route -> {
                     for (j in i + 1 ..< size) {
                         if (get(j) in current)
-                            childParentMap[get(j)] = current
+                            current.addChild(get(j))
                         else break
                     }
                 }
                 // body can occur anywhere, so we need to check the whole array
-                is RoutingCall.Extension -> {
+                is RouteElement.Extension -> {
                     for (other in this) {
                         if (other in current && other !in childParentMap)
-                            childParentMap[other] = current
+                            current.addChild(other)
                     }
                 }
+                // call features are leaf nodes
+                is RouteElement.CallFeature -> {}
             }
         }
-        val parents = childParentMap.values.toSet()
+
+        // 2. Merge routes from paths in the tree.
         return mapNotNull { route ->
-            when(route) {
-                in parents, !is RoutingCall.Route -> null
-                !in childParentMap -> route
-                else -> {
-                    val ancestry = sequence {
-                        var current: RoutingCall? = route
-                        while (current != null) {
-                            yield(current)
-                            current = childParentMap[current]
-                        }
-                    }
-                    route.copy(
-                        path = ancestry.toList().reversed()
-                            .filterIsInstance<RoutingCall.Route>()
-                            .mapNotNull { it.path?.takeIf(String::isNotEmpty) }
-                            .joinToString("/")
-                            .replace("//", "/"),
-                    )
+            if (route !is RouteElement.Route || route.method == null) return@mapNotNull null
+            if (route !in childParentMap && route !in parentChildMap) return@mapNotNull route
+
+            val ancestry = sequence {
+                var current: RouteElement? = route
+                while (current != null) {
+                    yield(current)
+                    current = childParentMap[current]
                 }
             }
+            val mergedPath = StringBuilder()
+            val mergedParams = mutableListOf<RouteField>()
+            for (element in ancestry.toList().reversed()) {
+                (element as? RouteElement.Route)?.path?.takeIf { it.isNotEmpty() }?.let {
+                    mergedPath.append("$it/")
+                }
+                mergedParams.takeCompatible(element.parameters)
+            }
+            parentChildMap[route]?.flatMap { it.parameters }?.let {
+                mergedParams.takeCompatible(it)
+            }
+
+            route.copy(
+                path = mergedPath.toString().trimEnd('/').replace("//", "/"),
+                parameters = mergedParams
+            )
         }
     }
 
-    fun List<KDocField>.toSpecObject(defaultContentType: String) =
+    fun RouteFieldList.toSpecObject(defaultContentType: String) =
         JsonObject(toSpecParametersMap(defaultContentType))
 
-    fun List<KDocField>.toSpecParametersMap(
+    fun RouteFieldList.toSpecParametersMap(
         defaultContentType: String
     ): Map<String, JsonElement> = buildMap {
         for (param in this@toSpecParametersMap) {
@@ -134,7 +146,7 @@ object OpenApiSchemaGenerator {
                 is Summary -> put("summary", param.text)
                 is Description -> put("description", param.text)
                 is Body -> {
-                    put("requestBody", param.jsonObject(defaultContentType))
+                    put("requestBody", param.jsonSchema(defaultContentType))
                 }
                 is Parameter -> {
                     append("parameters", buildJsonObject {
@@ -142,21 +154,14 @@ object OpenApiSchemaGenerator {
                         put("in", param.`in`)
                         put("description", param.description)
                         put("required", true)
-                        // TODO use type for primitives
-                        putJsonObject("schema") {
-                            param.typeRef?.let {
-                                put("\$ref", "#/components/schemas/$it")
-                            } ?: run {
-                                put("type", "string")
-                            }
-                        }
+                        put("schema", Json.encodeToJsonElement(param.typeLink?.jsonSchema() ?: JsonSchema.String))
                     })
                 }
-                is KDocField.Deprecated -> {
+                is RouteField.Deprecated -> {
                     put("deprecated", JsonPrimitive(true))
                 }
                 is Response -> {
-                    appendObject("responses", param.code, param.jsonObject(defaultContentType))
+                    appendObject("responses", param.code, param.jsonSchema(defaultContentType))
                 }
                 is Security -> {
                     append("security", buildJsonObject {
@@ -170,17 +175,23 @@ object OpenApiSchemaGenerator {
         }
     }
 
-    private fun KDocField.Content.jsonObject(contentType: String) = buildJsonObject {
+    private fun RouteField.Content.jsonSchema(contentType: String) = buildJsonObject {
         put("description", description)
         putJsonObject("content") {
-            put(this@jsonObject.contentType ?: contentType, buildJsonObject {
-                typeRef?.let {
-                    // TODO handle list / arrays
-                    putJsonObject("schema") {
-                        put("\$ref", "#/components/schemas/$it")
-                    }
-                }
+            put(this@jsonSchema.contentType ?: contentType, buildJsonObject {
+                val type = typeLink ?: return@buildJsonObject
+                put("schema", Json.encodeToJsonElement(type.jsonSchema()))
             })
         }
+    }
+
+    private fun TypeLink.jsonSchema(): JsonSchema = when(this) {
+        is TypeLink.Simple -> JsonSchema(jsonType)
+        is TypeLink.Reference -> JsonSchema(ref = "#/components/schemas/$name")
+        is TypeLink.Optional -> delegate.jsonSchema() // TODO
+        is TypeLink.Array -> JsonSchema(
+            type = JsonType.array,
+            items = element.jsonSchema()
+        )
     }
 }

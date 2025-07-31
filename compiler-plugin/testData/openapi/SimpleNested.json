@@ -14,7 +14,10 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/List<User>"
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/User0"
+                                    }
                                 }
                             }
                         }
@@ -45,11 +48,17 @@
                         "description": "The ID of the user",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
                 ],
                 "responses": {
+                    "400": {
+                        "description": "Bad ID argument",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
                     "404": {
                         "description": "The user was not found",
                         "content": {
@@ -67,29 +76,42 @@
                         "description": "The ID of the user",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
-                ]
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad ID argument",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "204": {
+                        "description": "The user was deleted",
+                        "content": {
+                            "application/json": {}
+                        }
+                    }
+                }
             }
         }
     },
     "components": {
         "schemas": {
-            "List<User>": {
-                "type": "object",
-                "properties": {}
-            },
             "User0": {
                 "type": "object",
                 "properties": {
                     "id": {
-                        "type": "string"
+                        "type": "integer"
                     },
                     "name": {
                         "type": "string"
                     }
                 }
+            },
+            "List": {
+                "type": "array"
             }
         }
     }
