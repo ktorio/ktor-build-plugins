@@ -6,6 +6,13 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 
 *No changes yet*
 
+## [3.2.3] - 2025-07-29
+
+- Update Ktor to [v3.2.3](https://github.com/ktorio/ktor/releases/tag/3.2.3)
+- [KTOR-8678] Enforce Commons Lang v3.18.0+
+
+[KTOR-8678]: https://youtrack.jetbrains.com/issue/KTOR-8678
+
 ## [3.2.2] - 2025-07-14
 
 - Update Ktor to [v3.2.2](https://github.com/ktorio/ktor/releases/tag/3.2.2)
@@ -74,7 +81,8 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 - Bump default JRE in Docker to 21 (current LTS version)
 - Set Kotlin API and language level to 1.8 for compatibility with Gradle 8.0+
 
-[unreleased]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.2...main
+[unreleased]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.3...main
+[3.2.3]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.2...v3.2.3
 [3.2.2]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.1...v3.2.2
 [3.2.1]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/ktorio/ktor-build-plugins/compare/v3.1.3...v3.2.0
