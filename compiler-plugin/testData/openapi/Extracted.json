@@ -7,7 +7,7 @@
     "paths": {
         "/api/users": {
             "post": {
-                "summary": "Save a new user.\n",
+                "summary": "Save a new user.",
                 "requestBody": {
                     "description": "The user to save.",
                     "content": {
@@ -20,7 +20,22 @@
                 }
             },
             "get": {
-                "summary": "Delete a user.\n",
+                "summary": "Get a list of users.",
+                "responses": {
+                    "200": {
+                        "description": "A list of users.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/User1"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 "parameters": [
                     {
                         "name": "id",
@@ -31,24 +46,12 @@
                             "type": "string"
                         }
                     }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "A list of users.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/List<User>"
-                                }
-                            }
-                        }
-                    }
-                }
+                ]
             }
         },
         "/api/users/{id}": {
             "delete": {
-                "summary": "Delete a user.\n",
+                "summary": "Delete a user.",
                 "parameters": [
                     {
                         "name": "id",
@@ -62,7 +65,7 @@
                 ]
             },
             "get": {
-                "summary": "Delete a user.\n",
+                "summary": "Get a single user",
                 "parameters": [
                     {
                         "name": "id",
@@ -76,9 +79,16 @@
                 ],
                 "responses": {
                     "404": {
-                        "description": "The user was not found",
+                        "description": "The user was not found"
+                    },
+                    "200": {
+                        "description": null,
                         "content": {
-                            "application/json": {}
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User1"
+                                }
+                            }
                         }
                     }
                 }
@@ -97,13 +107,6 @@
                         "type": "string"
                     }
                 }
-            },
-            "List<User>": {
-                "type": "object",
-                "properties": {}
-            },
-            "List": {
-                "type": "array"
             }
         }
     }

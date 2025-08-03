@@ -1,7 +1,6 @@
 package io.ktor.openapi
 
 import io.ktor.openapi.model.JsonSchema
-import io.ktor.openapi.model.JsonType
 import io.ktor.openapi.model.RouteField
 import io.ktor.openapi.model.RouteField.Body
 import io.ktor.openapi.model.RouteField.Description
@@ -13,11 +12,11 @@ import io.ktor.openapi.model.RouteField.Tag
 import io.ktor.openapi.model.RouteElement
 import io.ktor.openapi.model.RouteFieldList
 import io.ktor.openapi.model.SpecInfo
-import io.ktor.openapi.model.TypeLink
 import io.ktor.openapi.model.append
 import io.ktor.openapi.model.appendObject
+import io.ktor.openapi.model.getReference
+import io.ktor.openapi.model.mergeAll
 import io.ktor.openapi.model.put
-import io.ktor.openapi.model.takeCompatible
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -31,22 +30,27 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
 
-object OpenApiSchemaGenerator {
+object OpenApiSpecGenerator {
 
-    fun buildSchema(
+    fun buildSpecification(
         specInfo: SpecInfo,
         routeElements: List<RouteElement>,
         schemas: Map<String, JsonSchema>,
         defaultContentType: String,
         json: Json,
     ): JsonObject {
-        val actualCalls = routeElements
+        val callsByPath = routeElements
             .mergeNested()
             .filterIsInstance<RouteElement.Route>()
             .groupBy { it.path }
+        val schemaReferences = callsByPath.values.flatten()
+            .flatMap { it.parameters }
+            .filterIsInstance<RouteField.Content>()
+            .mapNotNull { it.schema?.getReference() }
+        val schemaJson = Json.encodeToJsonElement(schemas.filterKeys { it in schemaReferences })
 
         val paths = buildJsonObject {
-            for ((path, calls) in actualCalls) {
+            for ((path, calls) in callsByPath) {
                 putJsonObject(path ?: continue) {
                     for (call in calls) {
                         put(
@@ -63,7 +67,7 @@ object OpenApiSchemaGenerator {
             put("info", json.encodeToJsonElement(specInfo))
             put("paths", JsonObject(paths))
             putJsonObject("components") {
-                put("schemas", Json.encodeToJsonElement(schemas))
+                put("schemas", schemaJson)
             }
         }
     }
@@ -109,28 +113,25 @@ object OpenApiSchemaGenerator {
             if (route !is RouteElement.Route || route.method == null) return@mapNotNull null
             if (route !in childParentMap && route !in parentChildMap) return@mapNotNull route
 
-            val ancestry = sequence {
+            val ancestors = sequence {
                 var current: RouteElement? = route
                 while (current != null) {
                     yield(current)
                     current = childParentMap[current]
                 }
-            }
-            val mergedPath = StringBuilder()
-            val mergedParams = mutableListOf<RouteField>()
-            for (element in ancestry.toList().reversed()) {
-                (element as? RouteElement.Route)?.path?.takeIf { it.isNotEmpty() }?.let {
-                    mergedPath.append("$it/")
-                }
-                mergedParams.takeCompatible(element.parameters)
-            }
-            parentChildMap[route]?.flatMap { it.parameters }?.let {
-                mergedParams.takeCompatible(it)
-            }
+            }.toList()
+
+            val descendents = parentChildMap[route] ?: emptyList()
 
             route.copy(
-                path = mergedPath.toString().trimEnd('/').replace("//", "/"),
-                parameters = mergedParams
+                path = ancestors.reversed().asSequence()
+                    .filterIsInstance<RouteElement.Route>()
+                    .mapNotNull { it.path }
+                    .joinToString("/")
+                    .replace("//", "/"),
+                parameters = mergeAll(
+                    ancestors.map { it.parameters } + descendents.map { it.parameters }
+                )
             )
         }
     }
@@ -146,7 +147,7 @@ object OpenApiSchemaGenerator {
                 is Summary -> put("summary", param.text)
                 is Description -> put("description", param.text)
                 is Body -> {
-                    put("requestBody", param.jsonSchema(defaultContentType))
+                    put("requestBody", param.asSchema(defaultContentType))
                 }
                 is Parameter -> {
                     append("parameters", buildJsonObject {
@@ -154,14 +155,14 @@ object OpenApiSchemaGenerator {
                         put("in", param.`in`)
                         put("description", param.description)
                         put("required", true)
-                        put("schema", Json.encodeToJsonElement(param.typeLink?.jsonSchema() ?: JsonSchema.String))
+                        put("schema", Json.encodeToJsonElement(param.schema?.asSchema() ?: JsonSchema.String))
                     })
                 }
                 is RouteField.Deprecated -> {
                     put("deprecated", JsonPrimitive(true))
                 }
                 is Response -> {
-                    appendObject("responses", param.code, param.jsonSchema(defaultContentType))
+                    appendObject("responses", param.code, param.asSchema(defaultContentType))
                 }
                 is Security -> {
                     append("security", buildJsonObject {
@@ -175,23 +176,13 @@ object OpenApiSchemaGenerator {
         }
     }
 
-    private fun RouteField.Content.jsonSchema(contentType: String) = buildJsonObject {
+    private fun RouteField.Content.asSchema(contentType: String) = buildJsonObject {
         put("description", description)
+        val type = schema ?: return@buildJsonObject
         putJsonObject("content") {
-            put(this@jsonSchema.contentType ?: contentType, buildJsonObject {
-                val type = typeLink ?: return@buildJsonObject
-                put("schema", Json.encodeToJsonElement(type.jsonSchema()))
+            put(this@asSchema.contentType ?: contentType, buildJsonObject {
+                put("schema", Json.encodeToJsonElement(type.asSchema()))
             })
         }
-    }
-
-    private fun TypeLink.jsonSchema(): JsonSchema = when(this) {
-        is TypeLink.Simple -> JsonSchema(jsonType)
-        is TypeLink.Reference -> JsonSchema(ref = "#/components/schemas/$name")
-        is TypeLink.Optional -> delegate.jsonSchema() // TODO
-        is TypeLink.Array -> JsonSchema(
-            type = JsonType.array,
-            items = element.jsonSchema()
-        )
     }
 }

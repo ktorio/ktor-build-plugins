@@ -7,7 +7,7 @@
     "paths": {
         "/api/users": {
             "get": {
-                "summary": "Get a list of users.\n",
+                "summary": "Get a list of users.",
                 "responses": {
                     "200": {
                         "description": "A list of users.",
@@ -25,7 +25,7 @@
                 }
             },
             "post": {
-                "summary": "Save a new user.\n",
+                "summary": "Save a new user.",
                 "requestBody": {
                     "description": "the user to save.",
                     "content": {
@@ -40,7 +40,7 @@
         },
         "/api/users/{id}": {
             "get": {
-                "summary": "Get a single user\n",
+                "summary": "Get a single user",
                 "parameters": [
                     {
                         "name": "id",
@@ -54,21 +54,15 @@
                 ],
                 "responses": {
                     "400": {
-                        "description": "Bad ID argument",
-                        "content": {
-                            "application/json": {}
-                        }
+                        "description": "Bad ID argument"
                     },
                     "404": {
-                        "description": "The user was not found",
-                        "content": {
-                            "application/json": {}
-                        }
+                        "description": "The user was not found"
                     }
                 }
             },
             "delete": {
-                "summary": "Delete a user.\n",
+                "summary": "Delete a user.",
                 "parameters": [
                     {
                         "name": "id",
@@ -82,16 +76,10 @@
                 ],
                 "responses": {
                     "400": {
-                        "description": "Bad ID argument",
-                        "content": {
-                            "application/json": {}
-                        }
+                        "description": "Bad ID argument"
                     },
                     "204": {
-                        "description": "The user was deleted",
-                        "content": {
-                            "application/json": {}
-                        }
+                        "description": "The user was deleted"
                     }
                 }
             }
@@ -109,9 +97,6 @@
                         "type": "string"
                     }
                 }
-            },
-            "List": {
-                "type": "array"
             }
         }
     }

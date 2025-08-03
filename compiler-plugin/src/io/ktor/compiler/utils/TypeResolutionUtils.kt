@@ -28,11 +28,11 @@ import org.jetbrains.kotlin.util.PrivateForInline
 @OptIn(PrivateForInline::class, SymbolInternals::class)
 fun resolveTypeLink(
     context: CheckerContext,
-    typeLink: TypeLink,
+    reference: String,
 ): ConeKotlinType? {
     try {
         // For resolving, we still need to go through type resolver
-        val firTypeRef = createUserTypeRefFromLink(context, typeLink) ?: return null
+        val firTypeRef = createUserTypeRefFromLink(context, reference) ?: return null
 
         val configuration = TypeResolutionConfiguration(
             scopes = context.scopeSession.scopes().values.flatMap { it.values }.filterIsInstance<FirScope>(),
@@ -60,7 +60,7 @@ fun resolveTypeLink(
  */
 private fun createUserTypeRefFromLink(
     context: CheckerContext,
-    typeLink: TypeLink,
+    reference: String,
 ): FirUserTypeRef? {
     // TODO generics
 //    val parts = typeString.split(".")
@@ -104,7 +104,7 @@ private fun createUserTypeRefFromLink(
         isMarkedNullable = false
         qualifier += FirQualifierPartImpl(
             source = null,
-            name = Name.identifier(typeLink.name),
+            name = Name.identifier(reference),
             typeArgumentList = FirTypeArgumentListImpl(null)
         )
     }

@@ -47,7 +47,7 @@ fun Routing.userCrud(repository: Repository<User>) {
             /**
              * Get a list of users.
              *
-             * @response 200 A list of users.
+             * @response 200 [User]+ A list of users.
              */
             get {
                 val query = call.request.queryParameters.toMap()

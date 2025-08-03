@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
+import org.jetbrains.kotlin.fir.types.type
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
@@ -16,24 +17,58 @@ data class JsonSchema(
     val properties: Map<String, JsonSchema>? = null,
     @SerialName($$"$ref")
     val ref: String? = null,
-    val items: JsonSchema? = null
+    val items: JsonSchema? = null,
+    val required: Boolean? = null,
 ) {
     companion object {
         val String = JsonSchema(type = JsonType.string)
 
-        fun CheckerContext.schemaFromConeType(coneType: ConeKotlinType): JsonSchema {
+        fun CheckerContext.findSchemaDefinitions(coneType: ConeKotlinType): Sequence<JsonSchema> {
+            if (coneType !is ConeClassLikeType)
+                return emptySequence()
+
+            return when (findStandardJsonType(coneType.lookupTag.classId)) {
+                JsonType.array, JsonType.`object` -> coneType.typeArguments.asSequence().flatMap { typeArg ->
+                    typeArg.type?.let { findSchemaDefinitions(it) } ?: emptySequence()
+                }
+                null -> sequenceOf(schemaDefinitionForType(coneType))
+                else -> emptySequence()
+            }
+        }
+
+        fun CheckerContext.schemaFromConeType(coneType: ConeKotlinType, expand: Boolean = true): JsonSchema {
             if (coneType !is ConeClassLikeType)
                 return JsonSchema(JsonType.any)
 
-            return findStandardJsonType(coneType.lookupTag.classId)?.let(::JsonSchema)
-                ?: JsonSchema(
-                    type = JsonType.`object`,
-                    properties = getAllPropertiesFromType(coneType)
-                        .associate {
-                            it.name.asString() to schemaFromConeType(it.resolvedReturnType)
-                        }
+            return when(val jsonType = findStandardJsonType(coneType.lookupTag.classId)) {
+                JsonType.array -> JsonSchema(
+                    JsonType.array,
+                    items = coneType.typeArguments.first().type?.let {
+                        schemaFromConeType(it, expand)
+                    }
                 )
+                null -> {
+                    if (expand) schemaDefinitionForType(coneType)
+                    else JsonSchema(ref = "#/components/schemas/${coneType.lookupTag.classId.shortClassName.asString()}")
+                }
+                else -> JsonSchema(jsonType)
+            }
         }
+
+        fun JsonSchema.asReference(name: String): JsonSchema =
+            if (type == JsonType.`object`)
+                JsonSchema(ref = "#/components/schemas/$name")
+            else if (type == JsonType.array)
+                copy(items = items?.asReference(name))
+            else this
+
+        private fun CheckerContext.schemaDefinitionForType(coneType: ConeClassLikeType): JsonSchema = JsonSchema(
+            type = JsonType.`object`,
+            properties = getAllPropertiesFromType(coneType)
+                .associate {
+                    it.name.asString() to schemaFromConeType(it.resolvedReturnType)
+                }
+        )
     }
 }
 
