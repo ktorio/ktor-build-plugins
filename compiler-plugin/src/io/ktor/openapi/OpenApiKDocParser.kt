@@ -14,6 +14,8 @@ fun SourceCoordinates.parseKDoc(): RouteFieldList =
  * @param text The source text of the file
  * @param beforeOffset The offset before which to look for comments
  * @return The extracted comment text or empty string if no comment is found
+ *
+ * TODO going too far back
  */
 fun parsePrecedingComment(text: CharSequence, beforeOffset: Int): RouteFieldList {
     // Ensure offset is within bounds
@@ -93,29 +95,26 @@ private fun List<String>.parseParameters(): List<RouteField> =
         for (line in this@parseParameters) {
             if (line.startsWith("@")) {
                 if (current.isNotEmpty()) {
-                    parseParameter(current.toString())?.let(::add)
+                    parseParameter(current)?.let(::add)
                     current.clear()
                 }
             }
             current.appendLine(line)
         }
         if (current.isNotEmpty()) {
-            parseParameter(current.toString())?.let(::add)
+            parseParameter(current)?.let(::add)
         }
     }
 
 val contentTypeArg = Regex("^(\\w+/\\S+)$")
 val schemaArg = Regex("^\\[(.*)]([?+]?)$")
 
-fun parseParameter(text: String): RouteField? {
+fun parseParameter(text: CharSequence): RouteField? {
     if (!text.startsWith('@'))
-        return Summary(text)
+        return Summary(text.toString().trim())
     var i = 0
     val words = text.trim().removePrefix("@").split(" ")
     val next = { words[i++] }
-//    val maybeNext: ((String) -> Boolean) -> String? = { predicate ->
-//        words.getOrNull(i)?.takeIf(predicate)?.also { i++ }
-//    }
     val tryMatchNext: Regex.() -> MatchResult? = {
         words.getOrNull(i)?.let { word ->
             matchEntire(word)?.let { match ->
@@ -127,31 +126,31 @@ fun parseParameter(text: String): RouteField? {
 
     return when (next()) {
         "tag" -> Tag(next())
-        "path" -> PathParam(next(), schemaArg.tryMatchNext()?.getTypeLink(), remaining())
-        "query" -> PathParam(next(), schemaArg.tryMatchNext()?.getTypeLink(), remaining())
-        "header" -> Header(next(), schemaArg.tryMatchNext()?.getTypeLink(), remaining())
-        "cookie" -> Cookie(next(), schemaArg.tryMatchNext()?.getTypeLink(), remaining())
-        "body" -> Body(contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getTypeLink(), remaining())
-        "response" -> Response(next(), contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getTypeLink(), remaining())
+        "path" -> PathParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining())
+        "query" -> PathParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining())
+        "header" -> Header(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining())
+        "cookie" -> Cookie(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining())
+        "body" -> Body(contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getSchemaReference(), remaining())
+        "response" -> Response(next(), contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getSchemaReference(), remaining())
         "deprecated" -> Deprecated(remaining())
         else -> null // ignore unknown tags
     }
 }
 
 // TODO support ?+ and +?, maps
-private fun MatchResult.getTypeLink(): TypeLink? {
+private fun MatchResult.getSchemaReference(): SchemaReference.Link? {
     val (name, qualifier) = destructured
-    return getTypeLink(name, qualifier)
+    return getSchemaReference(name, qualifier)
 }
 
-fun getTypeLink(name: String, qualifier: String? = null): TypeLink? {
+fun getSchemaReference(name: String, qualifier: String? = null): SchemaReference.Link? {
     val base = when (val jsonType = findJsonPrimitiveType(name)) {
-        null -> TypeLink.Reference(name)
-        else -> TypeLink.Simple(name, jsonType)
+        null -> SchemaReference.Link.Reference(name)
+        else -> SchemaReference.Link.Simple(name, jsonType)
     }
     return when (qualifier) {
-        "?" -> TypeLink.Optional(base)
-        "+" -> TypeLink.Array(base)
+        "?" -> SchemaReference.Link.Optional(base)
+        "+" -> SchemaReference.Link.Array(base)
         else -> base
     }
 }

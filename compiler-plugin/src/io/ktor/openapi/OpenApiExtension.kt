@@ -1,15 +1,16 @@
 package io.ktor.openapi
 
 import io.ktor.compiler.utils.*
-import io.ktor.openapi.OpenApiKtorRouting.isCustomExtension
-import io.ktor.openapi.OpenApiKtorRouting.isRoute
-import io.ktor.openapi.OpenApiKtorRouting.isCallRespond
 import io.ktor.openapi.OpenApiKtorRouting.isCallReceive
+import io.ktor.openapi.OpenApiKtorRouting.isCallRespond
+import io.ktor.openapi.OpenApiKtorRouting.isCustomExtension
 import io.ktor.openapi.OpenApiKtorRouting.isParameterGet
 import io.ktor.openapi.OpenApiKtorRouting.isQueryParameterGet
+import io.ktor.openapi.OpenApiKtorRouting.isRoute
 import io.ktor.openapi.OpenApiKtorSchema.classifyContentNegotiationBody
 import io.ktor.openapi.OpenApiKtorSchema.isInstallContentNegotiation
 import io.ktor.openapi.model.*
+import io.ktor.openapi.model.JsonSchema.Companion.findSchemaDefinitions
 import io.ktor.openapi.model.JsonSchema.Companion.schemaFromConeType
 import kotlinx.serialization.json.Json
 import org.jetbrains.kotlin.KtSourceElement
@@ -21,9 +22,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.expression.ExpressionCheckers
 import org.jetbrains.kotlin.fir.analysis.checkers.expression.FirFunctionCallChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.fullyExpandedClassId
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
-import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
-import org.jetbrains.kotlin.fir.expressions.FirLiteralExpression
 import org.jetbrains.kotlin.fir.expressions.arguments
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.packageFqName
@@ -62,7 +61,7 @@ class OpenApiExtension(
             if (parent != null && !parent.exists())
                 Files.createDirectories(parent)
         }
-        val openApiSpec = OpenApiSchemaGenerator.buildSchema(
+        val openApiSpec = OpenApiSpecGenerator.buildSpecification(
             config.info,
             routeElements,
             schemas,
@@ -110,14 +109,15 @@ class OpenApiRouteCallReader(
         when {
             expression.isRoute() -> {
                 val routeFields = invocation.parseKDoc()
-                val path = expression.arguments.getOrNull(0)?.resolveToString()
+                val path = expression.getArgumentAsString("path")
                 for (content in routeFields.filterIsInstance<RouteField.Content>()) {
-                    if (content.typeLink == null) continue
-                    val typeLink = content.typeLink ?: continue
-                    val coneType = resolveTypeLink(context, typeLink) ?: continue
-                    if (!typeLink.hasReference()) continue
+                    if (content.schema == null) continue
+                    val reference = content.schema?.getReference() ?: continue
+                    val coneType = resolveTypeLink(context, reference) ?: continue
 
-                    onSchemaReference(typeLink.name, context.schemaFromConeType(coneType))
+                    context.findSchemaDefinitions(coneType).forEach { resolvedSchema ->
+                        onSchemaReference(reference, resolvedSchema)
+                    }
                 }
 
                 onRoutingCall(RouteElement.Route(
@@ -128,36 +128,35 @@ class OpenApiRouteCallReader(
                 ))
             }
             expression.isCallRespond() -> {
-                val coneType = expression.arguments.getOrNull(0)?.resolvedType ?: return
+                val coneType = expression.arguments.firstOrNull {
+                    it.resolvedType.classId?.shortClassName?.asString() != "HttpStatusCode"
+                }?.resolvedType ?: return
                 val className = coneType.classId?.shortClassName?.asString() ?: return
+                for (schema in context.findSchemaDefinitions(coneType))
+                    onSchemaReference(className, schema)
 
-                // TODO handle this better
-                if (className == "HttpStatusCode") return
-
-                onSchemaReference(className, context.schemaFromConeType(coneType))
-
-                // TODO optionals, arrays
+                val schema = SchemaReference.Resolved(context.schemaFromConeType(coneType, expand = false))
                 onRoutingCall(RouteElement.CallFeature(
                     functionName,
-                    listOf(RouteField.Response(code = "200", typeLink = getTypeLink(className))),
+                    listOf(RouteField.Response(code = "200", schema = schema)),
                     invocation
                 ))
             }
             expression.isCallReceive() -> {
                 val coneType = expression.resolvedType
                 val className = coneType.classId?.shortClassName?.asString() ?: return
+                for (schema in context.findSchemaDefinitions(coneType))
+                    onSchemaReference(className, schema)
 
-                onSchemaReference(className, context.schemaFromConeType(coneType))
-
-                // TODO optionals, arrays
+                val schema = SchemaReference.Resolved(context.schemaFromConeType(coneType, expand = false))
                 onRoutingCall(RouteElement.CallFeature(
                     functionName,
-                    listOf(RouteField.Body(typeLink = getTypeLink(className))),
+                    listOf(RouteField.Body(schema = schema)),
                     invocation
                 ))
             }
             expression.isParameterGet() -> {
-                val key = expression.arguments.getOrNull(0)?.resolveToString() ?: return
+                val key = expression.getArgumentAsString("name") ?: return
 
                 onRoutingCall(RouteElement.CallFeature(
                     functionName,
@@ -167,7 +166,7 @@ class OpenApiRouteCallReader(
 
             }
             expression.isQueryParameterGet() -> {
-                val key = expression.arguments.getOrNull(0)?.resolveToString() ?: return
+                val key = expression.getArgumentAsString("name") ?: return
 
                 onRoutingCall(RouteElement.CallFeature(
                     functionName,
@@ -193,13 +192,6 @@ class OpenApiRouteCallReader(
             }
         }
     }
-
-    // TODO only supports string literals atm, should handle constants and possibly trace up the stack for variables
-    private fun FirExpression.resolveToString(): String? =
-        when(this) {
-            is FirLiteralExpression -> this.value?.toString()
-            else -> null
-        }
 
     private fun CheckerContext.getSourceFile(): SourceFile? {
         return SourceFile(
