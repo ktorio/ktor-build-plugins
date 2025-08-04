@@ -39,4 +39,4 @@ out/
 ### Custom ###
 local-plugin-repository
 samples/ktor-openapi-sample/docs
-samples/ktor-openapi-sample/api.json
+*.actual.json

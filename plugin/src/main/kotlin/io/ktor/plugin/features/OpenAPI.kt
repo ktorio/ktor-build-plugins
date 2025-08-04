@@ -2,7 +2,6 @@ package io.ktor.plugin.features
 
 import io.ktor.plugin.KtorGradleCompilerPlugin
 import org.gradle.api.Project
-import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Property
 
 public abstract class OpenAPIExtension(project: Project) {
@@ -18,7 +17,7 @@ public abstract class OpenAPIExtension(project: Project) {
      * Defaults to "build/resources/main/openapi/generated.json"
      * TODO seems to be impossible to leave this optional
      */
-    public val output: Property<RegularFile?> = project.objects.fileProperty()
+//    public val output: Property<RegularFile?> = project.objects.fileProperty()
 
     /**
      * The title of the API.

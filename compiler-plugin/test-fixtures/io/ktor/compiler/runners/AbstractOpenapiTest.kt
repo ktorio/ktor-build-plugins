@@ -39,6 +39,11 @@ open class AbstractOpenapiTest : AbstractFirPhasedDiagnosticTest(FirParser.Light
                 ::KtorClasspathConfigurator,
                 ::OpenApiRegistrarConfigurator
             )
+
+            useAfterAnalysisCheckers(
+                ::OpenApiSnapshotVerificationService
+            )
+
         }
     }
 }

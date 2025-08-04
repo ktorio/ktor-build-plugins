@@ -1,4 +1,7 @@
-package io.ktor.openapi.model
+package io.ktor.openapi.routing
+
+import io.ktor.openapi.model.JsonSchema
+import io.ktor.openapi.model.JsonType
 
 /**
  * Sealed class representing different KDoc parameters for OpenAPI documentation.
