@@ -102,6 +102,15 @@ tasks {
         systemProperty("idea.home.path", rootDir)
     }
 
+
+    val updateSnapshots by registering(Test::class) {
+        group = "verification"
+        useJUnitPlatform()
+        environment("REPLACE_OPENAPI_SNAPSHOTS", "true")
+        systemProperty("testSamples.replaceSnapshots", "true")
+        include("**/OpenapiTestGenerated.class")
+    }
+
     val generateTests by registering(JavaExec::class) {
         inputs
             .dir(layout.projectDirectory.dir("testData"))
@@ -120,13 +129,6 @@ tasks {
         dependsOn(generateTests)
     }
 }
-
-//register<Test>("updateSnapshots") {
-//    group = "verification"
-//    useJUnitPlatform()
-//    environment("REPLACE_OPENAPI_SNAPSHOTS", "true")
-//    include("**/OpenAPIKDocProcessorTest.class")
-//}
 
 publishing {
     publications {

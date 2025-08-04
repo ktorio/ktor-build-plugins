@@ -58,6 +58,16 @@
                     },
                     "404": {
                         "description": "The user was not found"
+                    },
+                    "200": {
+                        "description": null,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User0"
+                                }
+                            }
+                        }
                     }
                 }
             },

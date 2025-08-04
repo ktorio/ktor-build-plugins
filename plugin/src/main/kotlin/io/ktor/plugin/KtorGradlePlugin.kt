@@ -5,6 +5,8 @@ import io.ktor.plugin.internal.*
 import io.ktor.plugin.internal.KotlinPluginType.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.Directory
+import org.gradle.api.provider.Provider
 
 public abstract class KtorGradlePlugin : Plugin<Project> {
     override fun apply(project: Project): Unit = with(project) {
@@ -26,6 +28,12 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
 
         afterEvaluate {
             if (!kotlinPluginApplied) reportKotlinPluginMissingWarning()
+
+            project.extensions.getByType(org.gradle.api.tasks.SourceSetContainer::class.java).forEach { sourceSet ->
+                if (sourceSet.name == "main") {
+                    sourceSet.resources.srcDir(project.ktorOutputDir)
+                }
+            }
         }
     }
 
@@ -73,3 +81,6 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
     )
 )
 public const val KTOR_VERSION: String = KtorGradlePlugin.VERSION
+
+internal val Project.ktorOutputDir: Provider<Directory>
+    get() = project.layout.buildDirectory.dir("ktor")

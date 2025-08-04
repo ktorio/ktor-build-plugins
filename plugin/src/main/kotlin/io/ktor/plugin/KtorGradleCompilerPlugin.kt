@@ -37,9 +37,10 @@ public class KtorGradleCompilerPlugin : KotlinCompilerPluginSupportPlugin {
                 return@provider emptyList()
 
             buildList {
+                val outputPath = project.ktorOutputDir.get().file("openapi.json").asFile.absolutePath
                 mainClass?.let { add(SubpluginOption(key = "mainClass", value = mainClass)) }
                 add(SubpluginOption(key = "openapi.enabled", value = extension.enabled.get().toString()))
-                add(SubpluginOption(key = "openapi.output", value = extension.outputPath(kotlinCompilation).absolutePath))
+                add(SubpluginOption(key = "openapi.output", value = outputPath))
                 extension.description.orNull?.let { add(SubpluginOption(key = "openapi.description", value = it)) }
                 extension.title.orNull?.let { add(SubpluginOption(key = "openapi.title", value = it)) }
                 extension.summary.orNull?.let { add(SubpluginOption(key = "openapi.summary", value = it)) }
@@ -52,12 +53,3 @@ public class KtorGradleCompilerPlugin : KotlinCompilerPluginSupportPlugin {
     }
 
 }
-
-private fun OpenAPIExtension.outputPath(compilation: KotlinCompilation<*>) =
-    if (output.isPresent) {
-        val path = output.get()
-        require(path != null) { "OpenAPI output file is null" }
-        path.asFile
-    } else {
-        compilation.output.resourcesDir.resolve("openapi/generated.json")
-    }
