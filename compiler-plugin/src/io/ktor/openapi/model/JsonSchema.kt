@@ -56,11 +56,11 @@ data class JsonSchema(
         }
 
         fun JsonSchema.asReference(name: String): JsonSchema =
-            if (type == JsonType.`object`)
-                JsonSchema(ref = "#/components/schemas/$name")
-            else if (type == JsonType.array)
-                copy(items = items?.asReference(name))
-            else this
+            when (type) {
+                JsonType.`object` -> JsonSchema(ref = "#/components/schemas/$name")
+                JsonType.array -> copy(items = items?.asReference(name))
+                else -> this
+            }
 
         private fun CheckerContext.schemaDefinitionForType(coneType: ConeClassLikeType): JsonSchema = JsonSchema(
             type = JsonType.`object`,

@@ -16,7 +16,6 @@ ktor {
         title = "OpenAPI example"
         version = "2.1"
         summary = "This is a sample API"
-        output = layout.projectDirectory.file("api.json")
     }
 }
 

@@ -1,10 +1,14 @@
 package io.ktor.openapi
 
 import io.ktor.openapi.model.*
-import io.ktor.openapi.model.RouteField.*
-import io.ktor.openapi.model.RouteField.Deprecated
+import io.ktor.openapi.routing.RouteField
+import io.ktor.openapi.routing.RouteField.*
+import io.ktor.openapi.routing.RouteField.Deprecated
+import io.ktor.openapi.routing.RouteFieldList
+import io.ktor.openapi.routing.SchemaReference
+import io.ktor.openapi.routing.SourceRange
 
-fun SourceCoordinates.parseKDoc(): RouteFieldList =
+fun SourceRange.parseKDoc(): RouteFieldList =
     parsePrecedingComment(file.text, range.first)
 
 /**

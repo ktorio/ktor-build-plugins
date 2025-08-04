@@ -1,21 +1,21 @@
 package io.ktor.openapi
 
 import io.ktor.openapi.model.JsonSchema
-import io.ktor.openapi.model.RouteField
-import io.ktor.openapi.model.RouteField.Body
-import io.ktor.openapi.model.RouteField.Description
-import io.ktor.openapi.model.RouteField.Parameter
-import io.ktor.openapi.model.RouteField.Response
-import io.ktor.openapi.model.RouteField.Security
-import io.ktor.openapi.model.RouteField.Summary
-import io.ktor.openapi.model.RouteField.Tag
-import io.ktor.openapi.model.RouteElement
-import io.ktor.openapi.model.RouteFieldList
+import io.ktor.openapi.routing.RouteField
+import io.ktor.openapi.routing.RouteField.Body
+import io.ktor.openapi.routing.RouteField.Description
+import io.ktor.openapi.routing.RouteField.Parameter
+import io.ktor.openapi.routing.RouteField.Response
+import io.ktor.openapi.routing.RouteField.Security
+import io.ktor.openapi.routing.RouteField.Summary
+import io.ktor.openapi.routing.RouteField.Tag
+import io.ktor.openapi.routing.RoutingReference
+import io.ktor.openapi.routing.RouteFieldList
 import io.ktor.openapi.model.SpecInfo
 import io.ktor.openapi.model.append
 import io.ktor.openapi.model.appendObject
-import io.ktor.openapi.model.getReference
-import io.ktor.openapi.model.mergeAll
+import io.ktor.openapi.routing.getReference
+import io.ktor.openapi.routing.mergeAll
 import io.ktor.openapi.model.put
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -34,14 +34,14 @@ object OpenApiSpecGenerator {
 
     fun buildSpecification(
         specInfo: SpecInfo,
-        routeElements: List<RouteElement>,
+        routingReferences: List<RoutingReference>,
         schemas: Map<String, JsonSchema>,
         defaultContentType: String,
         json: Json,
     ): JsonObject {
-        val callsByPath = routeElements
+        val callsByPath = routingReferences
             .mergeNested()
-            .filterIsInstance<RouteElement.Route>()
+            .filterIsInstance<RoutingReference.RouteCall>()
             .groupBy { it.path }
         val schemaReferences = callsByPath.values.flatten()
             .flatMap { it.parameters }
@@ -55,7 +55,7 @@ object OpenApiSpecGenerator {
                     for (call in calls) {
                         put(
                             call.method ?: continue,
-                            call.parameters.toSpecObject(defaultContentType)
+                            JsonObject(call.parameters.toSpecParametersMap(defaultContentType))
                         )
                     }
                 }
@@ -76,11 +76,11 @@ object OpenApiSpecGenerator {
     /**
      * Merges nested routing calls into a single call by merging their paths and parameters.
      */
-    fun List<RouteElement>.mergeNested(): List<RouteElement> {
-        val parentChildMap = mutableMapOf<RouteElement, List<RouteElement>>()
-        val childParentMap = mutableMapOf<RouteElement, RouteElement>()
+    fun List<RoutingReference>.mergeNested(): List<RoutingReference> {
+        val parentChildMap = mutableMapOf<RoutingReference, List<RoutingReference>>()
+        val childParentMap = mutableMapOf<RoutingReference, RoutingReference>()
 
-        fun RouteElement.addChild(child: RouteElement) {
+        fun RoutingReference.addChild(child: RoutingReference) {
             parentChildMap[this] = parentChildMap.getOrDefault(this, emptyList()) + child
             childParentMap[child] = this
         }
@@ -89,7 +89,7 @@ object OpenApiSpecGenerator {
         for (i in 0 ..< lastIndex) {
             when(val current = get(i)) {
                 // only subsequent invocations can be children
-                is RouteElement.Route -> {
+                is RoutingReference.RouteCall -> {
                     for (j in i + 1 ..< size) {
                         if (get(j) in current)
                             current.addChild(get(j))
@@ -97,24 +97,24 @@ object OpenApiSpecGenerator {
                     }
                 }
                 // body can occur anywhere, so we need to check the whole array
-                is RouteElement.Extension -> {
+                is RoutingReference.ExtensionFunction -> {
                     for (other in this) {
                         if (other in current && other !in childParentMap)
                             current.addChild(other)
                     }
                 }
-                // call features are leaf nodes
-                is RouteElement.CallFeature -> {}
+                // call features are always considered leaf nodes
+                is RoutingReference.CallExpression -> {}
             }
         }
 
         // 2. Merge routes from paths in the tree.
         return mapNotNull { route ->
-            if (route !is RouteElement.Route || route.method == null) return@mapNotNull null
+            if (route !is RoutingReference.RouteCall || route.method == null) return@mapNotNull null
             if (route !in childParentMap && route !in parentChildMap) return@mapNotNull route
 
             val ancestors = sequence {
-                var current: RouteElement? = route
+                var current: RoutingReference? = route
                 while (current != null) {
                     yield(current)
                     current = childParentMap[current]
@@ -125,7 +125,7 @@ object OpenApiSpecGenerator {
 
             route.copy(
                 path = ancestors.reversed().asSequence()
-                    .filterIsInstance<RouteElement.Route>()
+                    .filterIsInstance<RoutingReference.RouteCall>()
                     .mapNotNull { it.path }
                     .joinToString("/")
                     .replace("//", "/"),
@@ -135,9 +135,6 @@ object OpenApiSpecGenerator {
             )
         }
     }
-
-    fun RouteFieldList.toSpecObject(defaultContentType: String) =
-        JsonObject(toSpecParametersMap(defaultContentType))
 
     fun RouteFieldList.toSpecParametersMap(
         defaultContentType: String
