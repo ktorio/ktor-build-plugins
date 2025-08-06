@@ -7,6 +7,8 @@ import io.ktor.openapi.routing.RouteField.Deprecated
 import io.ktor.openapi.routing.RouteFieldList
 import io.ktor.openapi.routing.SchemaReference
 import io.ktor.openapi.routing.SourceRange
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
 
 fun SourceRange.parseKDoc(): RouteFieldList =
     parsePrecedingComment(file.text, range.first)
@@ -116,8 +118,9 @@ val schemaArg = Regex("^\\[(.*)]([?+]?)$")
 fun parseParameter(text: CharSequence): RouteField? {
     if (!text.startsWith('@'))
         return Summary(text.toString().trim())
+    val bodyAndAttributes = text.split(Regex("\n(?=\\s*$?\\p{Alpha}+)"), limit = 2)
     var i = 0
-    val words = text.trim().removePrefix("@").split(" ")
+    val words = bodyAndAttributes.first().trim().removePrefix("@").split(" ")
     val next = { words[i++] }
     val tryMatchNext: Regex.() -> MatchResult? = {
         words.getOrNull(i)?.let { word ->
@@ -127,19 +130,72 @@ fun parseParameter(text: CharSequence): RouteField? {
         }
     }
     val remaining = { words.drop(i).joinToString(" ").trim() }
+    val attributes = {
+        bodyAndAttributes.getOrNull(1)?.let {
+            parseJsonSchemaAttributes(it)
+        } ?: emptyMap()
+    }
 
     return when (next()) {
         "tag" -> Tag(next())
-        "path" -> PathParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining())
-        "query" -> PathParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining())
-        "header" -> Header(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining())
-        "cookie" -> Cookie(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining())
-        "body" -> Body(contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getSchemaReference(), remaining())
-        "response" -> Response(next(), contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getSchemaReference(), remaining())
+        "path" -> PathParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
+        "query" -> PathParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
+        "header" -> Header(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
+        "cookie" -> Cookie(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
+        "body" -> Body(contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
+        "response" -> Response(next(), contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
         "deprecated" -> Deprecated(remaining())
         else -> null // ignore unknown tags
     }
 }
+
+private fun parseJsonSchemaAttributes(text: CharSequence): Map<String, JsonElement> =
+    text.trim().lineSequence().map {
+        it.trim().split(Regex("\\s*:\\s*"), limit = 2) }
+        .filter { it.size == 2 }.associate { (key, value) ->
+            key to parseJsonSchemaAttribute(key, value)
+        }
+
+private fun parseJsonSchemaAttribute(key: String, value: String): JsonPrimitive =
+    when(key) {
+        // Number/Integer Validation
+        "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf" ->
+            JsonPrimitive(value.toNumberOrNull() ?: 0.0)
+
+        // String Validation
+        "minLength", "maxLength" ->
+            JsonPrimitive(value.toNumberOrNull() ?: 0)
+        "pattern", "format" ->
+            JsonPrimitive(value)
+
+        // Array Validation
+        "minItems", "maxItems", "minContains", "maxContains" ->
+            JsonPrimitive(value.toNumberOrNull() ?: 0)
+        "uniqueItems" ->
+            JsonPrimitive(value.equals("true", ignoreCase = true))
+
+        // Object Validation
+        "minProperties", "maxProperties" ->
+            JsonPrimitive(value.toNumberOrNull() ?: 0)
+        "additionalProperties" ->
+            JsonPrimitive(value.equals("true", ignoreCase = true))
+
+        // General Validation
+        "type", "default", "const" ->
+            JsonPrimitive(value)
+
+        // Metadata
+        "title", "description", $$"$comment" ->
+            JsonPrimitive(value)
+        "readOnly", "writeOnly" ->
+            JsonPrimitive(value.equals("true", ignoreCase = true))
+
+        // Default case for any other attributes
+        else -> JsonPrimitive(value)
+    }
+
+private fun String.toNumberOrNull(): Number? =
+    toLongOrNull() ?: toDoubleOrNull()
 
 // TODO support ?+ and +?, maps
 private fun MatchResult.getSchemaReference(): SchemaReference.Link? {
