@@ -1,6 +1,7 @@
 package io.ktor.plugin
 
 import io.ktor.plugin.features.*
+import io.ktor.plugin.generated.BuildConfig
 import io.ktor.plugin.internal.*
 import io.ktor.plugin.internal.KotlinPluginType.*
 import org.gradle.api.Plugin
@@ -66,7 +67,10 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
 
     public companion object {
         /** The Ktor plugin version. Usually it is equal to the Ktor version used in a project. */
-        public const val VERSION: String = "3.2.3"
+        public const val VERSION: String = BuildConfig.VERSION
+
+        /** The Ktor library version, used in the bom, this can differ for EAP's **/
+        public const val KTOR_VERSION: String = BuildConfig.KTOR_VERSION
 
         /** The group name used for Ktor tasks. */
         public const val TASK_GROUP: String = "Ktor"

@@ -31,4 +31,4 @@ private fun Project.configureMultiplatformDependency() {
 }
 
 private val DependencyHandler.ktorBom: Dependency
-    get() = platform("io.ktor:ktor-bom:${KtorGradlePlugin.VERSION}")
+    get() = platform("io.ktor:ktor-bom:${KtorGradlePlugin.KTOR_VERSION}")

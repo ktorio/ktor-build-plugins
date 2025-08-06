@@ -6,15 +6,15 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.pluginPublish)
     alias(libs.plugins.binaryCompatibilityValidator)
+    alias(libs.plugins.buildconfig)
 }
 
 group = libs.plugins.ktor.get().pluginId
-version = libs.plugins.ktor.get().version
-
-if (hasProperty("versionSuffix")) {
-    val suffix = property("versionSuffix")
-    version = "$version-$suffix"
-}
+version = listOfNotNull(
+    libs.plugins.ktor.get().version,
+    System.getenv("GIT_BRANCH")?.let(Regex("^.*/(.*)-eap$")::matchEntire)?.groupValues?.get(1)?.takeIf { it != "main" },
+    findProperty("versionSuffix")
+).joinToString("-")
 
 dependencies {
     implementation(gradleApi())
@@ -46,6 +46,13 @@ kotlin {
         languageVersion = KotlinVersion.KOTLIN_1_8
         apiVersion = KotlinVersion.KOTLIN_1_8
     }
+}
+
+// Include the project version for referencing the compiler plugin
+buildConfig {
+    packageName("io.ktor.plugin.generated")
+    buildConfigField("String", "VERSION", "\"${project.version}\"")
+    buildConfigField("String", "KTOR_VERSION", "\"${libs.ktor.server.core.get().version}\"")
 }
 
 gradlePlugin {
