@@ -1,10 +1,14 @@
 package io.ktor.compiler.utils
 
+import io.ktor.openapi.routing.SourceFile
+import org.jetbrains.kotlin.KtSourceElement
+import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
 import org.jetbrains.kotlin.fir.expressions.FirLiteralExpression
 import org.jetbrains.kotlin.fir.expressions.FirNamedArgumentExpression
 import org.jetbrains.kotlin.fir.expressions.arguments
+import org.jetbrains.kotlin.text
 
 /**
  * Handle named arguments and position arguments.
@@ -23,3 +27,13 @@ fun FirExpression.resolveToString(): String? =
         is FirLiteralExpression -> this.value?.toString()
         else -> null
     }
+
+val KtSourceElement.range: IntRange get() =
+    startOffset..endOffset
+
+fun CheckerContext.getSourceFile(): SourceFile? {
+    return SourceFile(
+        containingFilePath ?: return null,
+        containingFile?.source?.text ?: return null,
+    )
+}

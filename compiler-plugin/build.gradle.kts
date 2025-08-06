@@ -53,6 +53,11 @@ dependencies {
     testSamples(libs.ktor.server.core)
     testSamples(libs.ktor.server.cio)
     testSamples(libs.ktor.server.contentNegotiation)
+    testSamples(libs.ktor.server.auth)
+    testSamples(libs.ktor.server.authJwt)
+    testSamples(libs.ktor.client.core)
+    testSamples(libs.ktor.client.apache)
+
     testSamples(libs.ktor.json)
 
     testRuntimeOnly(libs.kotlin.test.junit5)

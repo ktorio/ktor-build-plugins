@@ -1,0 +1,48 @@
+{
+    "openapi": "3.1.1",
+    "info": {
+        "title": "Open API Document",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/login": {
+            "get": {
+                "security": [
+                    {
+                        "auth-oauth-google": []
+                    }
+                ]
+            }
+        },
+        "/callback": {
+            "get": {
+                "security": [
+                    {
+                        "auth-oauth-google": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {},
+        "securitySchemes": {
+            "auth-oauth-google": {
+                "type": "oauth2",
+                "flows": {
+                    "authorizationCode": {
+                        "authorizationUrl": "https://accounts.google.com/o/oauth2/auth",
+                        "tokenUrl": "https://accounts.google.com/o/oauth2/token",
+                        "scopes": {
+                            "https://www.googleapis.com/auth/userinfo.profile": "https://www.googleapis.com/auth/userinfo.profile"
+                        }
+                    }
+                }
+            },
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    }
+}

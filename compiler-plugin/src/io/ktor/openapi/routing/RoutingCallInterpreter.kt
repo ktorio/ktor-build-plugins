@@ -1,6 +1,7 @@
 package io.ktor.openapi.routing
 
 import io.ktor.openapi.model.JsonSchema
+import kotlinx.serialization.Serializable
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
@@ -18,10 +19,27 @@ sealed interface RoutingReferenceResult {
 
     data class Match(
         val call: RoutingReference,
-        val schema: Map<String, JsonSchema>,
+        val schema: Map<String, JsonSchema> = emptyMap(),
     ) : RoutingReferenceResult
 
     data class ContentType(
         val contentType: io.ktor.openapi.routing.ContentType,
     ): RoutingReferenceResult
+
+    data class SecurityScheme(
+        val name: String,
+        val type: String,
+        val scheme: String? = null,
+        val bearerFormat: String? = null,
+        val openIdConnectUrl: String? = null,
+        val flows: Map<String, OauthFlow>? = null,
+    ) : RoutingReferenceResult
 }
+
+@Serializable
+data class OauthFlow(
+    val authorizationUrl: String,
+    val tokenUrl: String,
+    val refreshUrl: String? = null,
+    val scopes: Map<String, String>? = null,
+)

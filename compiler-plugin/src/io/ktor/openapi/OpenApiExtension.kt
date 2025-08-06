@@ -1,14 +1,8 @@
 package io.ktor.openapi
 
 import io.ktor.openapi.model.*
-import io.ktor.openapi.routing.CallReceiveInterpreter
-import io.ktor.openapi.routing.CallRespondInterpreter
-import io.ktor.openapi.routing.ContentNegotiationInterpreter
+import io.ktor.openapi.routing.interpreters.*
 import io.ktor.openapi.routing.ContentType
-import io.ktor.openapi.routing.CustomExtensionInterpreter
-import io.ktor.openapi.routing.ParameterGetInterpreter
-import io.ktor.openapi.routing.QueryParameterGetInterpreter
-import io.ktor.openapi.routing.EndpointInterpreter
 import io.ktor.openapi.routing.RoutingReference
 import io.ktor.openapi.routing.RoutingCallInterpreter
 import io.ktor.openapi.routing.RoutingReferenceResult
@@ -34,6 +28,7 @@ class OpenApiExtension(
     private val routingReferences = mutableListOf<RoutingReference>()
     private val schemas = mutableMapOf<String, JsonSchema>()
     private var defaultContentType: String = ContentType.OTHER.value
+    private val securitySchemes = mutableListOf<RoutingReferenceResult.SecurityScheme>()
 
     private val routeCallReader = object: OpenApiRouteCallReader() {
         override fun onRoutingReference(reference: RoutingReference) {
@@ -44,6 +39,9 @@ class OpenApiExtension(
         }
         override fun onContentNegotiation(contentType: ContentType) {
             defaultContentType = contentType.value
+        }
+        override fun onSecurityScheme(security: RoutingReferenceResult.SecurityScheme) {
+            securitySchemes.add(security)
         }
     }
 
@@ -66,6 +64,7 @@ class OpenApiExtension(
             routingReferences,
             schemas,
             defaultContentType,
+            securitySchemes,
             json
         )
         val jsonString = json.encodeToString(openApiSpec)
@@ -91,12 +90,15 @@ abstract class OpenApiRouteCallReader(
         ParameterGetInterpreter(),
         QueryParameterGetInterpreter(),
         CustomExtensionInterpreter(),
-        ContentNegotiationInterpreter()
+        ContentNegotiationInterpreter(),
+        AuthenticationInterpreter(),
+        AuthenticateRouteInterpreter(),
     )
 ) : FirFunctionCallChecker(MppCheckerKind.Common) {
     abstract fun onRoutingReference(reference: RoutingReference)
     abstract fun onSchemaReference(name: String, schema: JsonSchema)
     abstract fun onContentNegotiation(contentType: ContentType)
+    abstract fun onSecurityScheme(security: RoutingReferenceResult.SecurityScheme)
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(expression: FirFunctionCall) {
@@ -111,6 +113,8 @@ abstract class OpenApiRouteCallReader(
                 }
                 is RoutingReferenceResult.ContentType ->
                     onContentNegotiation(result.contentType)
+                is RoutingReferenceResult.SecurityScheme ->
+                    onSecurityScheme(result)
             }
             // when match is found, skip other adapters
             return
