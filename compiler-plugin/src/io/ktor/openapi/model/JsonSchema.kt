@@ -3,6 +3,8 @@ package io.ktor.openapi.model
 import io.ktor.compiler.utils.getAllPropertiesFromType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
@@ -21,7 +23,7 @@ data class JsonSchema(
     val required: Boolean? = null,
 ) {
     companion object {
-        val String = JsonSchema(type = JsonType.string)
+        val String = JsonObject(mapOf("type" to JsonPrimitive("string")))
 
         fun CheckerContext.findSchemaDefinitions(coneType: ConeKotlinType): Sequence<JsonSchema> {
             if (coneType !is ConeClassLikeType)
