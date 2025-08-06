@@ -12,12 +12,11 @@ plugins {
 val artifact = "ktor-compiler-plugin"
 
 group = "io.ktor"
-version = libs.plugins.ktor.get().version
-
-if (hasProperty("versionSuffix")) {
-    val suffix = property("versionSuffix")
-    version = "$version-$suffix"
-}
+version = listOfNotNull(
+    libs.plugins.ktor.get().version,
+    System.getenv("GIT_BRANCH")?.let(Regex("^.*/(.*)-eap$")::matchEntire)?.groupValues?.get(1)?.takeIf { it != "main" },
+    findProperty("versionSuffix")
+).joinToString("-")
 
 val testSamples by configurations.creating
 val testData by sourceSets.creating {
@@ -146,14 +145,27 @@ tasks {
 }
 
 publishing {
+    if (hasProperty("space")) {
+        val publishingUrl = System.getenv("PUBLISHING_URL")
+        val publishingUser = System.getenv("PUBLISHING_USER")
+        if (publishingUrl == null || publishingUser == null) {
+            throw GradleException("Missing publishing credentials")
+        }
+        repositories {
+            maven(url = publishingUrl) {
+                name = "space"
+                credentials {
+                    username = publishingUser
+                    password = System.getenv("PUBLISHING_PASSWORD")
+                }
+            }
+        }
+    }
     publications {
         create<MavenPublication>("maven") {
             artifactId = artifact
             from(components["java"])
         }
-    }
-    repositories {
-        mavenLocal()
     }
 }
 
