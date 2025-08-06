@@ -23,6 +23,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
@@ -144,22 +145,22 @@ object OpenApiSpecGenerator {
                 is Summary -> put("summary", param.text)
                 is Description -> put("description", param.text)
                 is Body -> {
-                    put("requestBody", param.asSchema(defaultContentType))
+                    put("requestBody", param.asContentJson(defaultContentType))
                 }
                 is Parameter -> {
                     append("parameters", buildJsonObject {
                         put("name", param.name)
                         put("in", param.`in`)
                         put("description", param.description)
-                        put("required", true)
-                        put("schema", Json.encodeToJsonElement(param.schema?.asSchema() ?: JsonSchema.String))
+                        put("required", JsonPrimitive(true))
+                        put("schema", param.asSchema() ?: JsonSchema.String)
                     })
                 }
                 is RouteField.Deprecated -> {
                     put("deprecated", JsonPrimitive(true))
                 }
                 is Response -> {
-                    appendObject("responses", param.code, param.asSchema(defaultContentType))
+                    appendObject("responses", param.code, param.asContentJson(defaultContentType))
                 }
                 is Security -> {
                     append("security", buildJsonObject {
@@ -173,13 +174,23 @@ object OpenApiSpecGenerator {
         }
     }
 
-    private fun RouteField.Content.asSchema(contentType: String) = buildJsonObject {
+    private fun RouteField.Content.asContentJson(defaultContentType: String) = buildJsonObject {
         put("description", description)
-        val type = schema ?: return@buildJsonObject
+        val type = asSchema() ?: return@buildJsonObject
+        val contentType = this@asContentJson.contentType
         putJsonObject("content") {
-            put(this@asSchema.contentType ?: contentType, buildJsonObject {
-                put("schema", Json.encodeToJsonElement(type.asSchema()))
+            put(contentType ?: defaultContentType, buildJsonObject {
+                put("schema", type)
             })
         }
     }
+
+    private fun RouteField.SchemaHolder.asSchema(): JsonElement? =
+        schema?.asSchema()?.let { typeSchema ->
+            val typeSchemaObject = Json.encodeToJsonElement(typeSchema).jsonObject
+            JsonObject(
+                 typeSchemaObject + attributes
+            )
+        }
+
 }

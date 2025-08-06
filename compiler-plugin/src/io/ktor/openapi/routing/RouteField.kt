@@ -2,6 +2,7 @@ package io.ktor.openapi.routing
 
 import io.ktor.openapi.model.JsonSchema
 import io.ktor.openapi.model.JsonType
+import kotlinx.serialization.json.JsonElement
 
 /**
  * Sealed class representing different KDoc parameters for OpenAPI documentation.
@@ -13,6 +14,7 @@ sealed interface RouteField {
 
     sealed interface SchemaHolder : RouteField {
         val schema: SchemaReference?
+        val attributes: Map<String, JsonElement>
     }
 
     sealed interface Content : SchemaHolder {
@@ -45,12 +47,14 @@ sealed interface RouteField {
         override val name: String,
         override val schema: SchemaReference? = null,
         override val description: String? = null,
+        override val attributes: Map<String, JsonElement> = emptyMap(),
     ) : Parameter {
         override val `in`: String = "path"
         override fun merge(other: RouteField): RouteField? =
             if (other is PathParam && name == other.name) copy(
                 schema = schema ?: other.schema,
                 description = description ?: other.description,
+                attributes = attributes + other.attributes,
             ) else null
     }
 
@@ -63,12 +67,14 @@ sealed interface RouteField {
         override val name: String,
         override val schema: SchemaReference? = null,
         override val description: String? = null,
+        override val attributes: Map<String, JsonElement> = emptyMap(),
     ) : Parameter {
         override val `in`: String = "query"
         override fun merge(other: RouteField): RouteField? =
             if (other is QueryParam && name == other.name) copy(
                 schema = schema ?: other.schema,
                 description = description ?: other.description,
+                attributes = attributes + other.attributes,
             ) else null
     }
 
@@ -81,6 +87,7 @@ sealed interface RouteField {
         override val name: String,
         override val schema: SchemaReference? = null,
         override val description: String? = null,
+        override val attributes: Map<String, JsonElement> = emptyMap(),
     ) : Parameter {
         override val `in`: String = "header"
         override fun merge(other: RouteField): RouteField? =
@@ -99,12 +106,14 @@ sealed interface RouteField {
         override val name: String,
         override val schema: SchemaReference? = null,
         override val description: String? = null,
+        override val attributes: Map<String, JsonElement> = emptyMap(),
     ) : Parameter {
         override val `in`: String = "cookie"
         override fun merge(other: RouteField): RouteField? =
             if (other is Cookie && name == other.name) copy(
                 schema = schema ?: other.schema,
                 description = description ?: other.description,
+                attributes = attributes + other.attributes,
             ) else null
     }
 
@@ -117,12 +126,14 @@ sealed interface RouteField {
         override val contentType: String? = null,
         override val schema: SchemaReference? = null,
         override val description: String? = null,
+        override val attributes: Map<String, JsonElement> = emptyMap(),
     ) : Content {
         override fun merge(other: RouteField): RouteField? =
             if (other is Body) copy(
                 contentType = contentType ?: other.contentType,
                 schema = schema ?: other.schema,
                 description = description ?: other.description,
+                attributes = attributes + other.attributes,
             ) else null
     }
 
@@ -136,6 +147,7 @@ sealed interface RouteField {
         override val contentType: String? = null,
         override val schema: SchemaReference? = null,
         override val description: String? = null,
+        override val attributes: Map<String, JsonElement> = emptyMap(),
     ) : Content {
         override fun merge(other: RouteField): RouteField? =
             if (other is Response && code == other.code)
@@ -143,6 +155,7 @@ sealed interface RouteField {
                     contentType = contentType ?: other.contentType,
                     schema = schema ?: other.schema,
                     description = description ?: other.description,
+                    attributes = attributes + other.attributes,
                 )
             else null
     }

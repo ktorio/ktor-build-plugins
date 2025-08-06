@@ -102,13 +102,23 @@ tasks {
         systemProperty("idea.home.path", rootDir)
     }
 
-
     val updateSnapshots by registering(Test::class) {
         group = "verification"
+        dependsOn(testSamples)
         useJUnitPlatform()
-        environment("REPLACE_OPENAPI_SNAPSHOTS", "true")
+
+        // Copy all configurations / properties from the test task
+        val testTask = project.tasks.test.get()
+        classpath = testTask.classpath
+        testClassesDirs = testTask.testClassesDirs
+        testTask.systemProperties.forEach { (key, value) ->
+            systemProperty(key, value)
+        }
+
+        // Set flag to replace snapshots
         systemProperty("testSamples.replaceSnapshots", "true")
-        include("**/OpenapiTestGenerated.class")
+
+        workingDir = rootDir
     }
 
     val generateTests by registering(JavaExec::class) {
