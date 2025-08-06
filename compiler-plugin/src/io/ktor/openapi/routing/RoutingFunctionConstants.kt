@@ -13,6 +13,7 @@ object RoutingFunctionConstants {
     const val PATCH = "patch"
     const val INSTALL = "install"
     const val CONTENT_NEGOTIATION = "ContentNegotiation"
+    const val AUTHENTICATION = "Authentication"
 
     val HTTP_METHODS = setOf(GET, POST, PUT, DELETE, HEAD, OPTIONS, PATCH)
     val ROUTING_FUNCTION_NAMES = HTTP_METHODS + ROUTE

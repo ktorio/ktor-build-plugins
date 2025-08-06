@@ -38,6 +38,7 @@ object OpenApiSpecGenerator {
         routingReferences: List<RoutingReference>,
         schemas: Map<String, JsonSchema>,
         defaultContentType: String,
+        securitySchemes: List<io.ktor.openapi.routing.RoutingReferenceResult.SecurityScheme>,
         json: Json,
     ): JsonObject {
         val callsByPath = routingReferences
@@ -69,6 +70,25 @@ object OpenApiSpecGenerator {
             put("paths", JsonObject(paths))
             putJsonObject("components") {
                 put("schemas", schemaJson)
+                if (securitySchemes.isNotEmpty()) {
+                    putJsonObject("securitySchemes") {
+                        for (scheme in securitySchemes) {
+                            putJsonObject(scheme.name) {
+                                put("type", scheme.type)
+                                if (scheme.scheme != null)
+                                    put("scheme", scheme.scheme)
+                                if (scheme.bearerFormat != null) put("bearerFormat", scheme.bearerFormat)
+                                if (scheme.openIdConnectUrl != null) put("openIdConnectUrl", scheme.openIdConnectUrl)
+                                if (scheme.type == "oauth2")
+                                    putJsonObject("flows") {
+                                        scheme.flows?.forEach { (name, flow) ->
+                                            put(name, Json.encodeToJsonElement(flow))
+                                        }
+                                    }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
