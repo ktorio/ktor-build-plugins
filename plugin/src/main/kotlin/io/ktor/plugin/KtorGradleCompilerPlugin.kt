@@ -37,7 +37,7 @@ public class KtorGradleCompilerPlugin : KotlinCompilerPluginSupportPlugin {
                 return@provider emptyList()
 
             buildList {
-                val outputPath = project.ktorOutputDir.get().file("openapi.json").asFile.absolutePath
+                val outputPath = project.ktorOutputDir.get().file("openapi/generated-api.json").asFile.absolutePath
                 mainClass?.let { add(SubpluginOption(key = "mainClass", value = mainClass)) }
                 add(SubpluginOption(key = "openapi.enabled", value = extension.enabled.get().toString()))
                 add(SubpluginOption(key = "openapi.output", value = outputPath))
