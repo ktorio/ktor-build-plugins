@@ -22,18 +22,18 @@ class CallReceiveInterpreter : RoutingCallInterpreter {
             filePath = context.containingFilePath,
             fir = expression,
             fields = {
-                listOf(RouteField.Body(
-                    schema = SchemaReference.Resolved(
-                        schemaFromConeType(coneType, expand = false)
-                    )
-                ))
+                buildList {
+                    add(RouteField.Body(
+                        schema = SchemaReference.Resolved(schemaFromConeType(coneType, expand = false))
+                    ))
+                    findSchemaDefinitions(coneType).forEach { (name, schema) ->
+                        add(RouteField.Schema(name, schema))
+                    }
+                }
             },
         )
 
-        return RoutingReferenceResult.Match(
-            call = routeNode,
-            schema = findSchemaDefinitions(coneType).toMap()
-        )
+        return RoutingReferenceResult.Match(routeNode)
     }
 
     private fun isCallReceive(expression: FirFunctionCall): Boolean =

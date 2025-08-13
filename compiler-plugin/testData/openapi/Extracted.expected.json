@@ -82,7 +82,7 @@
                         "description": "The user was not found"
                     },
                     "200": {
-                        "description": null,
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -192,7 +192,7 @@
                         "description": "The message was not found"
                     },
                     "200": {
-                        "description": null,
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {

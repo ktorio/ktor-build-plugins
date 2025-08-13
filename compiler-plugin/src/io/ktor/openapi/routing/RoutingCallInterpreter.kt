@@ -15,17 +15,24 @@ fun interface RoutingCallInterpreter {
 }
 
 sealed interface RoutingReferenceResult {
+    /**
+     * Nothing found for this function call.
+     */
     object None : RoutingReferenceResult
 
-    data class Match(
-        val call: RouteNode,
-        val schema: Map<String, JsonSchema> = emptyMap(),
-    ) : RoutingReferenceResult
+    /**
+     * Route node found.
+     */
+    data class Match(val call: RouteNode) : RoutingReferenceResult
 
-    data class ContentType(
-        val contentType: io.ktor.openapi.routing.ContentType,
-    ): RoutingReferenceResult
+    /**
+     * `install(ContentNegotiation)`
+     */
+    data class ContentType(val contentType: io.ktor.openapi.routing.ContentType): RoutingReferenceResult
 
+    /**
+     * `authentication {}`
+     */
     data class SecurityScheme(
         val name: String,
         val type: String,
