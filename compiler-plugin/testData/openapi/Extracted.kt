@@ -11,26 +11,34 @@ import io.ktor.server.routing.*
 import io.ktor.server.response.*
 import io.ktor.util.toMap
 
-fun Application.extracted(repository: Repository1<User1>) {
+fun Application.extracted(userRepository: Repository1<User1>, messageRepository: Repository1<Message1>) {
     install(ContentNegotiation) {
         json()
     }
 
     routing {
         route("/api") {
-            userEndpoints(repository)
+            userEndpoints(userRepository)
+            messageEndpoints(messageRepository)
         }
     }
 }
 
 private fun Route.userEndpoints(repository: Repository1<User1>) {
     route("/users") {
-        readEndpoints(repository)
-        modificationEndpoints(repository)
+        userReadEndpoints(repository)
+        userModificationEndpoints(repository)
     }
 }
 
-private fun Route.modificationEndpoints(repository: Repository1<User1>) {
+private fun Route.messageEndpoints(repository: Repository1<Message1>) {
+    route("/messages") {
+        messageReadEndpoints(repository)
+        messageModificationEndpoints(repository)
+    }
+}
+
+private fun Route.userModificationEndpoints(repository: Repository1<User1>) {
     /**
      * Save a new user.
      *
@@ -51,7 +59,7 @@ private fun Route.modificationEndpoints(repository: Repository1<User1>) {
     }
 }
 
-private fun Route.readEndpoints(repository: Repository1<User1>) {
+private fun Route.userReadEndpoints(repository: Repository1<User1>) {
     /**
      * Get a list of users.
      *
@@ -76,6 +84,53 @@ private fun Route.readEndpoints(repository: Repository1<User1>) {
     }
 }
 
+
+private fun Route.messageModificationEndpoints(repository: Repository1<Message1>) {
+    /**
+     * Save a new message.
+     *
+     * @body [Message1] The message to save.
+     */
+    post {
+        repository.save(call.receive())
+        call.respond(HttpStatusCode.Created)
+    }
+
+    /**
+     * Delete a message.
+     * @path id The ID of the message
+     */
+    delete("{id}") {
+        repository.delete(call.parameters["id"]!!)
+        call.respond(HttpStatusCode.NoContent)
+    }
+}
+
+private fun Route.messageReadEndpoints(repository: Repository1<Message1>) {
+    /**
+     * Get a list of messages.
+     *
+     * @response 200 A list of messages.
+     */
+    get {
+        val query = call.request.queryParameters.toMap()
+        val list = repository.list(query)
+        call.respond(list)
+    }
+
+    /**
+     * Get a single message
+     *
+     * @path id The ID of the message
+     * @response 404 The message was not found
+     */
+    get("{id}") {
+        val message = repository.get(call.parameters["id"]!!)
+            ?: return@get call.respond(HttpStatusCode.NotFound)
+        call.respond(message)
+    }
+}
+
 interface Repository1<E> {
     fun get(id: String): E?
     fun save(entity: E)
@@ -84,3 +139,4 @@ interface Repository1<E> {
 }
 
 data class User1(val id: String, val name: String)
+data class Message1(val id: String, val text: String)

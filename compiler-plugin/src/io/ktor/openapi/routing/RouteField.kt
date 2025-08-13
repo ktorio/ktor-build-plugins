@@ -3,6 +3,7 @@ package io.ktor.openapi.routing
 import io.ktor.openapi.model.JsonSchema
 import io.ktor.openapi.model.JsonType
 import kotlinx.serialization.json.JsonElement
+import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 
 /**
  * Sealed class representing different KDoc parameters for OpenAPI documentation.
@@ -29,9 +30,26 @@ sealed interface RouteField {
     }
 
     /**
+     * Built into the OpenAPI JSON structure, so ignored when building the path item.
+     */
+    sealed interface Implicit : RouteField
+
+    data class Method(val method: String) : Implicit {
+        override fun merge(other: RouteField): RouteField? =
+            if (other is Method && method == other.method) this else null
+    }
+
+    data class Path(val path: String) : Implicit {
+        override fun merge(other: RouteField): RouteField? =
+            if (other is Path)
+                Path("${other.path}/${path.removePrefix("/")}")
+            else null
+    }
+
+    /**
      * Associates the endpoint with a tag for grouping.
      *
-     * Format: `@tag [TagName]`
+     * Format: `@tag TagName`
      */
     data class Tag(val name: String) : RouteField {
         override fun merge(other: RouteField): RouteField? =
@@ -194,15 +212,11 @@ sealed interface RouteField {
 
 typealias RouteFieldList = List<RouteField>
 
-fun mergeAll(listOfLists: List<RouteFieldList>): RouteFieldList {
-    val iterator = listOfLists.iterator()
-    if (!iterator.hasNext()) return emptyList()
-    var params = iterator.next()
-    while (iterator.hasNext()) {
-        params = params.merge(iterator.next())
-    }
-    return params
-}
+val RouteFieldList.path: String?
+    get() = firstIsInstanceOrNull<RouteField.Path>()?.path
+
+val RouteFieldList.method: String?
+    get() = firstIsInstanceOrNull<RouteField.Method>()?.method
 
 /**
  * Merges two lists of route fields into a new list.
