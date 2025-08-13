@@ -34,6 +34,12 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
+  @TestMetadata("ComplexExtensions.kt")
+  public void testComplexExtensions() {
+    runTest("compiler-plugin/testData/openapi/ComplexExtensions.kt");
+  }
+
+  @Test
   @TestMetadata("Extracted.kt")
   public void testExtracted() {
     runTest("compiler-plugin/testData/openapi/Extracted.kt");

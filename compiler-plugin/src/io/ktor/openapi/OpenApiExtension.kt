@@ -1,11 +1,8 @@
 package io.ktor.openapi
 
 import io.ktor.openapi.model.*
+import io.ktor.openapi.routing.*
 import io.ktor.openapi.routing.interpreters.*
-import io.ktor.openapi.routing.ContentType
-import io.ktor.openapi.routing.RoutingReference
-import io.ktor.openapi.routing.RoutingCallInterpreter
-import io.ktor.openapi.routing.RoutingReferenceResult
 import kotlinx.serialization.json.Json
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.fir.FirSession
@@ -25,14 +22,15 @@ class OpenApiExtension(
     private val config: OpenApiProcessorConfig,
 ) : FirExtensionRegistrar() {
 
-    private val routingReferences = mutableListOf<RoutingReference>()
+    private lateinit var routeGraph: RouteGraph
     private val schemas = mutableMapOf<String, JsonSchema>()
     private var defaultContentType: String = ContentType.OTHER.value
     private val securitySchemes = mutableListOf<RoutingReferenceResult.SecurityScheme>()
+    private var session: FirSession? = null
 
     private val routeCallReader = object: OpenApiRouteCallReader() {
-        override fun onRoutingReference(reference: RoutingReference) {
-            routingReferences.add(reference)
+        override fun onRoutingReference(reference: RouteNode) {
+            routeGraph.add(reference)
         }
         override fun onSchemaReference(name: String, schema: JsonSchema) {
             schemas[name] = schema
@@ -46,10 +44,15 @@ class OpenApiExtension(
     }
 
     override fun ExtensionRegistrarContext.configurePlugin() {
-        +::OpenApiFirAdditionalChecksExtension
+        +::registerChecker
     }
 
-    fun isEmpty() = routingReferences.isEmpty()
+    fun isEmpty() = routeGraph.isEmpty()
+
+    fun registerChecker(session: FirSession): FirAdditionalCheckersExtension {
+        this.session = session // TODO use a better mechanism here
+        return OpenApiFirAdditionalChecksExtension(session)
+    }
 
     fun saveSpecification(json: Json) {
         // skip if there are no paths
@@ -61,7 +64,7 @@ class OpenApiExtension(
         }
         val openApiSpec = OpenApiSpecGenerator.buildSpecification(
             config.info,
-            routingReferences,
+            routeGraph.build(),
             schemas,
             defaultContentType,
             securitySchemes,
@@ -72,10 +75,12 @@ class OpenApiExtension(
         outputFile.writeText(jsonString)
     }
 
-
     private inner class OpenApiFirAdditionalChecksExtension(session: FirSession) : FirAdditionalCheckersExtension(session) {
         override val expressionCheckers: ExpressionCheckers
             get() = object : ExpressionCheckers() {
+                init {
+                    routeGraph = RouteGraph(session)
+                }
                 override val functionCallCheckers = setOf(routeCallReader)
             }
     }
@@ -95,7 +100,7 @@ abstract class OpenApiRouteCallReader(
         AuthenticateRouteInterpreter(),
     )
 ) : FirFunctionCallChecker(MppCheckerKind.Common) {
-    abstract fun onRoutingReference(reference: RoutingReference)
+    abstract fun onRoutingReference(reference: RouteNode)
     abstract fun onSchemaReference(name: String, schema: JsonSchema)
     abstract fun onContentNegotiation(contentType: ContentType)
     abstract fun onSecurityScheme(security: RoutingReferenceResult.SecurityScheme)
@@ -116,7 +121,7 @@ abstract class OpenApiRouteCallReader(
                 is RoutingReferenceResult.SecurityScheme ->
                     onSecurityScheme(result)
             }
-            // when match is found, skip other adapters
+            // when a match is found, skip other adapters
             return
         }
     }

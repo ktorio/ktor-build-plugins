@@ -116,6 +116,7 @@ class AuthenticationInterpreter : RoutingCallInterpreter {
     /**
      * Parse OAuth flow configuration from the OAuth configuration lambda.
      */
+    context(context: CheckerContext)
     private fun parseOAuthFlows(configLambda: FirAnonymousFunctionExpression): Map<String, OauthFlow> {
         val body = configLambda.anonymousFunction.body ?: return emptyMap()
 
@@ -151,6 +152,7 @@ class AuthenticationInterpreter : RoutingCallInterpreter {
     /**
      * Extract scopes from a defaultScopes argument.
      */
+    context(context: CheckerContext)
     private fun extractScopes(defaultScopesArg: FirExpression?): Map<String, String>? {
         if (defaultScopesArg == null) return null
 

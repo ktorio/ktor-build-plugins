@@ -18,7 +18,7 @@ sealed interface RoutingReferenceResult {
     object None : RoutingReferenceResult
 
     data class Match(
-        val call: RoutingReference,
+        val call: RouteNode,
         val schema: Map<String, JsonSchema> = emptyMap(),
     ) : RoutingReferenceResult
 

@@ -25,26 +25,30 @@ data class JsonSchema(
     companion object {
         val String = JsonObject(mapOf("type" to JsonPrimitive("string")))
 
-        fun CheckerContext.findSchemaDefinitions(coneType: ConeKotlinType): Sequence<JsonSchema> {
+        context(context: CheckerContext)
+        fun findSchemaDefinitions(coneType: ConeKotlinType): Sequence<Pair<String, JsonSchema>> {
             if (coneType !is ConeClassLikeType)
                 return emptySequence()
 
-            return when (findStandardJsonType(coneType.lookupTag.classId)) {
-                JsonType.array, JsonType.`object` -> coneType.typeArguments.asSequence().flatMap { typeArg ->
-                    typeArg.type?.let { findSchemaDefinitions(it) } ?: emptySequence()
-                }
-                null -> sequenceOf(schemaDefinitionForType(coneType))
+            val classId = coneType.lookupTag.classId
+            return when (findStandardJsonType(classId)) {
+                JsonType.array, JsonType.`object` ->
+                    coneType.typeArguments.asSequence().flatMap { typeArg ->
+                        typeArg.type?.let { findSchemaDefinitions(it) } ?: emptySequence()
+                    }
+                null -> sequenceOf(classId.shortClassName.asString() to schemaDefinitionForType(coneType))
                 else -> emptySequence()
             }
         }
 
-        fun CheckerContext.schemaFromConeType(coneType: ConeKotlinType, expand: Boolean = true): JsonSchema {
+        context(context: CheckerContext)
+        fun schemaFromConeType(coneType: ConeKotlinType, expand: Boolean = true): JsonSchema {
             if (coneType !is ConeClassLikeType)
                 return JsonSchema(JsonType.any)
 
             return when(val jsonType = findStandardJsonType(coneType.lookupTag.classId)) {
                 JsonType.array -> JsonSchema(
-                    JsonType.array,
+                    type = JsonType.array,
                     items = coneType.typeArguments.first().type?.let {
                         schemaFromConeType(it, expand)
                     }
@@ -64,7 +68,8 @@ data class JsonSchema(
                 else -> this
             }
 
-        private fun CheckerContext.schemaDefinitionForType(coneType: ConeClassLikeType): JsonSchema = JsonSchema(
+        context(context: CheckerContext)
+        private fun schemaDefinitionForType(coneType: ConeClassLikeType): JsonSchema = JsonSchema(
             type = JsonType.`object`,
             properties = getAllPropertiesFromType(coneType)
                 .associate {

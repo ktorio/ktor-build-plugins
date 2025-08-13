@@ -93,6 +93,116 @@
                     }
                 }
             }
+        },
+        "/api/messages": {
+            "post": {
+                "summary": "Save a new message.",
+                "requestBody": {
+                    "description": "The message to save.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Message1"
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "The user was not found"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Get a list of messages.",
+                "responses": {
+                    "200": {
+                        "description": "A list of messages.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Message1"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the message",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/api/messages/{id}": {
+            "delete": {
+                "summary": "Delete a message.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the message",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "The user was not found"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Get a single message",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the message",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "The message was not found"
+                    },
+                    "200": {
+                        "description": null,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Message1"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -104,6 +214,17 @@
                         "type": "string"
                     },
                     "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Message1": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "text": {
                         "type": "string"
                     }
                 }

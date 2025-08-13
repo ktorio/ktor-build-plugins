@@ -6,12 +6,12 @@ import io.ktor.openapi.routing.RouteField.*
 import io.ktor.openapi.routing.RouteField.Deprecated
 import io.ktor.openapi.routing.RouteFieldList
 import io.ktor.openapi.routing.SchemaReference
-import io.ktor.openapi.routing.SourceRange
+import io.ktor.openapi.routing.SourceTextRange
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 
-fun SourceRange.parseKDoc(): RouteFieldList =
-    parsePrecedingComment(file.text, range.first)
+fun SourceTextRange.parseKDoc(): RouteFieldList =
+    parsePrecedingComment(fileText, range.first)
 
 /**
  * Parses the comment that precedes a given offset in the source text.
