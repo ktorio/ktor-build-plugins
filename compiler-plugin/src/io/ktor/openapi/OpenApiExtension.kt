@@ -1,6 +1,5 @@
 package io.ktor.openapi
 
-import io.ktor.openapi.model.*
 import io.ktor.openapi.routing.*
 import io.ktor.openapi.routing.interpreters.*
 import kotlinx.serialization.json.Json
@@ -23,17 +22,13 @@ class OpenApiExtension(
 ) : FirExtensionRegistrar() {
 
     private lateinit var routeGraph: RouteGraph
-    private val schemas = mutableMapOf<String, JsonSchema>()
-    private var defaultContentType: String = ContentType.OTHER.value
+    private var defaultContentType: String = ContentType.JSON.value
     private val securitySchemes = mutableListOf<RoutingReferenceResult.SecurityScheme>()
     private var session: FirSession? = null
 
     private val routeCallReader = object: OpenApiRouteCallReader() {
         override fun onRoutingReference(reference: RouteNode) {
             routeGraph.add(reference)
-        }
-        override fun onSchemaReference(name: String, schema: JsonSchema) {
-            schemas[name] = schema
         }
         override fun onContentNegotiation(contentType: ContentType) {
             defaultContentType = contentType.value
@@ -65,7 +60,6 @@ class OpenApiExtension(
         val openApiSpec = OpenApiSpecGenerator.buildSpecification(
             config.info,
             routeGraph.build(),
-            schemas,
             defaultContentType,
             securitySchemes,
             json
@@ -94,14 +88,13 @@ abstract class OpenApiRouteCallReader(
         CallReceiveInterpreter(),
         ParameterGetInterpreter(),
         QueryParameterGetInterpreter(),
-        CustomExtensionInterpreter(),
+        CustomFunctionInterpreter(),
         ContentNegotiationInterpreter(),
         AuthenticationInterpreter(),
         AuthenticateRouteInterpreter(),
     )
 ) : FirFunctionCallChecker(MppCheckerKind.Common) {
     abstract fun onRoutingReference(reference: RouteNode)
-    abstract fun onSchemaReference(name: String, schema: JsonSchema)
     abstract fun onContentNegotiation(contentType: ContentType)
     abstract fun onSecurityScheme(security: RoutingReferenceResult.SecurityScheme)
 
@@ -110,12 +103,8 @@ abstract class OpenApiRouteCallReader(
         for (adapter in adapters) {
             when(val result = adapter.check(expression)) {
                 is RoutingReferenceResult.None -> continue
-                is RoutingReferenceResult.Match -> {
+                is RoutingReferenceResult.Match ->
                     onRoutingReference(result.call)
-                    result.schema.forEach { (name, schema) ->
-                        onSchemaReference(name, schema)
-                    }
-                }
                 is RoutingReferenceResult.ContentType ->
                     onContentNegotiation(result.contentType)
                 is RoutingReferenceResult.SecurityScheme ->

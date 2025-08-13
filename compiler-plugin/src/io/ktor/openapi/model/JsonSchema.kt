@@ -1,13 +1,14 @@
 package io.ktor.openapi.model
 
-import io.ktor.compiler.utils.getAllPropertiesFromType
+import io.ktor.compiler.utils.*
+import io.ktor.openapi.routing.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
+import org.jetbrains.kotlin.fir.types.ConeTypeProjection
 import org.jetbrains.kotlin.fir.types.type
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
@@ -25,7 +26,7 @@ data class JsonSchema(
     companion object {
         val String = JsonObject(mapOf("type" to JsonPrimitive("string")))
 
-        context(context: CheckerContext)
+        context(context: RouteStack)
         fun findSchemaDefinitions(coneType: ConeKotlinType): Sequence<Pair<String, JsonSchema>> {
             if (coneType !is ConeClassLikeType)
                 return emptySequence()
@@ -34,17 +35,28 @@ data class JsonSchema(
             return when (findStandardJsonType(classId)) {
                 JsonType.array, JsonType.`object` ->
                     coneType.typeArguments.asSequence().flatMap { typeArg ->
-                        typeArg.type?.let { findSchemaDefinitions(it) } ?: emptySequence()
+                        // TODO handle generics
+                        resolveTypeArg(typeArg)?.let {
+                            findSchemaDefinitions(it)
+                        } ?: emptySequence()
                     }
                 null -> sequenceOf(classId.shortClassName.asString() to schemaDefinitionForType(coneType))
                 else -> emptySequence()
             }
         }
 
-        context(context: CheckerContext)
+        context(context: RouteStack)
+        private fun resolveTypeArg(arg: ConeTypeProjection): ConeKotlinType? {
+            return arg.resolveType()
+        }
+
+        context(context: RouteStack)
         fun schemaFromConeType(coneType: ConeKotlinType, expand: Boolean = true): JsonSchema {
-            if (coneType !is ConeClassLikeType)
-                return JsonSchema(JsonType.any)
+            if (coneType !is ConeClassLikeType) {
+                return coneType.resolveType()?.let { resolvedType ->
+                    schemaFromConeType(resolvedType, expand)
+                } ?: JsonSchema(type = JsonType.any)
+            }
 
             return when(val jsonType = findStandardJsonType(coneType.lookupTag.classId)) {
                 JsonType.array -> JsonSchema(
@@ -68,7 +80,7 @@ data class JsonSchema(
                 else -> this
             }
 
-        context(context: CheckerContext)
+        context(context: RouteStack)
         private fun schemaDefinitionForType(coneType: ConeClassLikeType): JsonSchema = JsonSchema(
             type = JsonType.`object`,
             properties = getAllPropertiesFromType(coneType)
@@ -130,11 +142,15 @@ fun findStandardJsonType(classId: ClassId): JsonType? =
         StandardClassIds.List,
         StandardClassIds.Collection,
         StandardClassIds.Set,
+        StandardClassIds.MutableList,
+        StandardClassIds.MutableCollection,
+        StandardClassIds.MutableSet,
         StandardClassIds.Iterable ->
             JsonType.array
 
         // Map type
-        StandardClassIds.Map ->
+        StandardClassIds.Map,
+        StandardClassIds.MutableMap ->
             JsonType.`object`
 
         // Any, Nothing, Unit types

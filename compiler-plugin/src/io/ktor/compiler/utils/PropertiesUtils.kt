@@ -1,14 +1,17 @@
 package io.ktor.compiler.utils
 
+import io.ktor.openapi.routing.RouteStack
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
+import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
 import org.jetbrains.kotlin.fir.resolve.toSymbol
 import org.jetbrains.kotlin.fir.scopes.processAllProperties
+import org.jetbrains.kotlin.fir.scopes.unsubstitutedScope
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 
-context(context: CheckerContext)
+context(context: RouteStack)
 fun getAllPropertiesFromType(
     coneType: ConeKotlinType,
 ): List<FirCallableSymbol<*>> {
@@ -16,7 +19,12 @@ fun getAllPropertiesFromType(
         ?: return emptyList()
 
     // TODO generics require substitution w/ type params
-    val scope = classSymbol.unsubstitutedScope(context)
+    val scope = classSymbol.unsubstitutedScope(
+        context.session,
+        context.scopeSession,
+        withForcedTypeCalculator = true,
+        memberRequiredPhase = FirResolvePhase.STATUS,
+    )
     return buildList {
         scope.processAllProperties(::add)
     }
