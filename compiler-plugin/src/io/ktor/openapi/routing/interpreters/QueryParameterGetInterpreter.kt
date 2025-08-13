@@ -11,7 +11,7 @@ class QueryParameterGetInterpreter : RoutingCallInterpreter {
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(expression: FirFunctionCall): RoutingReferenceResult {
-        if (!isCallQueryParameters(expression))
+        if (!isGetQueryParameter(expression))
             return RoutingReferenceResult.None
 
         val key = expression.getArgumentAsString("name") ?: return RoutingReferenceResult.None
@@ -25,7 +25,7 @@ class QueryParameterGetInterpreter : RoutingCallInterpreter {
         return RoutingReferenceResult.Match(routeNode)
     }
 
-    private fun isCallQueryParameters(expression: FirFunctionCall): Boolean =
+    private fun isGetQueryParameter(expression: FirFunctionCall): Boolean =
         expression.calleeReference.name.asString() == "get" &&
             expression.explicitReceiver?.source?.text == "call.queryParameters"
 }

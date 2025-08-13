@@ -187,7 +187,7 @@ private fun parseJsonSchemaAttribute(key: String, value: String): JsonPrimitive 
         // Metadata
         "title", "description", $$"$comment" ->
             JsonPrimitive(value)
-        "readOnly", "writeOnly" ->
+        "readOnly", "writeOnly", "required" ->
             JsonPrimitive(value.equals("true", ignoreCase = true))
 
         // Default case for any other attributes

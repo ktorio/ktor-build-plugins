@@ -3,7 +3,6 @@ package io.ktor.openapi
 import io.ktor.openapi.model.*
 import io.ktor.openapi.routing.*
 import io.ktor.openapi.routing.RouteField.*
-import io.ktor.openapi.routing.RoutingFunctionConstants.GET
 import kotlinx.serialization.json.*
 
 object OpenApiSpecGenerator {
@@ -11,22 +10,24 @@ object OpenApiSpecGenerator {
     fun buildSpecification(
         specInfo: SpecInfo,
         routes: RouteGraph,
-        schemas: Map<String, JsonSchema>,
         defaultContentType: String,
         securitySchemes: List<RoutingReferenceResult.SecurityScheme>,
         json: Json,
     ): JsonObject {
         val routes = RouteCollector.collectRoutes(routes)
-        val callsByPath = routes
-            .groupBy { it.path }
-        val schemaJson = Json.encodeToJsonElement(schemas)
+        val routesByPath = routes.groupBy { it.path }
+        val schemaJson = JsonObject(routes.flatMap {
+            it.fields.filterIsInstance<Schema>()
+        }.associate { (name, schema) ->
+            name to Json.encodeToJsonElement(schema)
+        })
 
         val paths = buildJsonObject {
-            for ((path, calls) in callsByPath) {
+            for ((path, calls) in routesByPath) {
                 putJsonObject(path) {
                     for (call in calls) {
                         put(
-                            call.method ?: GET,
+                            call.method,
                             JsonObject(call.fields.toSpecParametersMap(defaultContentType))
                         )
                     }
@@ -77,7 +78,9 @@ object OpenApiSpecGenerator {
                     append("parameters", buildJsonObject {
                         put("name", param.name)
                         put("in", param.`in`)
-                        put("description", param.description)
+                        param.description?.let {
+                            put("description", it)
+                        }
                         put("required", JsonPrimitive(true))
                         put("schema", param.asSchema() ?: JsonSchema.String)
                     })
@@ -96,13 +99,13 @@ object OpenApiSpecGenerator {
                 is Tag -> {
                     append("tags", param.name)
                 }
-                is RouteField.Implicit -> {}
+                is Transient -> {}
             }
         }
     }
 
-    private fun RouteField.Content.asContentJson(defaultContentType: String) = buildJsonObject {
-        put("description", description)
+    private fun Content.asContentJson(defaultContentType: String) = buildJsonObject {
+        put("description", description ?: "")
         val type = asSchema() ?: return@buildJsonObject
         val contentType = this@asContentJson.contentType
         putJsonObject("content") {
@@ -112,7 +115,7 @@ object OpenApiSpecGenerator {
         }
     }
 
-    private fun RouteField.SchemaHolder.asSchema(): JsonElement? =
+    private fun SchemaHolder.asSchema(): JsonElement? =
         schema?.asSchema()?.let { typeSchema ->
             val typeSchemaObject = Json.encodeToJsonElement(typeSchema).jsonObject
             JsonObject(

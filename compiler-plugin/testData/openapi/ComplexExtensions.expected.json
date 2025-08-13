@@ -9,13 +9,13 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": null,
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "array",
                                     "items": {
-                                        "type": "any"
+                                        "$ref": "#/components/schemas/User2"
                                     }
                                 }
                             }
@@ -25,11 +25,11 @@
             },
             "post": {
                 "requestBody": {
-                    "description": null,
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "any"
+                                "$ref": "#/components/schemas/User2"
                             }
                         }
                     }
@@ -40,13 +40,13 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": null,
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "array",
                                     "items": {
-                                        "type": "any"
+                                        "$ref": "#/components/schemas/Message2"
                                     }
                                 }
                             }
@@ -56,11 +56,11 @@
             },
             "post": {
                 "requestBody": {
-                    "description": null,
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "any"
+                                "$ref": "#/components/schemas/Message2"
                             }
                         }
                     }
@@ -73,7 +73,6 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": null,
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -82,11 +81,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": null,
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "any"
+                                    "$ref": "#/components/schemas/User2"
                                 }
                             }
                         }
@@ -98,7 +97,6 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": null,
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -113,7 +111,6 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": null,
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -122,11 +119,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": null,
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "any"
+                                    "$ref": "#/components/schemas/Message2"
                                 }
                             }
                         }
@@ -138,7 +135,6 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": null,
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -149,6 +145,29 @@
         }
     },
     "components": {
-        "schemas": {}
+        "schemas": {
+            "User2": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Message2": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "text": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
     }
 }

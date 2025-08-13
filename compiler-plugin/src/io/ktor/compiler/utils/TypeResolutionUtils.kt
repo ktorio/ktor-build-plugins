@@ -26,10 +26,8 @@ import org.jetbrains.kotlin.util.PrivateForInline
  * @return A ConeKotlinType for the resolved type, or null if the type couldn't be resolved
  */
 @OptIn(PrivateForInline::class, SymbolInternals::class)
-fun resolveTypeLink(
-    context: CheckerContext,
-    reference: String,
-): ConeKotlinType? {
+context(context: CheckerContext)
+fun resolveTypeLink(reference: String): ConeKotlinType? {
     try {
         // For resolving, we still need to go through type resolver
         val firTypeRef = createUserTypeRefFromLink(context, reference) ?: return null
@@ -63,40 +61,6 @@ private fun createUserTypeRefFromLink(
     reference: String,
 ): FirUserTypeRef? {
     // TODO generics
-//    val parts = typeString.split(".")
-//    val qualifierParts = parts.dropLast(1).map { part ->
-//        buildQualifierPart {
-//            name = Name.identifier(part)
-//        }
-//    }
-
-//    val lastPart = parts.last()
-//    val genericParts = if (lastPart.contains("<")) {
-//        // Simple parsing for generic types like List<String>
-//        val baseName = lastPart.substringBefore("<")
-//        val genericParam = lastPart.substringAfter("<").substringBefore(">")
-//
-//        // Add the base name
-//        val baseQualifier = buildQualifierPart {
-//            name = Name.identifier(baseName)
-//        }
-//
-//        // For simplicity, we're handling only simple cases here.
-//        // For complex generic structures, you'd need more sophisticated parsing.
-//        val typeArguments = listOf(
-//            buildTypeProjectionWithTypeRef {
-//                typeRef = createUserTypeRefFromString(session, genericParam)
-//            }
-//        )
-//
-//        qualifierParts + baseQualifier.copy(typeArguments = typeArguments)
-//    } else {
-//        // Simple type without generics
-//        qualifierParts + buildQualifierPart {
-//            name = Name.identifier(lastPart)
-//        }
-//    }
-
     val containingSource = context.containingFile?.source ?: return null
 
     return buildUserTypeRef {

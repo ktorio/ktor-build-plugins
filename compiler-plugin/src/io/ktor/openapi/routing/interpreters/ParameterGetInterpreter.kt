@@ -12,9 +12,7 @@ class ParameterGetInterpreter : RoutingCallInterpreter {
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(expression: FirFunctionCall): RoutingReferenceResult {
-        if (!(expression.calleeReference.name.asString() == "get" &&
-                    expression.explicitReceiver?.source?.text == "call.parameters")
-        ) return RoutingReferenceResult.None
+        if (!isGetParameter(expression)) return RoutingReferenceResult.None
 
         val key = expression.getArgumentAsString("name") ?: return RoutingReferenceResult.None
 
@@ -24,6 +22,9 @@ class ParameterGetInterpreter : RoutingCallInterpreter {
             fields = { listOf(RouteField.PathParam(key)) },
         )
 
-        return RoutingReferenceResult.Match(routeNode, emptyMap())
+        return RoutingReferenceResult.Match(routeNode)
     }
+
+    private fun isGetParameter(expression: FirFunctionCall): Boolean = expression.calleeReference.name.asString() == "get" &&
+            expression.explicitReceiver?.source?.text == "call.parameters"
 }

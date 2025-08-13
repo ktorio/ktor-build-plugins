@@ -32,18 +32,26 @@ sealed interface RouteField {
     /**
      * Built into the OpenAPI JSON structure, so ignored when building the path item.
      */
-    sealed interface Implicit : RouteField
+    sealed interface Transient : RouteField
 
-    data class Method(val method: String) : Implicit {
+    data class Method(val method: String) : Transient {
         override fun merge(other: RouteField): RouteField? =
             if (other is Method && method == other.method) this else null
     }
 
-    data class Path(val path: String) : Implicit {
+    data class Path(val path: String) : Transient {
         override fun merge(other: RouteField): RouteField? =
             if (other is Path)
                 Path("${other.path}/${path.removePrefix("/")}")
             else null
+    }
+
+    data class Schema(
+        val name: String,
+        val schema: JsonSchema
+    ) : Transient {
+        override fun merge(other: RouteField): RouteField? =
+            if (other is Schema && other.name == name) this else null
     }
 
     /**
@@ -53,7 +61,7 @@ sealed interface RouteField {
      */
     data class Tag(val name: String) : RouteField {
         override fun merge(other: RouteField): RouteField? =
-            if (other is Tag && name == other.name) other else null
+            if (other is Tag && name == other.name) this else null
     }
 
     /**
