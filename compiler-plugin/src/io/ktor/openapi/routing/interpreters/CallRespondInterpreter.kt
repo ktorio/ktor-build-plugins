@@ -1,55 +1,51 @@
 package io.ktor.openapi.routing.interpreters
 
-import io.ktor.compiler.utils.*
-import io.ktor.openapi.model.*
 import io.ktor.openapi.model.JsonSchema.Companion.findSchemaDefinitions
 import io.ktor.openapi.model.JsonSchema.Companion.schemaFromConeType
-import io.ktor.openapi.routing.RouteField
-import io.ktor.openapi.routing.RoutingCallInterpreter
-import io.ktor.openapi.routing.RoutingReference
-import io.ktor.openapi.routing.SourceRange
+import io.ktor.openapi.routing.*
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
 import org.jetbrains.kotlin.fir.expressions.arguments
-import org.jetbrains.kotlin.fir.types.resolvedType
-import org.jetbrains.kotlin.fir.references.symbol
 import org.jetbrains.kotlin.fir.packageFqName
-import org.jetbrains.kotlin.text
+import org.jetbrains.kotlin.fir.references.symbol
 import org.jetbrains.kotlin.fir.types.classId
+import org.jetbrains.kotlin.fir.types.resolvedType
+import org.jetbrains.kotlin.text
 
 class CallRespondInterpreter : RoutingCallInterpreter {
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    override fun check(expression: FirFunctionCall): io.ktor.openapi.routing.RoutingReferenceResult {
-        if (!(expression.calleeReference.name.asString() == "respond" &&
-                    expression.calleeReference.symbol?.packageFqName()?.asString()
-                        ?.startsWith("io.ktor.server.response") == true &&
-                    expression.extensionReceiver?.source?.text == "call")
-        ) return io.ktor.openapi.routing.RoutingReferenceResult.None
-
-        val sourceFile = context.getSourceFile() ?: return io.ktor.openapi.routing.RoutingReferenceResult.None
-        val invocation = SourceRange(sourceFile, expression.source?.range ?: return io.ktor.openapi.routing.RoutingReferenceResult.None)
-        val functionName = expression.calleeReference.name.asString()
+    override fun check(expression: FirFunctionCall): RoutingReferenceResult {
+        if (!isCallRespond(expression)) return RoutingReferenceResult.None
 
         val coneType = expression.arguments.firstOrNull {
             it.resolvedType.classId?.shortClassName?.asString() != "HttpStatusCode"
-        }?.resolvedType ?: return io.ktor.openapi.routing.RoutingReferenceResult.None
+        }?.resolvedType ?: return RoutingReferenceResult.None
 
-        val className = coneType.classId?.shortClassName?.asString() ?: return io.ktor.openapi.routing.RoutingReferenceResult.None
-        val schemaMap = mutableMapOf<String, JsonSchema>()
-
-        for (schema in context.findSchemaDefinitions(coneType)) {
-            schemaMap[className] = schema
-        }
-
-        val schema = io.ktor.openapi.routing.SchemaReference.Resolved(context.schemaFromConeType(coneType, expand = false))
-        val routingReference = RoutingReference.CallExpression(
-            functionName,
-            listOf(RouteField.Response(code = "200", schema = schema)),
-            invocation.asCoordinates()
+        val routeNode = RouteNode.CallFeature(
+            filePath = context.containingFilePath,
+            fir = expression,
+            fields = {
+                listOf(
+                    RouteField.Response(
+                        code = "200",
+                        schema = SchemaReference.Resolved(
+                            schemaFromConeType(coneType, expand = false)
+                        )
+                    )
+                )
+            },
         )
 
-        return io.ktor.openapi.routing.RoutingReferenceResult.Match(routingReference, schemaMap)
+        return RoutingReferenceResult.Match(
+            call = routeNode,
+            schema = findSchemaDefinitions(coneType).toMap()
+        )
     }
+
+    private fun isCallRespond(expression: FirFunctionCall): Boolean =
+        expression.calleeReference.name.asString() == "respond" &&
+            expression.extensionReceiver?.source?.text == "call" &&
+            expression.calleeReference.symbol?.packageFqName()?.asString()?.startsWith("io.ktor.server.response") == true
 }

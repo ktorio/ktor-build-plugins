@@ -8,14 +8,15 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 
-fun CheckerContext.getAllPropertiesFromType(
+context(context: CheckerContext)
+fun getAllPropertiesFromType(
     coneType: ConeKotlinType,
 ): List<FirCallableSymbol<*>> {
-    val classSymbol = coneType.toSymbol(session) as? FirClassSymbol<*>
+    val classSymbol = coneType.toSymbol(context.session) as? FirClassSymbol<*>
         ?: return emptyList()
 
     // TODO generics require substitution w/ type params
-    val scope = classSymbol.unsubstitutedScope(this)
+    val scope = classSymbol.unsubstitutedScope(context)
     return buildList {
         scope.processAllProperties(::add)
     }
