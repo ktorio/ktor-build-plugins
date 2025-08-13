@@ -142,11 +142,15 @@ fun findStandardJsonType(classId: ClassId): JsonType? =
         StandardClassIds.List,
         StandardClassIds.Collection,
         StandardClassIds.Set,
+        StandardClassIds.MutableList,
+        StandardClassIds.MutableCollection,
+        StandardClassIds.MutableSet,
         StandardClassIds.Iterable ->
             JsonType.array
 
         // Map type
-        StandardClassIds.Map ->
+        StandardClassIds.Map,
+        StandardClassIds.MutableMap ->
             JsonType.`object`
 
         // Any, Nothing, Unit types
