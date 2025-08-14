@@ -22,7 +22,7 @@ class OpenApiExtension(
 ) : FirExtensionRegistrar() {
 
     private lateinit var routeGraph: RouteGraph
-    private var defaultContentType: String = ContentType.OTHER.value
+    private var defaultContentType: String = ContentType.JSON.value
     private val securitySchemes = mutableListOf<RoutingReferenceResult.SecurityScheme>()
     private var session: FirSession? = null
 

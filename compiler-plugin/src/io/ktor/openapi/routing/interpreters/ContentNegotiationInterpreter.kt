@@ -27,6 +27,7 @@ class ContentNegotiationInterpreter : RoutingCallInterpreter {
         return RoutingReferenceResult.ContentType(contentType)
     }
 
-    private fun isInstallContentNegotiation(expression: FirFunctionCall): Boolean = expression.calleeReference.name.asString() == INSTALL &&
+    private fun isInstallContentNegotiation(expression: FirFunctionCall): Boolean =
+        expression.calleeReference.name.asString() == INSTALL &&
             expression.arguments.firstOrNull()?.source.text == CONTENT_NEGOTIATION
 }
