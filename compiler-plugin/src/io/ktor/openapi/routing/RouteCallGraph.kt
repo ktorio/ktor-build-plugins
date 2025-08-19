@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.fir.FirSession
 /**
  * Represents a graph of routes where a node can have multiple parents.
  */
-class RouteGraph(val session: FirSession) {
+class RouteCallGraph(val session: FirSession) {
     private val parentToChildren = mutableMapOf<RouteNode, MutableSet<RouteNode>>()
     private val childToParents = mutableMapOf<RouteNode, MutableSet<RouteNode>>()
     internal val routes = mutableListOf<RouteNode.Route>()
@@ -34,7 +34,7 @@ class RouteGraph(val session: FirSession) {
      * Now that the function nodes are all accounted for, we can look for their children to
      * populate the edges.
      */
-    fun build(): RouteGraph {
+    fun build(): RouteCallGraph {
         for (function in functions) {
             for (other in functions) {
                 if (other in function && other.isTopLevel())

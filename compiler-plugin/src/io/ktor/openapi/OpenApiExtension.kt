@@ -21,7 +21,7 @@ class OpenApiExtension(
     private val config: OpenApiProcessorConfig,
 ) : FirExtensionRegistrar() {
 
-    private lateinit var routeGraph: RouteGraph
+    private lateinit var routeGraph: RouteCallGraph
     private var defaultContentType: String = ContentType.JSON.value
     private val securitySchemes = mutableListOf<RoutingReferenceResult.SecurityScheme>()
     private var session: FirSession? = null
@@ -73,7 +73,7 @@ class OpenApiExtension(
         override val expressionCheckers: ExpressionCheckers
             get() = object : ExpressionCheckers() {
                 init {
-                    routeGraph = RouteGraph(session)
+                    routeGraph = RouteCallGraph(session)
                 }
                 override val functionCallCheckers = setOf(routeCallReader)
             }

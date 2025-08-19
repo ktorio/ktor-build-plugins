@@ -3,8 +3,8 @@ package io.ktor.openapi.routing
 import org.jetbrains.kotlin.fir.FirSession
 
 object RouteCollector {
-    fun collectRoutes(graph: RouteGraph): List<ResolvedRoute> {
-        // 2. Process each route node to generate ResolvedRoutes
+    fun collectRoutes(graph: RouteCallGraph): List<ResolvedRoute> {
+        // Process each route node to generate ResolvedRoutes
         return graph.routes.flatMap { route ->
             if (route.method == null) return@flatMap emptyList()
             
@@ -41,6 +41,7 @@ object RouteCollector {
 
         val path = fields.path ?: return null
         val method = fields.method ?: return null
+        if (RouteField.Ignore in fields) return null
 
         return ResolvedRoute(
             path = path,

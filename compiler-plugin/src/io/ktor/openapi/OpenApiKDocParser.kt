@@ -9,6 +9,7 @@ import io.ktor.openapi.routing.SchemaReference
 import io.ktor.openapi.routing.SourceTextRange
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
+import kotlin.collections.filterNotNull
 
 fun SourceTextRange.parseKDoc(): RouteFieldList =
     parsePrecedingComment(fileText, range.first)
@@ -96,21 +97,21 @@ fun parsePrecedingComment(text: CharSequence, beforeOffset: Int): RouteFieldList
 }
 
 private fun List<String>.parseParameters(): List<RouteField> =
-    buildList {
+    sequence {
         val current = StringBuilder()
         for (line in this@parseParameters) {
             if (line.startsWith("@")) {
                 if (current.isNotEmpty()) {
-                    parseParameter(current)?.let(::add)
+                    yield(parseParameter(current))
                     current.clear()
                 }
             }
             current.appendLine(line)
         }
         if (current.isNotEmpty()) {
-            parseParameter(current)?.let(::add)
+            yield(parseParameter(current))
         }
-    }
+    }.filterNotNull().toList()
 
 val contentTypeArg = Regex("^(\\w+/\\S+)$")
 val schemaArg = Regex("^\\[(.*)]([?+]?)$")
@@ -137,6 +138,7 @@ fun parseParameter(text: CharSequence): RouteField? {
     }
 
     return when (next()) {
+        "ignore" -> Ignore
         "tag" -> Tag(next())
         "path" -> PathParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
         "query" -> PathParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())

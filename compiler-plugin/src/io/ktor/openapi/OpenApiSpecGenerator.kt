@@ -9,7 +9,7 @@ object OpenApiSpecGenerator {
 
     fun buildSpecification(
         specInfo: SpecInfo,
-        routes: RouteGraph,
+        routes: RouteCallGraph,
         defaultContentType: String,
         securitySchemes: List<RoutingReferenceResult.SecurityScheme>,
         json: Json,

@@ -34,6 +34,8 @@ sealed interface RouteField {
      */
     sealed interface Transient : RouteField
 
+    object Ignore: Transient
+
     data class Method(val method: String) : Transient {
         override fun merge(other: RouteField): RouteField? =
             if (other is Method && method == other.method) this else null
