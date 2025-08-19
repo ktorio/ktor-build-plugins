@@ -27,13 +27,6 @@ context(context: CheckerContext)
 fun FirFunctionCall.getArgumentAsString(name: String, index: Int = 0): String? =
     getArgument(name, index)?.resolveToString()
 
-// TODO only supports string literals atm, should handle constants and possibly trace up the stack for variables
-//fun FirExpression.resolveToString(): String? =
-//    when(this) {
-//        is FirLiteralExpression -> this.value?.toString()
-//        else -> null
-//    }
-
 val KtSourceElement.range: IntRange get() =
     startOffset..endOffset
 
