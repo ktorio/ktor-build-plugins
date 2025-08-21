@@ -6,10 +6,51 @@
     },
     "paths": {
         "/login": {
-            "get": {}
+            "get": {
+                "security": [
+                    {
+                        "auth-oauth-google": []
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": ""
+                    }
+                }
+            }
         },
         "/callback": {
-            "get": {}
+            "get": {
+                "security": [
+                    {
+                        "auth-oauth-google": []
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/hello": {
+            "get": {
+                "security": [
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {

@@ -33,11 +33,10 @@ class KtorCompilerPluginRegistrar : CompilerPluginRegistrar() {
     private fun readConfiguration(
         cc: CompilerConfiguration,
     ): OpenApiProcessorConfig =
-        with(KtorCommandLineProcessor.Companion) {
+        with(KtorCommandLineProcessor) {
             OpenApiProcessorConfig(
                 enabled = cc[OPENAPI_ENABLED_KEY]?.toBooleanStrictOrNull() ?: false,
                 outputFile = cc[OPENAPI_OUTPUT_KEY] ?: "openapi.json",
-                mainClass = cc[MAIN_CLASS_KEY],
                 info = SpecInfo(
                     title = cc[OPENAPI_TITLE_KEY] ?: "API Documentation",
                     version = cc[OPENAPI_VERSION_KEY] ?: "1.0.0",

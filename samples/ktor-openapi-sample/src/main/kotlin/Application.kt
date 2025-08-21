@@ -34,7 +34,7 @@ fun main() {
             /**
              * Get the OpenAPI specification.
              */
-            openAPI("/docs", swaggerFile = "api.json")
+            openAPI("/docs", swaggerFile = "openapi/generated.json")
         }
     }.start(wait = true)
 }

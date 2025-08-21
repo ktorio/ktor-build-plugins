@@ -26,19 +26,16 @@ public class KtorGradleCompilerPlugin : KotlinCompilerPluginSupportPlugin {
         val project = kotlinCompilation.target.project
 
         // TODO support KMP
-        // Return an empty list of options for now
-        // Later you can add configuration options from your Gradle extension
         return project.provider {
             val extension = project.extensions.extraProperties[OPENAPI_EXTENSION_KEY] as OpenAPIExtension
-            val mainClass = project.application.mainClass.orNull
 
             // Only apply for main compilations
             if (kotlinCompilation.compileKotlinTaskName.contains("test", ignoreCase = true))
                 return@provider emptyList()
 
             buildList {
-                val outputPath = project.ktorOutputDir.get().file("openapi/generated-api.json").asFile.absolutePath
-                mainClass?.let { add(SubpluginOption(key = "mainClass", value = mainClass)) }
+                val outputPath = extension.target.takeIf { it.isPresent }?.get()?.asFile?.absolutePath ?:
+                    project.ktorOutputDir.get().file("openapi/generated.json").asFile.absolutePath
                 add(SubpluginOption(key = "openapi.enabled", value = extension.enabled.get().toString()))
                 add(SubpluginOption(key = "openapi.output", value = outputPath))
                 extension.description.orNull?.let { add(SubpluginOption(key = "openapi.description", value = it)) }

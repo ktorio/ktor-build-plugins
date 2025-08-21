@@ -2,13 +2,13 @@ package io.ktor.openapi.model
 
 import io.ktor.compiler.utils.*
 import io.ktor.openapi.routing.*
+import io.ktor.openapi.routing.resolveType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
-import org.jetbrains.kotlin.fir.types.ConeTypeProjection
 import org.jetbrains.kotlin.fir.types.type
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
@@ -22,52 +22,54 @@ data class JsonSchema(
     val ref: String? = null,
     val items: JsonSchema? = null,
     val required: Boolean? = null,
+    val additionalProperties: JsonSchema? = null,
+    val format: String? = null,
 ) {
     companion object {
-        val String = JsonObject(mapOf("type" to JsonPrimitive("string")))
+        val String = JsonSchema(type = JsonType.string)
+        val Binary = JsonSchema(type = JsonType.string, format = "binary")
+        val StringObject = JsonObject(mapOf("type" to JsonPrimitive("string")))
 
         context(context: RouteStack)
-        fun findSchemaDefinitions(coneType: ConeKotlinType): Sequence<Pair<String, JsonSchema>> {
-            if (coneType !is ConeClassLikeType)
+        fun ConeKotlinType.findSchemaDefinitions(): Sequence<Pair<String, JsonSchema>> {
+            if (this !is ConeClassLikeType)
                 return emptySequence()
 
-            val classId = coneType.lookupTag.classId
-            return when (findStandardJsonType(classId)) {
+            val classId = lookupTag.classId
+            return when (classId.toJsonType()) {
                 JsonType.array, JsonType.`object` ->
-                    coneType.typeArguments.asSequence().flatMap { typeArg ->
-                        // TODO handle generics
-                        resolveTypeArg(typeArg)?.let {
-                            findSchemaDefinitions(it)
-                        } ?: emptySequence()
+                    typeArguments.asSequence().flatMap { typeProjection ->
+                        typeProjection.resolveType()?.findSchemaDefinitions() ?: emptySequence()
                     }
-                null -> sequenceOf(classId.shortClassName.asString() to schemaDefinitionForType(coneType))
+                null -> sequenceOf(classId.shortClassName.asString() to schemaDefinitionForType(this))
                 else -> emptySequence()
             }
         }
 
         context(context: RouteStack)
-        private fun resolveTypeArg(arg: ConeTypeProjection): ConeKotlinType? {
-            return arg.resolveType()
-        }
-
-        context(context: RouteStack)
-        fun schemaFromConeType(coneType: ConeKotlinType, expand: Boolean = true): JsonSchema {
-            if (coneType !is ConeClassLikeType) {
-                return coneType.resolveType()?.let { resolvedType ->
-                    schemaFromConeType(resolvedType, expand)
-                } ?: JsonSchema(type = JsonType.any)
+        fun ConeKotlinType.asJsonSchema(fullSchema: Boolean = true): JsonSchema {
+            if (this !is ConeClassLikeType) {
+                return resolveType()?.asJsonSchema(fullSchema) ?: JsonSchema()
             }
 
-            return when(val jsonType = findStandardJsonType(coneType.lookupTag.classId)) {
+            return when(val jsonType = lookupTag.classId.toJsonType()) {
                 JsonType.array -> JsonSchema(
                     type = JsonType.array,
-                    items = coneType.typeArguments.first().type?.let {
-                        schemaFromConeType(it, expand)
-                    }
+                    items = typeArguments.first().type?.asJsonSchema(fullSchema)
                 )
+                JsonType.`object` -> {
+                    when(lookupTag.classId) {
+                        StandardClassIds.Map, StandardClassIds.MutableMap ->
+                            JsonSchema(
+                                type = JsonType.`object`,
+                                additionalProperties = typeArguments.last().type?.asJsonSchema(fullSchema)
+                            )
+                        else -> schemaDefinitionForType(this)
+                    }
+                }
                 null -> {
-                    if (expand) schemaDefinitionForType(coneType)
-                    else JsonSchema(ref = "#/components/schemas/${coneType.lookupTag.classId.shortClassName.asString()}")
+                    if (fullSchema) schemaDefinitionForType(this)
+                    else JsonSchema(ref = "#/components/schemas/${this.lookupTag.classId.shortClassName.asString()}")
                 }
                 else -> JsonSchema(jsonType)
             }
@@ -85,12 +87,13 @@ data class JsonSchema(
             type = JsonType.`object`,
             properties = getAllPropertiesFromType(coneType)
                 .associate {
-                    it.name.asString() to schemaFromConeType(it.resolvedReturnType)
+                    it.name.asString() to it.resolvedReturnType.asJsonSchema()
                 }
         )
     }
 }
 
+@Serializable
 @Suppress("EnumEntryName")
 enum class JsonType {
     string,
@@ -107,11 +110,11 @@ fun findJsonPrimitiveType(name: String): JsonType? {
         StandardClassIds.BASE_KOTLIN_PACKAGE,
         Name.identifier(name)
     )
-    return findStandardJsonType(classId)
+    return classId.toJsonType()
 }
 
-fun findStandardJsonType(classId: ClassId): JsonType? =
-    when(classId) {
+fun ClassId.toJsonType(): JsonType? =
+    when(this) {
         // Integer types
         StandardClassIds.Int,
         StandardClassIds.UInt,
@@ -125,7 +128,8 @@ fun findStandardJsonType(classId: ClassId): JsonType? =
 
         // Number types
         StandardClassIds.Float,
-        StandardClassIds.Double ->
+        StandardClassIds.Double,
+        StandardClassIds.Number ->
             JsonType.number
 
         // Boolean type

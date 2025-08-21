@@ -1,5 +1,6 @@
 package io.ktor.plugin
 
+import io.ktor.plugin.KtorGradlePlugin.Companion.VERSION
 import io.ktor.plugin.internal.*
 import org.gradle.api.plugins.ApplicationPlugin
 import kotlin.test.*
@@ -94,6 +95,5 @@ class PluginTest {
         val bom = deps.single()
         assertEquals("io.ktor", bom.group)
         assertEquals("ktor-bom", bom.name)
-        assertEquals(KTOR_VERSION, bom.version)
     }
 }

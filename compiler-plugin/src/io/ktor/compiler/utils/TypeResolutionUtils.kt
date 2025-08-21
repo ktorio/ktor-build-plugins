@@ -1,6 +1,5 @@
 package io.ktor.compiler.utils
 
-import io.ktor.openapi.model.*
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.fakeElement
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -22,7 +21,7 @@ import org.jetbrains.kotlin.util.PrivateForInline
  * Resolves a type from its string representation.
  *
  * @param context The checker context to use for type resolution
- * @param typeLink The string representation of the type to resolve (e.g., "kotlin.String", "List<Int>")
+ * @param reference The string representation of the type to resolve (e.g., "String")
  * @return A ConeKotlinType for the resolved type, or null if the type couldn't be resolved
  */
 @OptIn(PrivateForInline::class, SymbolInternals::class)
@@ -55,21 +54,31 @@ fun resolveTypeLink(reference: String): ConeKotlinType? {
 
 /**
  * Creates a FirUserTypeRef from a string representation of a type.
+ *
+ * Note, parameterized types are not accepted.
  */
 private fun createUserTypeRefFromLink(
-    context: CheckerContext,
+    ctx: CheckerContext,
     reference: String,
 ): FirUserTypeRef? {
-    // TODO generics
-    val containingSource = context.containingFile?.source ?: return null
+    val containingSource = ctx.containingFile?.source ?: return null
+    val ref = reference.trim()
+    if (ref.isEmpty()) return null
+    // Not supported here: parameterized or nullable types. Fail fast.
+    if (ref.any { it == '<' || it == '>' || it == '?' }) return null
+    // Allow qualified names, e.g., kotlin.String, java.time.Instant
+    val parts = ref.split('.').filter { it.isNotBlank() }
+    if (parts.isEmpty()) return null
 
     return buildUserTypeRef {
         source = containingSource.fakeElement(KtFakeSourceElementKind.Enhancement)
         isMarkedNullable = false
-        qualifier += FirQualifierPartImpl(
-            source = null,
-            name = Name.identifier(reference),
-            typeArgumentList = FirTypeArgumentListImpl(null)
-        )
+        for (p in parts) {
+            qualifier += FirQualifierPartImpl(
+                source = null,
+                name = Name.identifier(p),
+                typeArgumentList = FirTypeArgumentListImpl(null)
+            )
+        }
     }
 }

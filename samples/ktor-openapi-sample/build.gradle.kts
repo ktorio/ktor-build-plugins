@@ -12,22 +12,9 @@ application.mainClass = "io.ktor.samples.openapi.ApplicationKt"
 
 ktor {
     openApi {
-        enabled = true
         title = "OpenAPI example"
         version = "2.1"
         summary = "This is a sample API"
-    }
-}
-
-// Use project module for the compiler plugin
-// TODO this does not work!
-configurations.all {
-    resolutionStrategy.dependencySubstitution {
-        substitute(
-            module("io.ktor:ktor-compiler-plugin")
-        ).using(
-            project(":compiler-plugin")
-        )
     }
 }
 

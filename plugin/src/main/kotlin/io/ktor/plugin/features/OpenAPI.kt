@@ -2,6 +2,7 @@ package io.ktor.plugin.features
 
 import io.ktor.plugin.KtorGradleCompilerPlugin
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Property
 
 public abstract class OpenAPIExtension(project: Project) {
@@ -10,14 +11,13 @@ public abstract class OpenAPIExtension(project: Project) {
      * When enabled, the Kotlin compiler plugin will be applied to detect routing functions
      * and generate OpenAPI documentation based on KDoc comments.
      */
-    public val enabled: Property<Boolean> = project.property(false)
+    public val enabled: Property<Boolean> = project.property(true)
 
     /**
      * The output path for the generated OpenAPI specification.
      * Defaults to "build/resources/main/openapi/generated.json"
-     * TODO seems to be impossible to leave this optional
      */
-//    public val output: Property<RegularFile?> = project.objects.fileProperty()
+    public val target: Property<RegularFile?> = project.objects.fileProperty()
 
     /**
      * The title of the API.
@@ -60,5 +60,9 @@ internal const val OPENAPI_EXTENSION_KEY = "ktor.openapi.extension"
 internal fun Project.configureOpenAPI() {
     val extension = createKtorExtension<OpenAPIExtension>("openApi")
     extensions.extraProperties.set(OPENAPI_EXTENSION_KEY, extension)
-    plugins.apply(KtorGradleCompilerPlugin::class.java)
+    try {
+        plugins.apply(KtorGradleCompilerPlugin::class.java)
+    } catch (_: Throwable) {
+        logger.warn("Could not apply compiler plugin. OpenAPI generation might not work.")
+    }
 }

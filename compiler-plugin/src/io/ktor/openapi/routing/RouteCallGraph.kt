@@ -3,7 +3,7 @@ package io.ktor.openapi.routing
 import org.jetbrains.kotlin.fir.FirSession
 
 /**
- * Represents a graph of routes where a node can have multiple parents.
+ * Represents a graph of code elements that are used to build routes in Ktor.
  */
 class RouteCallGraph(val session: FirSession) {
     private val parentToChildren = mutableMapOf<RouteNode, MutableSet<RouteNode>>()

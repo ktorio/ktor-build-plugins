@@ -1,6 +1,5 @@
 package io.ktor.openapi.routing
 
-import io.ktor.openapi.model.JsonSchema
 import kotlinx.serialization.Serializable
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext

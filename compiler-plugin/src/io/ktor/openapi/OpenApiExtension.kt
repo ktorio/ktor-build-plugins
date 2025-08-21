@@ -24,7 +24,6 @@ class OpenApiExtension(
     private lateinit var routeGraph: RouteCallGraph
     private var defaultContentType: String = ContentType.JSON.value
     private val securitySchemes = mutableListOf<RoutingReferenceResult.SecurityScheme>()
-    private var session: FirSession? = null
 
     private val routeCallReader = object: OpenApiRouteCallReader() {
         override fun onRoutingReference(reference: RouteNode) {
@@ -45,7 +44,7 @@ class OpenApiExtension(
     fun isEmpty() = routeGraph.isEmpty()
 
     fun registerChecker(session: FirSession): FirAdditionalCheckersExtension {
-        this.session = session // TODO use a better mechanism here
+        routeGraph = RouteCallGraph(session)
         return OpenApiFirAdditionalChecksExtension(session)
     }
 
@@ -72,9 +71,6 @@ class OpenApiExtension(
     private inner class OpenApiFirAdditionalChecksExtension(session: FirSession) : FirAdditionalCheckersExtension(session) {
         override val expressionCheckers: ExpressionCheckers
             get() = object : ExpressionCheckers() {
-                init {
-                    routeGraph = RouteCallGraph(session)
-                }
                 override val functionCallCheckers = setOf(routeCallReader)
             }
     }

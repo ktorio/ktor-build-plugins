@@ -10,19 +10,22 @@ import io.ktor.server.routing.routing
 import io.ktor.utils.io.writeByte
 import io.ktor.utils.io.writeString
 
-fun Application.routingWithAttributes(reportService: ReportService) {
+const val ROOT = "/api/v1"
+const val ID = "id"
+
+fun Application.routingWithConstants(reportService: ReportService) {
     routing {
-        route("/api") {
+        route(ROOT) {
             /**
              * Get report by ID.
              * @path id [Long] Report ID.
              *   minimum: 1
              *   maximum: 999999999999
              *   required: true
-             * @response 200 application/json [Map]<[String], [Number]> Report details.
+             * @response 200 application/json :[Number] Report details.
              */
-            get("/report/{id}") {
-                val report = reportService.getReport(call.parameters["id"]!!.toLong())
+            get("${EntityTypes.REPORTS}/{$ID}") {
+                val report = reportService.getReport(call.parameters[ID]!!.toLong())
                 call.respondBytesWriter {
                     writeByte('{'.code.toByte())
                     var i = 0
@@ -36,6 +39,10 @@ fun Application.routingWithAttributes(reportService: ReportService) {
             }
         }
     }
+}
+
+object EntityTypes {
+    const val REPORTS = "reports"
 }
 
 interface ReportService {
