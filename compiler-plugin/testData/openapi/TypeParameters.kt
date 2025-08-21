@@ -18,14 +18,14 @@ fun Application.complexExtension(userRepository: Repository2<User2>, messageRepo
 
     routing {
         route("/api") {
-            crudEndpoints("/users", userRepository)
-            crudEndpoints("/messages", messageRepository)
+            crudEndpoints("users", userRepository)
+            crudEndpoints("messages", messageRepository)
         }
     }
 }
 
 private fun <E> Route.crudEndpoints(path: String, repository: Repository2<E>) {
-    route(path) {
+    route("data/$path") {
         readEndpoints(repository)
         modificationEndpoints(repository)
     }

@@ -24,6 +24,10 @@ fun Application.simpleNested(repository: Repository0<User0>) {
                 /**
                  * Get a list of users.
                  *
+                 * @query q [String] Search query
+                 * @query limit [Int] Max items to return
+                 *   minimum: 1
+                 *   maximum: 100
                  * @response 200 [User0]+ A list of users.
                  */
                 get {

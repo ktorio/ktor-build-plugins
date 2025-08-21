@@ -31,7 +31,7 @@ class CustomFunctionInterpreter : RoutingCallInterpreter {
             fir = expression,
             declaration = body,
             fields = {
-                invocation.parseKDoc() + body.parseKDoc()
+                (invocation.parseKDoc() + body.parseKDoc()).resolveSchemaReferences()
             }
         )
 

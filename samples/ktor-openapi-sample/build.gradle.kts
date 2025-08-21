@@ -19,18 +19,6 @@ ktor {
     }
 }
 
-// Use project module for the compiler plugin
-// TODO this does not work!
-configurations.all {
-    resolutionStrategy.dependencySubstitution {
-        substitute(
-            module("io.ktor:ktor-compiler-plugin")
-        ).using(
-            project(":compiler-plugin")
-        )
-    }
-}
-
 dependencies {
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cio)

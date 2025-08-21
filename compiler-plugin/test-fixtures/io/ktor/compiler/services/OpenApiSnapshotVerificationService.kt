@@ -34,7 +34,9 @@ class OpenApiSnapshotVerificationService(testServices: TestServices): AfterAnaly
                 }
             } else {
                 val expected = Files.readString(expectedFile)
-                testServices.assertions.assertEquals(expected, actualJson) {
+                val expectedNormalized = expected.trimEnd()
+                val actualNormalized = actualJson.trimEnd()
+                testServices.assertions.assertEquals(expectedNormalized, actualNormalized) {
                     "Expected snapshot contents to match for the file: $actualFile"
                 }
             }

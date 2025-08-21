@@ -5,38 +5,7 @@
         "version": "1.0.0"
     },
     "paths": {
-        "/api/users": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/User2"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "requestBody": {
-                    "description": "",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/User2"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/messages": {
+        "/api/data/users": {
             "get": {
                 "responses": {
                     "200": {
@@ -64,10 +33,15 @@
                             }
                         }
                     }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
                 }
             }
         },
-        "/api/users/{id}": {
+        "/api/data/users/{id}": {
             "get": {
                 "parameters": [
                     {
@@ -80,44 +54,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/User2"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/api/messages/{id}": {
-            "get": {
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
+                    "404": {
+                        "description": ""
+                    },
                     "200": {
                         "description": "",
                         "content": {
@@ -140,7 +79,12 @@
                             "type": "string"
                         }
                     }
-                ]
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                }
             }
         }
     },

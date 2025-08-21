@@ -1,5 +1,6 @@
 package io.ktor.openapi.routing.interpreters
 
+import io.ktor.compiler.utils.getFunctionName
 import io.ktor.openapi.routing.ContentType
 import io.ktor.openapi.routing.RoutingCallInterpreter
 import io.ktor.openapi.routing.RoutingFunctionConstants.CONTENT_NEGOTIATION
@@ -28,6 +29,6 @@ class ContentNegotiationInterpreter : RoutingCallInterpreter {
     }
 
     private fun isInstallContentNegotiation(expression: FirFunctionCall): Boolean =
-        expression.calleeReference.name.asString() == INSTALL &&
+        expression.getFunctionName() == INSTALL &&
             expression.arguments.firstOrNull()?.source.text == CONTENT_NEGOTIATION
 }

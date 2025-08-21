@@ -13,13 +13,6 @@ public abstract class OpenAPIExtension(project: Project) {
     public val enabled: Property<Boolean> = project.property(false)
 
     /**
-     * The output path for the generated OpenAPI specification.
-     * Defaults to "build/resources/main/openapi/generated.json"
-     * TODO seems to be impossible to leave this optional
-     */
-//    public val output: Property<RegularFile?> = project.objects.fileProperty()
-
-    /**
      * The title of the API.
      */
     public val title: Property<String?> = project.property<String?>(null)
@@ -60,5 +53,9 @@ internal const val OPENAPI_EXTENSION_KEY = "ktor.openapi.extension"
 internal fun Project.configureOpenAPI() {
     val extension = createKtorExtension<OpenAPIExtension>("openApi")
     extensions.extraProperties.set(OPENAPI_EXTENSION_KEY, extension)
-    plugins.apply(KtorGradleCompilerPlugin::class.java)
+    try {
+        plugins.apply(KtorGradleCompilerPlugin::class.java)
+    } catch (_: Throwable) {
+        logger.warn("Could not apply compiler plugin. OpenAPI generation might not work.")
+    }
 }

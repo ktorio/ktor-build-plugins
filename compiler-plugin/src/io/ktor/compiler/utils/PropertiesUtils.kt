@@ -1,8 +1,6 @@
 package io.ktor.compiler.utils
 
-import io.ktor.openapi.routing.RouteStack
-import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
-import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
+import io.ktor.openapi.routing.*
 import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
 import org.jetbrains.kotlin.fir.resolve.toSymbol
 import org.jetbrains.kotlin.fir.scopes.processAllProperties
@@ -18,7 +16,6 @@ fun getAllPropertiesFromType(
     val classSymbol = coneType.toSymbol(context.session) as? FirClassSymbol<*>
         ?: return emptyList()
 
-    // TODO generics require substitution w/ type params
     val scope = classSymbol.unsubstitutedScope(
         context.session,
         context.scopeSession,

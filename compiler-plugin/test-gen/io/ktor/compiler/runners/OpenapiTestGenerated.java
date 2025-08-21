@@ -22,32 +22,32 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
-  @TestMetadata("Attributes.kt")
-  public void testAttributes() {
-    runTest("compiler-plugin/testData/openapi/Attributes.kt");
-  }
-
-  @Test
   @TestMetadata("Authentication.kt")
   public void testAuthentication() {
     runTest("compiler-plugin/testData/openapi/Authentication.kt");
   }
 
   @Test
-  @TestMetadata("ComplexExtensions.kt")
-  public void testComplexExtensions() {
-    runTest("compiler-plugin/testData/openapi/ComplexExtensions.kt");
+  @TestMetadata("Functions.kt")
+  public void testFunctions() {
+    runTest("compiler-plugin/testData/openapi/Functions.kt");
   }
 
   @Test
-  @TestMetadata("Extracted.kt")
-  public void testExtracted() {
-    runTest("compiler-plugin/testData/openapi/Extracted.kt");
+  @TestMetadata("Nesting.kt")
+  public void testNesting() {
+    runTest("compiler-plugin/testData/openapi/Nesting.kt");
   }
 
   @Test
-  @TestMetadata("SimpleNested.kt")
-  public void testSimpleNested() {
-    runTest("compiler-plugin/testData/openapi/SimpleNested.kt");
+  @TestMetadata("Templates.kt")
+  public void testTemplates() {
+    runTest("compiler-plugin/testData/openapi/Templates.kt");
+  }
+
+  @Test
+  @TestMetadata("TypeParameters.kt")
+  public void testTypeParameters() {
+    runTest("compiler-plugin/testData/openapi/TypeParameters.kt");
   }
 }

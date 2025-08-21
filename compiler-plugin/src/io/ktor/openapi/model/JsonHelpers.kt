@@ -13,7 +13,11 @@ internal fun MutableMap<String, JsonElement>.append(key: String, value: String) 
 
 internal fun MutableMap<String, JsonElement>.append(key: String, value: JsonElement) =
     compute(key) { _, oldValue ->
-        oldValue?.jsonArray?.let { JsonArray(it + value) } ?: JsonArray(listOf(value))
+        when (oldValue) {
+            null -> JsonArray(listOf(value))
+            is JsonArray -> JsonArray(oldValue + value)
+            else -> JsonArray(listOf(oldValue, value)) // preserve the existing scalar/object by converting to an array
+        }
     }
 
 internal fun MutableMap<String, JsonElement>.appendObject(key: String, subKey: String, buildObject: JsonObjectBuilder.() -> Unit) =

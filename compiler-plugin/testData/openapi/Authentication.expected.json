@@ -6,10 +6,29 @@
     },
     "paths": {
         "/login": {
-            "get": {}
+            "get": {
+                "security": [
+                    {
+                        "auth-oauth-google": []
+                    }
+                ]
+            }
         },
         "/callback": {
-            "get": {}
+            "get": {
+                "security": [
+                    {
+                        "auth-oauth-google": []
+                    }
+                ]
+            }
+        },
+        "/hello": {
+            "get": {
+                "security": [
+                    {}
+                ]
+            }
         }
     },
     "components": {

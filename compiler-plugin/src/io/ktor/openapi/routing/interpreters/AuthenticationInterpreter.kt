@@ -2,6 +2,7 @@ package io.ktor.openapi.routing.interpreters
 
 import io.ktor.compiler.utils.getArgument
 import io.ktor.compiler.utils.getArgumentAsString
+import io.ktor.compiler.utils.getFunctionName
 import io.ktor.compiler.utils.resolveToString
 import io.ktor.openapi.routing.OauthFlow
 import io.ktor.openapi.routing.RoutingCallInterpreter
@@ -32,7 +33,7 @@ class AuthenticationInterpreter : RoutingCallInterpreter {
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(expression: FirFunctionCall): RoutingReferenceResult {
-        val callee = expression.calleeReference.name.asString()
+        val callee = expression.getFunctionName()
         val isInstallAuthentication = callee == INSTALL && expression.arguments.firstOrNull()?.source?.text == AUTHENTICATION
         val isAuthenticationCall = callee.equals("authentication", ignoreCase = true)
         if (!isInstallAuthentication && !isAuthenticationCall) return RoutingReferenceResult.None
@@ -90,7 +91,7 @@ class AuthenticationInterpreter : RoutingCallInterpreter {
         return statements
             .filterIsInstance<FirFunctionCall>()
             .find { call ->
-                val calleeName = call.calleeReference.name.asString()
+                val calleeName = call.getFunctionName()
                 providerNames.any { it.equals(calleeName, ignoreCase = true) }
             }
     }
@@ -109,7 +110,7 @@ class AuthenticationInterpreter : RoutingCallInterpreter {
             }
             .filterIsInstance<FirFunctionCall>()
             .find {
-                it.calleeReference.name.asString().equals(name, ignoreCase = true)
+                it.getFunctionName().equals(name, ignoreCase = true)
             }
     }
 
@@ -126,8 +127,9 @@ class AuthenticationInterpreter : RoutingCallInterpreter {
             .firstOrNull { it.lValue.source.text == "providerLookup" }
             ?.rValue as? FirAnonymousFunctionExpression ?: return emptyMap()
 
-        // Find the OAuth2ServerSettings constructor call
+        // Find the OAuth2ServerSettings constructor call (or fallback to OAuthServerSettings)
         val settingsCall = findNestedFunctionCall(providerLookupLambda, "OAuth2ServerSettings")
+            ?: findNestedFunctionCall(providerLookupLambda, "OAuthServerSettings")
             ?: return emptyMap()
 
         // Extract OAuth configuration parameters
@@ -144,7 +146,7 @@ class AuthenticationInterpreter : RoutingCallInterpreter {
                 authorizationUrl = authorizeUrl,
                 tokenUrl = tokenUrl,
                 refreshUrl = null,
-                scopes = scopes
+                scopes = scopes ?: emptyMap()
             )
         )
     }
@@ -158,7 +160,7 @@ class AuthenticationInterpreter : RoutingCallInterpreter {
 
         // Handle listOf(...) call
         if (defaultScopesArg is FirFunctionCall &&
-            defaultScopesArg.calleeReference.name.asString() == "listOf") {
+            defaultScopesArg.getFunctionName() == "listOf") {
 
             val scopeValues = defaultScopesArg.arguments
                 .mapNotNull { it.resolveToString() }

@@ -14,18 +14,23 @@ class QueryParameterGetInterpreter : RoutingCallInterpreter {
         if (!isGetQueryParameter(expression))
             return RoutingReferenceResult.None
 
-        val key = expression.getArgumentAsString("name") ?: return RoutingReferenceResult.None
+        val key = expression.getArgument("name")
+            ?: return RoutingReferenceResult.None
 
         val routeNode = RouteNode.CallFeature(
             filePath = context.containingFilePath,
             fir = expression,
-            fields = { listOf(RouteField.QueryParam(key)) },
+            fields = {
+                key.evaluate().asString()?.let {
+                    listOf(RouteField.QueryParam(it))
+                } ?: emptyList()
+            }
         )
 
         return RoutingReferenceResult.Match(routeNode)
     }
 
     private fun isGetQueryParameter(expression: FirFunctionCall): Boolean =
-        expression.calleeReference.name.asString() == "get" &&
+        expression.getFunctionName() == "get" &&
             expression.explicitReceiver?.source?.text == "call.queryParameters"
 }

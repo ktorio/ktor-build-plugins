@@ -23,6 +23,9 @@ object RouteCollector {
         }
     }
 
+    /**
+     * We build a simulated stack from the routing calls to resolve the expected runtime values.
+     */
     context(session: FirSession)
     fun resolve(
         parents: Iterable<RouteNode> = emptyList(),

@@ -28,7 +28,10 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
         }
 
         afterEvaluate {
-            if (!kotlinPluginApplied) reportKotlinPluginMissingWarning()
+            if (!kotlinPluginApplied) {
+                reportKotlinPluginMissingWarning()
+                return@afterEvaluate
+            }
 
             project.extensions.getByType(org.gradle.api.tasks.SourceSetContainer::class.java).forEach { sourceSet ->
                 if (sourceSet.name == "main") {

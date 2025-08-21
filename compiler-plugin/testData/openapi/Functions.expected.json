@@ -17,6 +17,11 @@
                             }
                         }
                     }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
                 }
             },
             "get": {
@@ -35,18 +40,7 @@
                             }
                         }
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The ID of the user",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                }
             }
         },
         "/api/users/{id}": {
@@ -62,7 +56,12 @@
                             "type": "string"
                         }
                     }
-                ]
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                }
             },
             "get": {
                 "summary": "Get a single user",
@@ -107,20 +106,9 @@
                         }
                     }
                 },
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The ID of the user",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
                 "responses": {
-                    "404": {
-                        "description": "The user was not found"
+                    "201": {
+                        "description": ""
                     }
                 }
             },
@@ -140,18 +128,7 @@
                             }
                         }
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The ID of the message",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                }
             }
         },
         "/api/messages/{id}": {
@@ -169,8 +146,8 @@
                     }
                 ],
                 "responses": {
-                    "404": {
-                        "description": "The user was not found"
+                    "204": {
+                        "description": ""
                     }
                 }
             },
