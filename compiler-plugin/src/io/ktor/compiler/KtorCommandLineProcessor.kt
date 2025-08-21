@@ -10,7 +10,6 @@ class KtorCommandLineProcessor : CommandLineProcessor {
     companion object {
         const val PLUGIN_ID = "io.ktor.ktor-compiler-plugin"
 
-        val MAIN_CLASS_KEY = CompilerConfigurationKey<String>("mainClass")
         val OPENAPI_ENABLED_KEY = CompilerConfigurationKey<String>("openapi.enabled")
         val OPENAPI_OUTPUT_KEY = CompilerConfigurationKey<String>("openapi.output")
         val OPENAPI_DESCRIPTION_KEY = CompilerConfigurationKey<String>("openapi.description")
@@ -20,13 +19,6 @@ class KtorCommandLineProcessor : CommandLineProcessor {
         val OPENAPI_CONTACT_KEY = CompilerConfigurationKey<String>("openapi.contact")
         val OPENAPI_LICENSE_KEY = CompilerConfigurationKey<String>("openapi.license")
         val OPENAPI_VERSION_KEY = CompilerConfigurationKey<String>("openapi.version")
-
-        val MAIN_CLASS_OPTION = CliOption(
-            "mainClass",
-            "<fqName>",
-            "Fully qualified name of the application's main class",
-            required = false
-        )
 
         val OPENAPI_ENABLED_OPTION = CliOption(
             "openapi.enabled",
@@ -95,7 +87,6 @@ class KtorCommandLineProcessor : CommandLineProcessor {
     override val pluginId: String get() = PLUGIN_ID
 
     override val pluginOptions: Collection<AbstractCliOption> get() = listOf(
-        MAIN_CLASS_OPTION,
         OPENAPI_ENABLED_OPTION,
         OPENAPI_OUTPUT_OPTION,
         OPENAPI_DESCRIPTION_OPTION,
@@ -109,7 +100,6 @@ class KtorCommandLineProcessor : CommandLineProcessor {
 
     override fun processOption(option: AbstractCliOption, value: String, configuration: CompilerConfiguration) {
         when (option) {
-            MAIN_CLASS_OPTION -> configuration.put(MAIN_CLASS_KEY, value)
             OPENAPI_ENABLED_OPTION -> configuration.put(OPENAPI_ENABLED_KEY, value)
             OPENAPI_OUTPUT_OPTION -> configuration.put(OPENAPI_OUTPUT_KEY, value)
             OPENAPI_DESCRIPTION_OPTION -> configuration.put(OPENAPI_DESCRIPTION_KEY, value)

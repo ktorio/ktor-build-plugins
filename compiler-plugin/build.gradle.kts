@@ -87,7 +87,6 @@ kotlin {
 tasks {
     test {
         dependsOn(testSamples)
-
         useJUnitPlatform()
         workingDir = rootDir
 
@@ -110,6 +109,7 @@ tasks {
         group = "verification"
         dependsOn(testSamples)
         useJUnitPlatform()
+        workingDir = rootDir
 
         // Copy all configurations / properties from the test task
         val testTask = project.tasks.test.get()
@@ -121,8 +121,6 @@ tasks {
 
         // Set flag to replace snapshots
         systemProperty("testSamples.replaceSnapshots", "true")
-
-        workingDir = rootDir
     }
 
     val generateTests by registering(JavaExec::class) {
@@ -148,15 +146,16 @@ publishing {
     if (hasProperty("space")) {
         val publishingUrl = System.getenv("PUBLISHING_URL")
         val publishingUser = System.getenv("PUBLISHING_USER")
-        if (publishingUrl == null || publishingUser == null) {
-            throw GradleException("Missing publishing credentials")
+        val publishingPassword = System.getenv("PUBLISHING_PASSWORD")
+        if (publishingUrl == null || publishingUser == null || publishingPassword == null) {
+            throw GradleException("Missing publishing credentials (PUBLISHING_URL / PUBLISHING_USER / PUBLISHING_PASSWORD)")
         }
         repositories {
             maven(url = publishingUrl) {
                 name = "space"
                 credentials {
                     username = publishingUser
-                    password = System.getenv("PUBLISHING_PASSWORD")
+                    password = publishingPassword
                 }
             }
         }

@@ -1,13 +1,13 @@
 package io.ktor.openapi.routing.interpreters
 
+import io.ktor.compiler.utils.getFunctionName
+import io.ktor.compiler.utils.isInPackage
 import io.ktor.openapi.model.JsonSchema.Companion.findSchemaDefinitions
-import io.ktor.openapi.model.JsonSchema.Companion.schemaFromConeType
+import io.ktor.openapi.model.JsonSchema.Companion.asJsonSchema
 import io.ktor.openapi.routing.*
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
-import org.jetbrains.kotlin.fir.packageFqName
-import org.jetbrains.kotlin.fir.references.symbol
 import org.jetbrains.kotlin.fir.types.resolvedType
 import org.jetbrains.kotlin.text
 
@@ -24,9 +24,9 @@ class CallReceiveInterpreter : RoutingCallInterpreter {
             fields = {
                 buildList {
                     add(RouteField.Body(
-                        schema = SchemaReference.Resolved(schemaFromConeType(coneType, expand = false))
+                        schema = SchemaReference.Resolved(coneType.asJsonSchema(fullSchema = false))
                     ))
-                    findSchemaDefinitions(coneType).forEach { (name, schema) ->
+                    coneType.findSchemaDefinitions().forEach { (name, schema) ->
                         add(RouteField.Schema(name, schema))
                     }
                 }
@@ -36,8 +36,8 @@ class CallReceiveInterpreter : RoutingCallInterpreter {
         return RoutingReferenceResult.Match(routeNode)
     }
 
-    private fun isCallReceive(expression: FirFunctionCall): Boolean =
-        expression.calleeReference.name.asString() == "receive" &&
-                expression.extensionReceiver?.source?.text == "call" &&
-                expression.calleeReference.symbol?.packageFqName()?.asString()?.startsWith("io.ktor.server.request") == true
+    private fun isCallReceive(call: FirFunctionCall): Boolean =
+        call.getFunctionName() == "receive" &&
+                call.extensionReceiver?.source?.text == "call" &&
+                call.isInPackage("io.ktor.server.request")
 }

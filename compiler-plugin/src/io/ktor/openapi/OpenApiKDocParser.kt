@@ -9,7 +9,6 @@ import io.ktor.openapi.routing.SchemaReference
 import io.ktor.openapi.routing.SourceTextRange
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
-import kotlin.collections.filterNotNull
 
 fun SourceTextRange.parseKDoc(): RouteFieldList =
     parsePrecedingComment(fileText, range.first)
@@ -21,8 +20,6 @@ fun SourceTextRange.parseKDoc(): RouteFieldList =
  * @param text The source text of the file
  * @param beforeOffset The offset before which to look for comments
  * @return The extracted comment text or empty string if no comment is found
- *
- * TODO going too far back
  */
 fun parsePrecedingComment(text: CharSequence, beforeOffset: Int): RouteFieldList {
     // Ensure offset is within bounds
@@ -77,7 +74,7 @@ fun parsePrecedingComment(text: CharSequence, beforeOffset: Int): RouteFieldList
 
     // Check for block comments
     val commentEnd = precedingText.lastIndexOf("*/")
-    if (commentEnd != -1) {
+    if (commentEnd != -1 && text.subSequence(commentEnd + 2, lineStart).isBlank()) {
         val commentStart = precedingText.lastIndexOf("/*", commentEnd)
         if (commentStart != -1) {
             val lines = precedingText.subSequence(commentStart + 2, commentEnd)
@@ -114,12 +111,12 @@ private fun List<String>.parseParameters(): List<RouteField> =
     }.filterNotNull().toList()
 
 val contentTypeArg = Regex("^(\\w+/\\S+)$")
-val schemaArg = Regex("^\\[(.*)]([?+]?)$")
+val schemaArg = Regex("^(:?)\\[(.*)]([?+]?)$")
 
 fun parseParameter(text: CharSequence): RouteField? {
     if (!text.startsWith('@'))
         return Summary(text.toString().trim())
-    val bodyAndAttributes = text.split(Regex("\n(?=\\s*$?\\p{Alpha}+)"), limit = 2)
+    val bodyAndAttributes = text.split(Regex("\n(?=\\s*\\$?\\p{Alpha}+)"), limit = 2)
     var i = 0
     val words = bodyAndAttributes.first().trim().removePrefix("@").split(" ")
     val next = { words[i++] }
@@ -141,7 +138,7 @@ fun parseParameter(text: CharSequence): RouteField? {
         "ignore" -> Ignore
         "tag" -> Tag(next())
         "path" -> PathParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
-        "query" -> PathParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
+        "query" -> QueryParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
         "header" -> Header(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
         "cookie" -> Cookie(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
         "body" -> Body(contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
@@ -199,20 +196,29 @@ private fun parseJsonSchemaAttribute(key: String, value: String): JsonPrimitive 
 private fun String.toNumberOrNull(): Number? =
     toLongOrNull() ?: toDoubleOrNull()
 
-// TODO support ?+ and +?, maps
 private fun MatchResult.getSchemaReference(): SchemaReference.Link? {
-    val (name, qualifier) = destructured
-    return getSchemaReference(name, qualifier)
+    val (prefix, name, postfix) = destructured
+    return getSchemaReference(prefix, name, postfix)
 }
 
-fun getSchemaReference(name: String, qualifier: String? = null): SchemaReference.Link? {
-    val base = when (val jsonType = findJsonPrimitiveType(name)) {
+/**
+ * Treats links like `[Type]?` as optional and `[Type]+` as arrays.
+ *
+ * This design may be revisited before release.
+ */
+fun getSchemaReference(prefix: String?, name: String, postfix: String?): SchemaReference.Link? {
+    var link = when (val jsonType = findJsonPrimitiveType(name)) {
         null -> SchemaReference.Link.Reference(name)
         else -> SchemaReference.Link.Simple(name, jsonType)
     }
-    return when (qualifier) {
-        "?" -> SchemaReference.Link.Optional(base)
-        "+" -> SchemaReference.Link.Array(base)
-        else -> base
+    link = when (postfix) {
+        "?" -> SchemaReference.Link.Optional(link)
+        "+" -> SchemaReference.Link.Array(link)
+        else -> link
     }
+    link = when (prefix) {
+        ":" -> SchemaReference.Link.Map(link)
+        else -> link
+    }
+    return link
 }

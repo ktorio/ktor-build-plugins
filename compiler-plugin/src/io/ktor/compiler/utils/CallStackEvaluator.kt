@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
 import org.jetbrains.kotlin.fir.expressions.FirNamedArgumentExpression
+import org.jetbrains.kotlin.fir.expressions.UnresolvedExpressionTypeAccess
 import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirFunctionSymbol
@@ -84,18 +85,15 @@ private fun mapArgumentsToParameters(
     val parameters = function.valueParameters
 
     // Handle positional arguments
+    var paramIndex = 0
     for (i in arguments.indices) {
-        if (i >= parameters.size) break
-
+        if (paramIndex >= parameters.size) break
         val argument = arguments[i]
-        val parameter = parameters[i]
-
         // If it's a named argument, skip it here (will be handled below)
         if (argument is FirNamedArgumentExpression) continue
-
+        val parameter = parameters[paramIndex++]
         // Evaluate the argument
         val evaluatedArg = evaluator.evaluateAsExpression(argument)
-
         // Store the evaluated value for this parameter
         evaluatedArg?.let {
             evaluator.variables.setVariableValue(parameter.symbol, it)
@@ -120,8 +118,7 @@ private fun mapArgumentsToParameters(
         call.extensionReceiver?.let { receiver ->
             val evaluatedReceiver = evaluator.evaluateAsExpression(receiver)
             evaluatedReceiver?.let {
-                // TODO
-                // scope.setVariableValue(receiverParam.symbol, it)
+                evaluator.variables.setVariableValue(receiverParam.symbol, it)
             }
         }
     }
@@ -130,6 +127,7 @@ private fun mapArgumentsToParameters(
 /**
  * Infers type parameters from a function call
  */
+@OptIn(UnresolvedExpressionTypeAccess::class)
 private fun inferTypeParameters(
     call: FirFunctionCall,
     function: FirFunction,
@@ -174,12 +172,10 @@ private fun inferTypeParameters(
         val parameter = valueParameters[i]
 
         // Compare argument type to parameter type to infer type parameters
-        val argumentType = argument.resolvedType
-        val parameterType = parameter.returnTypeRef.coneTypeOrNull
+        val argumentType = argument.coneTypeOrNull ?: continue
+        val parameterType = parameter.returnTypeRef.coneTypeOrNull ?: continue
 
-        if (argumentType != null && parameterType != null) {
-            inferTypeParametersFromTypes(argumentType, parameterType, evaluator.types)
-        }
+        inferTypeParametersFromTypes(argumentType, parameterType, evaluator.types)
     }
 }
 
@@ -192,7 +188,7 @@ private fun inferTypeParametersFromTypes(
     typeScope: FirScopedEvaluator.TypeSubstitutionContext
 ) {
     when {
-        // If parameter type is a type parameter, we can substitute directly
+        // If the parameter type is a type parameter, we can substitute directly
         parameterType is ConeTypeParameterType -> {
             val symbol = parameterType.lookupTag.typeParameterSymbol
             typeScope.setTypeSubstitution(symbol, argumentType)

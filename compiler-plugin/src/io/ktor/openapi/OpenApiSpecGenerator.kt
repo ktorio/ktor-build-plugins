@@ -53,7 +53,7 @@ object OpenApiSpecGenerator {
                                 if (scheme.type == "oauth2")
                                     putJsonObject("flows") {
                                         scheme.flows?.forEach { (name, flow) ->
-                                            put(name, Json.encodeToJsonElement(flow))
+                                            put(name, json.encodeToJsonElement(flow))
                                         }
                                     }
                             }
@@ -65,7 +65,8 @@ object OpenApiSpecGenerator {
     }
 
     fun RouteFieldList.toSpecParametersMap(
-        defaultContentType: String
+        defaultContentType: String,
+        securitySchemes: List<RoutingReferenceResult.SecurityScheme> = emptyList(),
     ): Map<String, JsonElement> = buildMap {
         for (param in this@toSpecParametersMap) {
             when(param) {
@@ -82,7 +83,7 @@ object OpenApiSpecGenerator {
                             put("description", it)
                         }
                         put("required", JsonPrimitive(true))
-                        put("schema", param.asSchema() ?: JsonSchema.String)
+                        put("schema", param.asSchema() ?: JsonSchema.StringObject)
                     })
                 }
                 is RouteField.Deprecated -> {
@@ -92,9 +93,16 @@ object OpenApiSpecGenerator {
                     appendObject("responses", param.code, param.asContentJson(defaultContentType))
                 }
                 is Security -> {
-                    append("security", buildJsonObject {
-                        putJsonArray(param.scheme) {}
-                    })
+                    when (param.scheme) {
+                        // optional
+                        null -> append("security", JsonObject(emptyMap()))
+                        // everything
+                        "*" -> securitySchemes.forEach {
+                            append("security", JsonObject(mapOf(it.name to JsonArray(emptyList()))))
+                        }
+                        // specific
+                        else -> append("security", JsonObject(mapOf(param.scheme to JsonArray(emptyList()))))
+                    }
                 }
                 is Tag -> {
                     append("tags", param.name)

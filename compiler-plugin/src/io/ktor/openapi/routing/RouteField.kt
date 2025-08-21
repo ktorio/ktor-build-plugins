@@ -1,8 +1,12 @@
 package io.ktor.openapi.routing
 
+import io.ktor.compiler.utils.resolveTypeLink
 import io.ktor.openapi.model.JsonSchema
+import io.ktor.openapi.model.JsonSchema.Companion.findSchemaDefinitions
 import io.ktor.openapi.model.JsonType
+import io.ktor.openapi.routing.RouteField.Schema
 import kotlinx.serialization.json.JsonElement
+import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 
 /**
@@ -44,7 +48,7 @@ sealed interface RouteField {
     data class Path(val path: String) : Transient {
         override fun merge(other: RouteField): RouteField? =
             if (other is Path)
-                Path("${other.path}/${path.removePrefix("/")}")
+                Path("${other.path}/$path".replace("//", "/"))
             else null
     }
 
@@ -82,7 +86,7 @@ sealed interface RouteField {
             if (other is PathParam && name == other.name) copy(
                 schema = schema ?: other.schema,
                 description = description ?: other.description,
-                attributes = attributes + other.attributes,
+                attributes = other.attributes + attributes,
             ) else null
     }
 
@@ -102,7 +106,7 @@ sealed interface RouteField {
             if (other is QueryParam && name == other.name) copy(
                 schema = schema ?: other.schema,
                 description = description ?: other.description,
-                attributes = attributes + other.attributes,
+                attributes = other.attributes + attributes,
             ) else null
     }
 
@@ -141,7 +145,7 @@ sealed interface RouteField {
             if (other is Cookie && name == other.name) copy(
                 schema = schema ?: other.schema,
                 description = description ?: other.description,
-                attributes = attributes + other.attributes,
+                attributes = other.attributes + attributes,
             ) else null
     }
 
@@ -161,7 +165,7 @@ sealed interface RouteField {
                 contentType = contentType ?: other.contentType,
                 schema = schema ?: other.schema,
                 description = description ?: other.description,
-                attributes = attributes + other.attributes,
+                attributes = other.attributes + attributes,
             ) else null
     }
 
@@ -183,7 +187,7 @@ sealed interface RouteField {
                     contentType = contentType ?: other.contentType,
                     schema = schema ?: other.schema,
                     description = description ?: other.description,
-                    attributes = attributes + other.attributes,
+                    attributes = other.attributes + attributes,
                 )
             else null
     }
@@ -212,9 +216,16 @@ sealed interface RouteField {
     /**
      * Documents security requirements.
      *
+     * Special cases include "*" when any scheme can be used, or null when security is optional.
+     *
      * Format: `@security scheme`
      */
-    data class Security(val scheme: String) : RouteField {
+    data class Security(val scheme: String?) : RouteField {
+        companion object {
+            val All = Security("*")
+            val Optional = Security(null)
+        }
+
         override fun merge(other: RouteField): RouteField? =
             if (other is Security && scheme == other.scheme) this else null
     }
@@ -244,9 +255,21 @@ fun RouteFieldList.merge(other: RouteFieldList) = buildList {
         if (match == null) add(field)
     }
     // add all remaining unmerged fields to the result
-    // TODO ignore all summary fields because we currently have some false positives
     addAll(otherMutable.filterNot { it is RouteField.Summary })
 }
+
+context(stack: RouteStack, context: CheckerContext)
+fun RouteFieldList.resolveSchemaReferences(): RouteFieldList =
+    this + sequence<RouteField> {
+        for (field in asSequence().filterIsInstance<RouteField.Content>()) {
+            val reference = field.schema?.getReference() ?: continue
+            val coneType = resolveTypeLink(reference) ?: continue
+
+            yieldAll(coneType.findSchemaDefinitions().map { (name, schema) ->
+                Schema(name, schema)
+            })
+        }
+    }.toList()
 
 sealed interface SchemaReference {
 
@@ -276,6 +299,13 @@ sealed interface SchemaReference {
                     items = element.asSchema()
                 )
         }
+        data class Map(val valueType: Link) : Link by valueType {
+            override fun asSchema(): JsonSchema =
+                JsonSchema(
+                    type = JsonType.`object`,
+                    additionalProperties = valueType.asSchema()
+                )
+        }
         data class Optional(val delegate: Link) : Link by delegate {
             override fun asSchema(): JsonSchema =
                 delegate.asSchema()
@@ -290,6 +320,7 @@ fun SchemaReference.getReference(): String? = when(this) {
     is SchemaReference.Resolved -> schema.ref?.substringAfterLast('/')
     is SchemaReference.Link.Array -> element.getReference()
     is SchemaReference.Link.Optional -> delegate.getReference()
+    is SchemaReference.Link.Map -> valueType.getReference()
     is SchemaReference.Link.Reference -> name
     is SchemaReference.Link.Simple -> null
 }

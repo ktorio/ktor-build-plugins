@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.builder.buildLiteralExpression
 import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.resolve.ScopeSession
+import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
 import org.jetbrains.kotlin.fir.types.*
@@ -22,19 +23,19 @@ class FirEvaluationScope(
     val parent: FirEvaluationScope? = null
 ) {
     // Maps variable symbols to their constant values (as FirLiteralExpression)
-    internal val variableValues = mutableMapOf<FirCallableSymbol<*>, FirExpression>()
+    internal val variableValues = mutableMapOf<FirBasedSymbol<*>, FirExpression>()
 
     /**
      * Sets a value for a variable in this scope
      */
-    fun setVariableValue(symbol: FirCallableSymbol<*>, value: FirExpression) {
+    fun setVariableValue(symbol: FirBasedSymbol<*>, value: FirExpression) {
         variableValues[symbol] = value
     }
 
     /**
      * Gets a value for a variable from this scope or any parent scope
      */
-    fun getVariableValue(symbol: FirCallableSymbol<*>): FirExpression? {
+    fun getVariableValue(symbol: FirBasedSymbol<*>): FirExpression? {
         return variableValues[symbol] ?: parent?.getVariableValue(symbol)
     }
 

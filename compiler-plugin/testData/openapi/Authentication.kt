@@ -63,6 +63,11 @@ fun Application.routingWithAuthentication() {
                 call.respondRedirect("/hello")
             }
         }
+        authenticate(optional = true) {
+            get("/hello") {
+                call.respondText("Hello, world!", contentType = ContentType.Text.Plain)
+            }
+        }
     }
 }
 

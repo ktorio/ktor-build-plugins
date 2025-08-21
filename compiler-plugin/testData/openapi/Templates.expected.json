@@ -5,7 +5,7 @@
         "version": "1.0.0"
     },
     "paths": {
-        "/api/report/{id}": {
+        "/api/v1/reports/{id}": {
             "get": {
                 "summary": "Get report by ID.",
                 "parameters": [
@@ -24,7 +24,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "[Map]<[String], [Number]> Report details."
+                        "description": "Report details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

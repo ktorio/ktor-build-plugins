@@ -15,5 +15,5 @@ data class SourceTextRange(
     val range: IntRange,
 ): SourceCoordinates {
     override val startOffset: Int get() = range.first
-    override val endOffset: Int get() = range.last
+    override val endOffset: Int get() = range.last + 1
 }

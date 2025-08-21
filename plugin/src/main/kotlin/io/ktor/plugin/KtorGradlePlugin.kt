@@ -28,7 +28,10 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
         }
 
         afterEvaluate {
-            if (!kotlinPluginApplied) reportKotlinPluginMissingWarning()
+            if (!kotlinPluginApplied) {
+                reportKotlinPluginMissingWarning()
+                return@afterEvaluate
+            }
 
             project.extensions.getByType(org.gradle.api.tasks.SourceSetContainer::class.java).forEach { sourceSet ->
                 if (sourceSet.name == "main") {
@@ -69,7 +72,8 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
         /** The Ktor plugin version. Usually it is equal to the Ktor version used in a project. */
         public const val VERSION: String = BuildConfig.VERSION
 
-        /** The Ktor library version, used in the bom, this can differ for EAP's **/
+        /** The Ktor library version, used i
+         *  the bom, this can differ for EAP's **/
         public const val KTOR_VERSION: String = BuildConfig.KTOR_VERSION
 
         /** The group name used for Ktor tasks. */
