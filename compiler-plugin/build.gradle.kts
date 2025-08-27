@@ -54,6 +54,7 @@ dependencies {
     testSamples(libs.ktor.server.contentNegotiation)
     testSamples(libs.ktor.server.auth)
     testSamples(libs.ktor.server.authJwt)
+    testSamples(libs.ktor.server.resources)
     testSamples(libs.ktor.client.core)
     testSamples(libs.ktor.client.apache)
 
