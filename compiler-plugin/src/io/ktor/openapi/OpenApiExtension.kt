@@ -88,6 +88,7 @@ abstract class OpenApiRouteCallReader(
         ContentNegotiationInterpreter(),
         AuthenticationInterpreter(),
         AuthenticateRouteInterpreter(),
+        ResourceRoutingCallInterpreter(),
     )
 ) : FirFunctionCallChecker(MppCheckerKind.Common) {
     abstract fun onRoutingReference(reference: RouteNode)
