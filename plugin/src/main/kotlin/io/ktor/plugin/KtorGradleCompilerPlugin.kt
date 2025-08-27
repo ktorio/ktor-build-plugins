@@ -1,8 +1,7 @@
 package io.ktor.plugin
 
 import io.ktor.plugin.features.OPENAPI_EXTENSION_KEY
-import io.ktor.plugin.features.OpenAPIExtension
-import io.ktor.plugin.internal.application
+import io.ktor.plugin.features.OpenApiExtension
 import org.gradle.api.provider.Provider
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerPluginSupportPlugin
@@ -22,12 +21,13 @@ public class KtorGradleCompilerPlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean = true
 
+    @OptIn(OpenApiPreview::class)
     override fun applyToCompilation(kotlinCompilation: KotlinCompilation<*>): Provider<List<SubpluginOption>> {
         val project = kotlinCompilation.target.project
 
         // TODO support KMP
         return project.provider {
-            val extension = project.extensions.extraProperties[OPENAPI_EXTENSION_KEY] as OpenAPIExtension
+            val extension = project.extensions.extraProperties[OPENAPI_EXTENSION_KEY] as OpenApiExtension
 
             // Only apply for main compilations
             if (kotlinCompilation.compileKotlinTaskName.contains("test", ignoreCase = true))
