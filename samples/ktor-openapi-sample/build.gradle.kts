@@ -1,3 +1,4 @@
+import io.ktor.plugin.OpenApiPreview
 import org.gradle.kotlin.dsl.openApi
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -11,6 +12,7 @@ plugins {
 application.mainClass = "io.ktor.samples.openapi.ApplicationKt"
 
 ktor {
+    @OptIn(OpenApiPreview::class)
     openApi {
         title = "OpenAPI example"
         version = "2.1"

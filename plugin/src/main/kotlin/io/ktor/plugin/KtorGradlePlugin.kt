@@ -16,7 +16,7 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
         configureFatJar()
         configureDocker()
         configureBomFile()
-        configureOpenAPI()
+        configureOpenApi()
         // Disabled until the native image generation is not possible with a single task with default configs
         // See https://youtrack.jetbrains.com/issue/KTOR-4596/Disable-Native-image-related-tasks
         // configureNativeImage()

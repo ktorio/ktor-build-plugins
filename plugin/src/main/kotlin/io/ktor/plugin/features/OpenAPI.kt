@@ -1,11 +1,13 @@
 package io.ktor.plugin.features
 
 import io.ktor.plugin.KtorGradleCompilerPlugin
+import io.ktor.plugin.OpenApiPreview
 import org.gradle.api.Project
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Property
 
-public abstract class OpenAPIExtension(project: Project) {
+@OpenApiPreview
+public abstract class OpenApiExtension(project: Project) {
     /**
      * Enables the OpenAPI generation.
      * When enabled, the Kotlin compiler plugin will be applied to detect routing functions
@@ -57,8 +59,9 @@ public abstract class OpenAPIExtension(project: Project) {
 
 internal const val OPENAPI_EXTENSION_KEY = "ktor.openapi.extension"
 
-internal fun Project.configureOpenAPI() {
-    val extension = createKtorExtension<OpenAPIExtension>("openApi")
+@OptIn(OpenApiPreview::class)
+internal fun Project.configureOpenApi() {
+    val extension = createKtorExtension<OpenApiExtension>("openApi")
     extensions.extraProperties.set(OPENAPI_EXTENSION_KEY, extension)
     try {
         plugins.apply(KtorGradleCompilerPlugin::class.java)
