@@ -27,7 +27,7 @@ class EndpointInterpreter : RoutingCallInterpreter {
                     addAll(invocation.parseKDoc().resolveSchemaReferences())
 
                     // path argument
-                    expression.getArgument("path")?.evaluate()?.asString()?.let {
+                    expression.getArgument("path", type = "String")?.evaluate()?.asString()?.let {
                         add(RouteField.Path(it))
                     }
 
@@ -50,10 +50,10 @@ class EndpointInterpreter : RoutingCallInterpreter {
     /**
      * If the function name is an HTTP method, use that.  Otherwise, check if a method argument is supplied.
      */
-    context(stack: RouteStack)
+    context(checker: CheckerContext, reporter: DiagnosticReporter, stack: RouteStack)
     private fun getMethod(expression: FirFunctionCall): String? =
         expression.getFunctionName().takeIf { it in HTTP_METHODS }
-            ?: expression.getArgument("method", 1)?.evaluate()
+            ?: expression.getArgument("method", 1, "HttpMethod")?.evaluate()
                 ?.sourceText()?.substringAfterLast('.')?.lowercase().takeIf { it in HTTP_METHODS }
 
 }

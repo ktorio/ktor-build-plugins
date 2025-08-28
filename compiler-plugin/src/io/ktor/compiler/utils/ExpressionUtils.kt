@@ -7,15 +7,29 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.packageFqName
 import org.jetbrains.kotlin.fir.references.symbol
+import org.jetbrains.kotlin.fir.resolve.toClassSymbol
+import org.jetbrains.kotlin.fir.types.resolvedType
 import org.jetbrains.kotlin.text
 
-/**
- * Handle named arguments and position arguments.
- */
 fun FirFunctionCall.getArgument(name: String, index: Int = 0): FirExpression? =
     arguments.firstOrNull { arg ->
         arg is FirNamedArgumentExpression && arg.name.asString() == name
     } ?: arguments.getOrNull(index)
+
+/**
+ * Handle named arguments and position arguments.
+ */
+context(context: CheckerContext)
+fun FirFunctionCall.getArgument(name: String, index: Int = 0, type: String? = null): FirExpression? {
+    val argumentExpression = arguments.firstOrNull { arg ->
+        arg is FirNamedArgumentExpression && arg.name.asString() == name
+    } ?: arguments.getOrNull(index)
+
+    return argumentExpression?.takeIf {
+        type == null ||
+            it.resolvedType.toClassSymbol(context.session)?.classId?.shortClassName?.asString() == type
+    }
+}
 
 fun FirEvaluatorResult?.asString(): String? =
     ((this as? FirEvaluatorResult.Evaluated)?.result as? FirLiteralExpression)?.value?.toString()
@@ -27,7 +41,7 @@ fun FirEvaluatorResult?.sourceText(): String? =
     ((this as? FirEvaluatorResult.Evaluated)?.result as? FirExpression)?.source?.text?.toString()
 
 context(context: CheckerContext)
-fun FirFunctionCall.getArgumentAsString(name: String, index: Int = 0): String? =
+fun FirFunctionCall.getArgumentAsStringConstant(name: String, index: Int = 0): String? =
     getArgument(name, index)?.resolveToString()
 
 /**

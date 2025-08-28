@@ -1,7 +1,7 @@
 package io.ktor.openapi.routing.interpreters
 
 import io.ktor.compiler.utils.getArgument
-import io.ktor.compiler.utils.getArgumentAsString
+import io.ktor.compiler.utils.getArgumentAsStringConstant
 import io.ktor.compiler.utils.getFunctionName
 import io.ktor.compiler.utils.resolveToString
 import io.ktor.openapi.routing.OauthFlow
@@ -45,7 +45,7 @@ class AuthenticationInterpreter : RoutingCallInterpreter {
 
         val oauthCall = findAuthProviderCall(lambdaStatements, listOf("oauth", "oauth2"))
         if (oauthCall != null) {
-            val name = oauthCall.getArgumentAsString("name", 0) ?: "oauth2"
+            val name = oauthCall.getArgumentAsStringConstant("name", 0) ?: "oauth2"
             val providerLambda = oauthCall.arguments.lastOrNull() as? FirAnonymousFunctionExpression
 
             val flows = if (providerLambda != null) {
@@ -63,7 +63,7 @@ class AuthenticationInterpreter : RoutingCallInterpreter {
 
         val basicCall = findAuthProviderCall(lambdaStatements, listOf("basic"))
         if (basicCall != null) {
-            val name = basicCall.getArgumentAsString("name", 0) ?: "basicAuth"
+            val name = basicCall.getArgumentAsStringConstant("name", 0) ?: "basicAuth"
             return RoutingReferenceResult.SecurityScheme(
                 name = name,
                 type = "http",
@@ -73,7 +73,7 @@ class AuthenticationInterpreter : RoutingCallInterpreter {
 
         val bearerOrJwtCall = findAuthProviderCall(lambdaStatements, listOf("bearer", "jwt"))
         if (bearerOrJwtCall != null) {
-            val name = bearerOrJwtCall.getArgumentAsString("name", 0) ?: "bearerAuth"
+            val name = bearerOrJwtCall.getArgumentAsStringConstant("name", 0) ?: "bearerAuth"
             return RoutingReferenceResult.SecurityScheme(
                 name = name,
                 type = "http",
@@ -133,8 +133,8 @@ class AuthenticationInterpreter : RoutingCallInterpreter {
             ?: return emptyMap()
 
         // Extract OAuth configuration parameters
-        val authorizeUrl = settingsCall.getArgumentAsString("authorizeUrl", 1) ?: return emptyMap()
-        val tokenUrl = settingsCall.getArgumentAsString("accessTokenUrl", 2) ?: return emptyMap()
+        val authorizeUrl = settingsCall.getArgumentAsStringConstant("authorizeUrl", 1) ?: return emptyMap()
+        val tokenUrl = settingsCall.getArgumentAsStringConstant("accessTokenUrl", 2) ?: return emptyMap()
 
         // Extract scopes from defaultScopes
         val defaultScopesArg = settingsCall.getArgument("defaultScopes", 6)

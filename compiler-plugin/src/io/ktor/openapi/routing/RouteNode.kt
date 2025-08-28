@@ -33,7 +33,7 @@ sealed interface RouteNode: SourceCoordinates {
 
         override fun toString(): String = buildString {
             append(fir.getFunctionName())
-            (fir.getArgument("path") as? FirLiteralExpression)?.let {
+            (fir.getArgument("path", 0) as? FirLiteralExpression)?.let {
                 append(" ")
                 append(it.value.toString())
             }

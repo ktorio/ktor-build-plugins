@@ -37,9 +37,10 @@ class AuthenticateRouteInterpreter : RoutingCallInterpreter {
                     }
 
                     buildList {
-                        schemes?.map(RouteField::Security)?.let {
-                            addAll(it)
-                        } ?: add(RouteField.Security.All)
+                        when(schemes) {
+                            null -> add(RouteField.Security.All)
+                            else -> addAll(schemes.map(RouteField::Security))
+                        }
 
                         if (optionalArg?.evaluate()?.asBoolean() == true) {
                             add(RouteField.Security.Optional)

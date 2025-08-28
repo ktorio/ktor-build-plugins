@@ -7,15 +7,13 @@ import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.resolve.SupertypeSupplier
 import org.jetbrains.kotlin.fir.resolve.TypeResolutionConfiguration
 import org.jetbrains.kotlin.fir.resolve.typeResolver
-import org.jetbrains.kotlin.fir.scopes.FirScope
-import org.jetbrains.kotlin.fir.symbols.SymbolInternals
+import org.jetbrains.kotlin.fir.scopes.createImportingScopes
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.FirUserTypeRef
 import org.jetbrains.kotlin.fir.types.builder.buildUserTypeRef
 import org.jetbrains.kotlin.fir.types.impl.FirQualifierPartImpl
 import org.jetbrains.kotlin.fir.types.impl.FirTypeArgumentListImpl
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.util.PrivateForInline
 
 /**
  * Resolves a type from its string representation.
@@ -24,15 +22,15 @@ import org.jetbrains.kotlin.util.PrivateForInline
  * @param reference The string representation of the type to resolve (e.g., "String")
  * @return A ConeKotlinType for the resolved type, or null if the type couldn't be resolved
  */
-@OptIn(PrivateForInline::class, SymbolInternals::class)
 context(context: CheckerContext)
 fun resolveTypeLink(reference: String): ConeKotlinType? {
     try {
         // For resolving, we still need to go through type resolver
         val firTypeRef = createUserTypeRefFromLink(context, reference) ?: return null
+        val firFile = context.containingFile ?: return null
 
         val configuration = TypeResolutionConfiguration(
-            scopes = context.scopeSession.scopes().values.flatMap { it.values }.filterIsInstance<FirScope>(),
+            scopes = createImportingScopes(firFile, context.session, context.scopeSession),
             containingClassDeclarations = context.containingDeclarations.filterIsInstance<FirClass>(),
             useSiteFile = context.containingFile,
         )
