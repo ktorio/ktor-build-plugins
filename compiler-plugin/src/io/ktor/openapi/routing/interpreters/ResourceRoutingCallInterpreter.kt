@@ -7,6 +7,7 @@ import io.ktor.openapi.routing.*
 import io.ktor.openapi.routing.RoutingFunctionConstants.HTTP_METHODS
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
+import org.jetbrains.kotlin.fir.declarations.getAnnotationByClassId
 import org.jetbrains.kotlin.fir.declarations.primaryConstructorIfAny
 import org.jetbrains.kotlin.fir.declarations.toAnnotationClassId
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
@@ -16,6 +17,9 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.toConeTypeProjection
+import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.Name
 
 class ResourceRoutingCallInterpreter : RoutingCallInterpreter {
 
@@ -78,8 +82,7 @@ class ResourceRoutingCallInterpreter : RoutingCallInterpreter {
     /**
      * Gets the full path by traversing the resource hierarchy
      */
-    @OptIn(SymbolInternals::class)
-    context(stack: RouteStack)
+    context(checker: CheckerContext, stack: RouteStack, reporter: DiagnosticReporter)
     private fun getFullResourcePath(resourceType: ConeKotlinType): String? {
         val paths = buildList {
             var currentType: ConeKotlinType? = resourceType
@@ -89,11 +92,12 @@ class ResourceRoutingCallInterpreter : RoutingCallInterpreter {
                 val resourceClass = stack.session.symbolProvider.getClassLikeSymbolByClassId(classId) as? FirRegularClassSymbol ?: break
 
                 // Get the path from the Resource annotation
-                val resourceAnnotation = resourceClass.annotations.find {
-                    it.toAnnotationClassId(stack.session)?.shortClassName?.asString() == "Resource"
-                } ?: break
+                val annotation = resourceClass.getAnnotationByClassId(ClassId(
+                    FqName("io.ktor.server.resources"),
+                    Name.identifier("Resource")
+                ), checker.session) ?: break
 
-                val path = resourceAnnotation.argumentMapping.mapping.entries
+                val path = annotation.argumentMapping.mapping.entries
                     .firstOrNull { it.key.asString() == "path" }
                     ?.value?.evaluate()?.asString() ?: ""
 
@@ -117,7 +121,6 @@ class ResourceRoutingCallInterpreter : RoutingCallInterpreter {
     /**
      * Finds the parent resource type if this resource has a parent field
      */
-    @OptIn(SymbolInternals::class)
     context(stack: RouteStack)
     private fun findParentResourceType(resourceClass: FirRegularClassSymbol): ConeKotlinType? {
         // Look for a constructor parameter named "parent"
@@ -130,7 +133,6 @@ class ResourceRoutingCallInterpreter : RoutingCallInterpreter {
     /**
      * Extracts path parameters from the resource class
      */
-    @OptIn(SymbolInternals::class)
     context(stack: RouteStack)
     private fun getPathParameters(resourceType: ConeKotlinType, pathParams: Set<String>): List<ParameterInfo> {
         val result = mutableListOf<ParameterInfo>()

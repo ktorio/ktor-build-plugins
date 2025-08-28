@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.fir.expressions.UnresolvedExpressionTypeAccess
 import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirFunctionSymbol
+import org.jetbrains.kotlin.fir.symbols.lazyDeclarationResolver
 import org.jetbrains.kotlin.fir.types.*
 
 /**
@@ -127,7 +128,6 @@ private fun mapArgumentsToParameters(
 /**
  * Infers type parameters from a function call
  */
-@OptIn(UnresolvedExpressionTypeAccess::class)
 private fun inferTypeParameters(
     call: FirFunctionCall,
     function: FirFunction,
@@ -172,8 +172,8 @@ private fun inferTypeParameters(
         val parameter = valueParameters[i]
 
         // Compare argument type to parameter type to infer type parameters
-        val argumentType = argument.coneTypeOrNull ?: continue
-        val parameterType = parameter.returnTypeRef.coneTypeOrNull ?: continue
+        val argumentType = argument.resolvedType
+        val parameterType = parameter.returnTypeRef.coneType
 
         inferTypeParametersFromTypes(argumentType, parameterType, evaluator.types)
     }

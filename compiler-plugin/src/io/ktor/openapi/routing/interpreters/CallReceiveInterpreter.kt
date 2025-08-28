@@ -17,12 +17,12 @@ class CallReceiveInterpreter : RoutingCallInterpreter {
     override fun check(expression: FirFunctionCall): RoutingReferenceResult {
         if (!isCallReceive(expression)) return RoutingReferenceResult.None
 
-        val coneType = expression.resolvedType
         val routeNode = RouteNode.CallFeature(
             filePath = context.containingFilePath,
             fir = expression,
             fields = {
                 buildList {
+                    val coneType = expression.resolvedType
                     add(RouteField.Body(
                         schema = SchemaReference.Resolved(coneType.asJsonSchema(fullSchema = false))
                     ))
