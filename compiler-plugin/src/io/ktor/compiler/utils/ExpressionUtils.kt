@@ -4,6 +4,7 @@ import io.ktor.openapi.routing.*
 import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.fir.FirEvaluatorResult
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
+import org.jetbrains.kotlin.fir.declarations.evaluateAs
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.packageFqName
 import org.jetbrains.kotlin.fir.references.symbol
@@ -47,10 +48,9 @@ fun FirFunctionCall.getArgumentAsStringConstant(name: String, index: Int = 0): S
 /**
  * Resolves the expression to a string value without the assistance of the route call stack.
  */
-@OptIn(PrivateConstantEvaluatorAPI::class)
 context(context: CheckerContext)
-fun FirExpression.resolveToString(): String? =
-    FirExpressionEvaluator.evaluateExpression(this, context.session).asString()
+fun FirExpression.resolveToString(): String =
+    evaluateAs<FirLiteralExpression>(context.session)?.value.toString()
 
 val KtSourceElement.range: IntRange get() =
     startOffset..endOffset
