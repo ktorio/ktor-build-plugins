@@ -1,15 +1,11 @@
 package io.ktor.compiler.utils
 
 import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
 import org.jetbrains.kotlin.fir.expressions.FirNamedArgumentExpression
-import org.jetbrains.kotlin.fir.expressions.UnresolvedExpressionTypeAccess
 import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
-import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirFunctionSymbol
-import org.jetbrains.kotlin.fir.symbols.lazyDeclarationResolver
 import org.jetbrains.kotlin.fir.types.*
 
 /**
@@ -32,7 +28,6 @@ fun createCallStackEvaluator(callStack: List<FirFunctionCall>): FirScopedEvaluat
 /**
  * Processes the entire call stack to build parameter values and type substitutions at each level
  */
-@OptIn(SymbolInternals::class)
 private fun processCallStack(
     callStack: List<FirFunctionCall>,
     evaluator: FirScopedEvaluator,
@@ -51,10 +46,8 @@ private fun processCallStack(
         val functionSymbol = calleeReference.resolvedSymbol as? FirFunctionSymbol<*>
             ?: continue
 
-        val function = functionSymbol.fir
-
         // Process this function call
-        processFunction(call, function, evaluator, session)
+        processFunction(call, functionSymbol, evaluator, session)
     }
 }
 
@@ -63,7 +56,7 @@ private fun processCallStack(
  */
 private fun processFunction(
     call: FirFunctionCall,
-    function: FirFunction,
+    function: FirFunctionSymbol<*>,
     evaluator: FirScopedEvaluator,
     session: FirSession
 ) {
@@ -78,12 +71,12 @@ private fun processFunction(
  */
 private fun mapArgumentsToParameters(
     call: FirFunctionCall,
-    function: FirFunction,
+    function: FirFunctionSymbol<*>,
     evaluator: FirScopedEvaluator,
     session: FirSession
 ) {
     val arguments = call.argumentList.arguments
-    val parameters = function.valueParameters
+    val parameters = function.valueParameterSymbols
 
     // Handle positional arguments
     var paramIndex = 0
@@ -97,7 +90,7 @@ private fun mapArgumentsToParameters(
         val evaluatedArg = evaluator.evaluateAsExpression(argument)
         // Store the evaluated value for this parameter
         evaluatedArg?.let {
-            evaluator.variables.setVariableValue(parameter.symbol, it)
+            evaluator.variables.setVariableValue(parameter, it)
         }
     }
 
@@ -109,17 +102,17 @@ private fun mapArgumentsToParameters(
 
             val evaluatedArg = evaluator.evaluateAsExpression(arg.expression)
             evaluatedArg?.let {
-                evaluator.variables.setVariableValue(parameter.symbol, it)
+                evaluator.variables.setVariableValue(parameter, it)
             }
         }
     }
 
     // Process receivers if present
-    function.receiverParameter?.let { receiverParam ->
+    function.receiverParameterSymbol?.let { receiverParam ->
         call.extensionReceiver?.let { receiver ->
             val evaluatedReceiver = evaluator.evaluateAsExpression(receiver)
             evaluatedReceiver?.let {
-                evaluator.variables.setVariableValue(receiverParam.symbol, it)
+                evaluator.variables.setVariableValue(receiverParam, it)
             }
         }
     }
@@ -130,7 +123,7 @@ private fun mapArgumentsToParameters(
  */
 private fun inferTypeParameters(
     call: FirFunctionCall,
-    function: FirFunction,
+    function: FirFunctionSymbol<*>,
     evaluator: FirScopedEvaluator,
     session: FirSession
 ) {
@@ -163,7 +156,7 @@ private fun inferTypeParameters(
 
     // Infer type arguments from argument expressions when possible
     val arguments = call.argumentList.arguments
-    val valueParameters = function.valueParameters
+    val valueParameters = function.valueParameterSymbols
 
     for (i in arguments.indices) {
         if (i >= valueParameters.size) break
@@ -173,7 +166,7 @@ private fun inferTypeParameters(
 
         // Compare argument type to parameter type to infer type parameters
         val argumentType = argument.resolvedType
-        val parameterType = parameter.returnTypeRef.coneType
+        val parameterType = parameter.resolvedReturnType
 
         inferTypeParametersFromTypes(argumentType, parameterType, evaluator.types)
     }
