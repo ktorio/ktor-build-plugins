@@ -7,6 +7,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.config.incrementalCompilation
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -19,6 +20,7 @@ class KtorCompilerPluginRegistrar : CompilerPluginRegistrar() {
         if (!openApiConfig.enabled) {
             return
         }
+        configuration.incrementalCompilation = false
 
         val extension = OpenApiExtension(openApiConfig)
         FirExtensionRegistrarAdapter.registerExtension(extension)
