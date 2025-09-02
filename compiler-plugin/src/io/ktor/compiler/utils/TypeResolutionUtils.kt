@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.fir.resolve.SupertypeSupplier
 import org.jetbrains.kotlin.fir.resolve.TypeResolutionConfiguration
 import org.jetbrains.kotlin.fir.resolve.typeResolver
 import org.jetbrains.kotlin.fir.scopes.createImportingScopes
+import org.jetbrains.kotlin.fir.types.ConeErrorType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.FirUserTypeRef
 import org.jetbrains.kotlin.fir.types.builder.buildUserTypeRef
@@ -43,7 +44,7 @@ fun resolveTypeLink(reference: String): ConeKotlinType? {
             resolveDeprecations = true,
             supertypeSupplier = SupertypeSupplier.Default,
         )
-        return resolvedTypeRefResult.type
+        return resolvedTypeRefResult.type.takeIf { it !is ConeErrorType }
     } catch (e: Exception) {
         return null
     }

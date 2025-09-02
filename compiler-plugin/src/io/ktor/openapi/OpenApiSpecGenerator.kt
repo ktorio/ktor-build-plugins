@@ -82,7 +82,7 @@ object OpenApiSpecGenerator {
                         param.description?.let {
                             put("description", it)
                         }
-                        put("required", JsonPrimitive(true))
+                        put("required", JsonPrimitive(param is PathParam))
                         put("schema", param.asSchema() ?: JsonSchema.StringObject)
                     })
                 }

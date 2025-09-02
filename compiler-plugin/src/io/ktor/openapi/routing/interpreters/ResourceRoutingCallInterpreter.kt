@@ -92,7 +92,7 @@ class ResourceRoutingCallInterpreter : RoutingCallInterpreter {
 
                 // Get the path from the Resource annotation
                 val annotation = resourceClass.getAnnotationByClassId(ClassId(
-                    FqName("io.ktor.server.resources"),
+                    FqName("io.ktor.resources"),
                     Name.identifier("Resource")
                 ), checker.session) ?: break
 

@@ -1,6 +1,8 @@
 package io.ktor.plugin.features
 
 import io.ktor.plugin.*
+import io.ktor.plugin.KtorGradlePlugin.Companion.COMPILER_PLUGIN_ID
+import io.ktor.plugin.KtorGradlePlugin.Companion.VERSION
 import io.ktor.plugin.internal.*
 import io.ktor.plugin.ktorOutputDir
 import org.gradle.api.Project
@@ -88,11 +90,8 @@ private fun Project.configureOpenApiGenerationTask(
 
     dependencies.add(
         configurations.ktorCompilerPlugins.name,
-        "io.ktor:ktor-compiler-plugin:${KtorGradlePlugin.VERSION}"
+        "$COMPILER_PLUGIN_ID:$VERSION"
     )
-    kotlinApiPlugin.addCompilerPluginDependency(provider {
-        project(":compiler-plugin")
-    })
 
     return kotlinApiPlugin.registerKotlinJvmCompileTask(
         taskName = OPENAPI_TASK_NAME,
@@ -160,5 +159,5 @@ private fun <T> CompilerPluginConfig.ktorOption(key: String, value: Property<T>)
     }
 }
 private fun <T: Any> CompilerPluginConfig.ktorOption(key: String, value: T) {
-    addPluginArgument(KtorGradlePlugin.COMPILER_PLUGIN_ID, SubpluginOption(key, value.toString()))
+    addPluginArgument(COMPILER_PLUGIN_ID.replace(':', '.'), SubpluginOption(key, value.toString()))
 }

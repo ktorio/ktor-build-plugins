@@ -13,7 +13,7 @@
                         "name": "q",
                         "in": "query",
                         "description": "Search query",
-                        "required": true,
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -22,7 +22,7 @@
                         "name": "limit",
                         "in": "query",
                         "description": "Max items to return",
-                        "required": true,
+                        "required": false,
                         "schema": {
                             "type": "integer",
                             "minimum": 1,

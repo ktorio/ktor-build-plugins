@@ -22,13 +22,12 @@ fun FirFunctionCall.getArgument(name: String, index: Int = 0): FirExpression? =
  */
 context(context: CheckerContext)
 fun FirFunctionCall.getArgument(name: String, index: Int = 0, type: String? = null): FirExpression? {
-    val argumentExpression = arguments.firstOrNull { arg ->
-        arg is FirNamedArgumentExpression && arg.name.asString() == name
-    } ?: arguments.getOrNull(index)
-
-    return argumentExpression?.takeIf {
+    val args = if (arguments.lastOrNull() is FirAnonymousFunctionExpression) arguments.dropLast(1) else arguments
+    val candidate = args.firstOrNull { it is FirNamedArgumentExpression && it.name.asString() == name }
+        ?: args.getOrNull(index)
+    return candidate?.takeIf {
         type == null ||
-            it.resolvedType.toClassSymbol(context.session)?.classId?.shortClassName?.asString() == type
+                it.resolvedType.toClassSymbol(context.session)?.classId?.shortClassName?.asString() == type
     }
 }
 

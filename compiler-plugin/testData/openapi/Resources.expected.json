@@ -113,7 +113,7 @@
                     {
                         "name": "query",
                         "in": "query",
-                        "required": true,
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -121,7 +121,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "required": true,
+                        "required": false,
                         "schema": {
                             "type": "integer"
                         }
@@ -129,7 +129,7 @@
                     {
                         "name": "offset",
                         "in": "query",
-                        "required": true,
+                        "required": false,
                         "schema": {
                             "type": "integer"
                         }

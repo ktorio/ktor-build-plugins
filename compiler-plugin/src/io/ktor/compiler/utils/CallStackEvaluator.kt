@@ -128,10 +128,7 @@ private fun inferTypeParameters(
     session: FirSession
 ) {
     // Get the type parameters from the function
-    val typeParameters = when (function) {
-        is FirSimpleFunction -> function.typeParameters
-        else -> emptyList()
-    }
+    val typeParameters = function.typeParameterSymbols
 
     if (typeParameters.isEmpty()) return
 
@@ -141,15 +138,12 @@ private fun inferTypeParameters(
     // Map explicit type arguments to type parameters
     for (i in typeArguments.indices) {
         if (i >= typeParameters.size) break
-
         val typeArg = typeArguments[i]
-        val typeParam = typeParameters[i]
-
+        val typeParamSymbol = typeParameters[i]
         if (typeArg is FirTypeProjectionWithVariance) {
-            val typeRef = typeArg.typeRef
-            if (typeRef is FirResolvedTypeRef) {
-                val concreteType = typeRef.coneType
-                evaluator.types.setTypeSubstitution(typeParam.symbol, concreteType)
+            val concreteType = (typeArg.typeRef as? FirResolvedTypeRef)?.coneType
+            if (concreteType != null) {
+                evaluator.types.setTypeSubstitution(typeParamSymbol, concreteType)
             }
         }
     }
@@ -158,17 +152,18 @@ private fun inferTypeParameters(
     val arguments = call.argumentList.arguments
     val valueParameters = function.valueParameterSymbols
 
-    for (i in arguments.indices) {
-        if (i >= valueParameters.size) break
+    // Positional arguments (skip named; track separate param index)
+    var paramIndex = 0
+    for (arg in arguments) {
+        if (arg is FirNamedArgumentExpression) continue
+        val parameter = valueParameters.getOrNull(paramIndex++) ?: break
+        inferTypeParametersFromTypes(arg.resolvedType, parameter.resolvedReturnType, evaluator.types)
+    }
 
-        val argument = arguments[i]
-        val parameter = valueParameters[i]
-
-        // Compare argument type to parameter type to infer type parameters
-        val argumentType = argument.resolvedType
-        val parameterType = parameter.resolvedReturnType
-
-        inferTypeParametersFromTypes(argumentType, parameterType, evaluator.types)
+    // Named arguments
+    arguments.filterIsInstance<FirNamedArgumentExpression>().forEach { named ->
+        val parameter = valueParameters.find { it.name == named.name } ?: return@forEach
+        inferTypeParametersFromTypes(named.expression.resolvedType, parameter.resolvedReturnType, evaluator.types)
     }
 }
 

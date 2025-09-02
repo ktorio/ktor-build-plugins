@@ -30,5 +30,5 @@ class ContentNegotiationInterpreter : RoutingCallInterpreter {
 
     private fun isInstallContentNegotiation(expression: FirFunctionCall): Boolean =
         expression.getFunctionName() == INSTALL &&
-            expression.arguments.firstOrNull()?.source.text == CONTENT_NEGOTIATION
+            expression.arguments.firstOrNull()?.source?.text == CONTENT_NEGOTIATION
 }

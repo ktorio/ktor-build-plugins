@@ -41,11 +41,11 @@ sourceSets {
 idea.module.generatedSourceDirs.add(projectDir.resolve("test-gen"))
 
 dependencies {
-    compileOnly(libs.kotlin.compiler)
+    compileOnly(libs.kotlin.compilerEmbeddable)
     implementation(libs.kotlinx.json)
 
     testFixturesApi(libs.kotlin.test.junit5)
-    testFixturesApi(libs.kotlin.compiler.testFramework)
+    testFixturesApi(libs.kotlin.compilerTestFramework)
     testFixturesApi(libs.kotlin.compiler)
     testFixturesApi(libs.kotlinx.json)
 

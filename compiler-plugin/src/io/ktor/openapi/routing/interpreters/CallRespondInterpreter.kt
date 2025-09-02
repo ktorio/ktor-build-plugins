@@ -52,7 +52,7 @@ class CallRespondInterpreter : RoutingCallInterpreter {
 
     private fun isCallRespond(call: FirFunctionCall): Boolean =
         call.getFunctionName().startsWith("respond") &&
-            call.extensionReceiver?.source?.text == "call" &&
+            call.extensionReceiver?.resolvedType?.classId?.shortClassName?.asString() == "ApplicationCall" &&
             call.isInPackage("io.ktor.server.response")
 
     context(context: CheckerContext)
