@@ -8,6 +8,7 @@ import io.ktor.openapi.routing.*
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
+import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.resolvedType
 import org.jetbrains.kotlin.text
 
@@ -38,6 +39,6 @@ class CallReceiveInterpreter : RoutingCallInterpreter {
 
     private fun isCallReceive(call: FirFunctionCall): Boolean =
         call.getFunctionName() == "receive" &&
-                call.extensionReceiver?.source?.text == "call" &&
+                call.extensionReceiver?.resolvedType?.classId?.shortClassName?.asString() == "ApplicationCall" &&
                 call.isInPackage("io.ktor.server.request")
 }

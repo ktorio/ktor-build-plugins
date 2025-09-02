@@ -71,6 +71,7 @@ data class JsonSchema(
                     if (fullSchema) schemaDefinitionForType(this)
                     else JsonSchema(ref = "#/components/schemas/${this.lookupTag.classId.shortClassName.asString()}")
                 }
+                JsonType.any -> JsonSchema()
                 else -> JsonSchema(jsonType)
             }
         }

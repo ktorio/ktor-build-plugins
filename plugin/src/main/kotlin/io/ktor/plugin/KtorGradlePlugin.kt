@@ -83,7 +83,7 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
         public const val TASK_GROUP: String = "Ktor"
 
         /** The name of the compiler plugin */
-        public const val COMPILER_PLUGIN_ID: String = "io.ktor.ktor-compiler-plugin"
+        public const val COMPILER_PLUGIN_ID: String = "io.ktor:ktor-compiler-plugin"
     }
 }
 

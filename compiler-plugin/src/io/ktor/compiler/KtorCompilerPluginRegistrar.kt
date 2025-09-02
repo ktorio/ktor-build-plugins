@@ -20,7 +20,6 @@ class KtorCompilerPluginRegistrar : CompilerPluginRegistrar() {
         if (!openApiConfig.enabled) {
             return
         }
-        configuration.incrementalCompilation = false
 
         val extension = OpenApiExtension(openApiConfig)
         FirExtensionRegistrarAdapter.registerExtension(extension)
