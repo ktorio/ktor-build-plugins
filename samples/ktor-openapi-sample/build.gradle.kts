@@ -1,7 +1,4 @@
-import io.ktor.plugin.OpenApiPreview
-import org.gradle.kotlin.dsl.openApi
-import org.gradle.kotlin.dsl.withType
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import io.ktor.plugin.*
 
 plugins {
     alias(libs.plugins.ktor)
@@ -27,8 +24,4 @@ dependencies {
     implementation(libs.ktor.server.contentNegotiation)
     implementation(libs.ktor.json)
     implementation(libs.logback)
-}
-
-tasks.withType<KotlinCompile>().configureEach {
-    incremental = false
 }

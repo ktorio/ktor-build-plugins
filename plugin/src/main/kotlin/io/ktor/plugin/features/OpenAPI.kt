@@ -1,20 +1,21 @@
 package io.ktor.plugin.features
 
-import io.ktor.plugin.KtorGradleCompilerPlugin
-import io.ktor.plugin.OpenApiPreview
+import io.ktor.plugin.*
+import io.ktor.plugin.internal.*
+import io.ktor.plugin.ktorOutputDir
 import org.gradle.api.Project
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.TaskProvider
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+import org.jetbrains.kotlin.gradle.plugin.CompilerPluginConfig
+import org.jetbrains.kotlin.gradle.plugin.KotlinApiPlugin
+import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 @OpenApiPreview
 public abstract class OpenApiExtension(project: Project) {
-    /**
-     * Enables the OpenAPI generation.
-     * When enabled, the Kotlin compiler plugin will be applied to detect routing functions
-     * and generate OpenAPI documentation based on KDoc comments.
-     */
-    public val enabled: Property<Boolean> = project.property(true)
-
     /**
      * The output path for the generated OpenAPI specification.
      * Defaults to "build/resources/main/openapi/generated.json"
@@ -57,15 +58,107 @@ public abstract class OpenApiExtension(project: Project) {
     public val version: Property<String?> = project.property<String?>(null)
 }
 
-internal const val OPENAPI_EXTENSION_KEY = "ktor.openapi.extension"
+internal const val OPENAPI_TASK_NAME = "buildOpenApi"
+internal const val OPENAPI_TASK_DESCRIPTION = "Generates OpenAPI specification based on Ktor routing definitions."
 
 @OptIn(OpenApiPreview::class)
 internal fun Project.configureOpenApi() {
     val extension = createKtorExtension<OpenApiExtension>("openApi")
-    extensions.extraProperties.set(OPENAPI_EXTENSION_KEY, extension)
     try {
-        plugins.apply(KtorGradleCompilerPlugin::class.java)
+        val kotlinApiPlugin = plugins.apply(KotlinApiPlugin::class.java)
+
+        // Configure the custom OpenAPI generation task when Kotlin JVM plugin is applied
+        whenKotlinJvmApplied {
+            configureOpenApiGenerationTask(extension, kotlinApiPlugin)
+        }
     } catch (_: Throwable) {
         logger.warn("Could not apply compiler plugin. OpenAPI generation might not work.")
     }
+}
+
+@OptIn(OpenApiPreview::class)
+private fun Project.configureOpenApiGenerationTask(
+    extension: OpenApiExtension,
+    kotlinApiPlugin: KotlinApiPlugin
+): TaskProvider<out KotlinJvmCompile>? {
+    // Get the main compile task as a reference
+    val mainCompileTask = tasks.withType<KotlinCompile>()
+        .firstOrNull { "test" !in it.name.lowercase() }
+        ?: return null
+
+    dependencies.add(
+        configurations.ktorCompilerPlugins.name,
+        "io.ktor:ktor-compiler-plugin:${KtorGradlePlugin.VERSION}"
+    )
+    kotlinApiPlugin.addCompilerPluginDependency(provider {
+        project(":compiler-plugin")
+    })
+
+    return kotlinApiPlugin.registerKotlinJvmCompileTask(
+        taskName = OPENAPI_TASK_NAME,
+        compilerOptions = kotlinApiPlugin.createCompilerJvmOptions(),
+        explicitApiMode = provider { ExplicitApiMode.Disabled }
+    ).also { provider ->
+        provider.configure { task ->
+            task.doFirst {
+                logger.warn("Ktor's OpenAPI generation is ** experimental **")
+                logger.lifecycle("""
+                    - It may be incompatible with Kotlin versions outside 2.2.*
+                    - Behavior will likely change in future releases
+                    - Please report any issues at https://youtrack.jetbrains.com/newIssue?project=KTOR
+                """.trimIndent())
+            }
+
+            task.group = KtorGradlePlugin.TASK_GROUP
+            task.description = OPENAPI_TASK_DESCRIPTION
+            // Copy the main compile task configuration
+            task.source(mainCompileTask.sources)
+            task.dependsOn(mainCompileTask.dependsOn)
+            // Multiplatform is unimportant
+            task.multiPlatformEnabled.set(false)
+            // Update to use classpath configuration from the main task
+            task.friendPaths.setFrom(mainCompileTask.friendPaths)
+            task.libraries.setFrom(mainCompileTask.libraries)
+            task.destinationDirectory.set(task.project.layout.buildDirectory.dir("tmp/openapi-frontend"))
+            // Configure the compiler to only run the frontend (skip code generation)
+            task.compilerOptions {
+                // Copy relevant options from main compile task
+                jvmTarget.set(mainCompileTask.compilerOptions.jvmTarget)
+                apiVersion.set(mainCompileTask.compilerOptions.apiVersion)
+                languageVersion.set(mainCompileTask.compilerOptions.languageVersion)
+                javaParameters.set(mainCompileTask.compilerOptions.javaParameters)
+                moduleName.set(mainCompileTask.compilerOptions.moduleName)
+
+                // Free compiler args to disable incremental compilation
+                freeCompilerArgs.addAll(mainCompileTask.compilerOptions.freeCompilerArgs.get())
+                freeCompilerArgs.add("-Xenable-incremental-compilation=false")
+                // TODO seems that disabling back-end compilation is impossible
+            }
+
+            task.pluginClasspath.from(configurations.ktorCompilerPlugins)
+
+            task.pluginOptions.add(CompilerPluginConfig().apply {
+                val outputPath = extension.target.takeIf { it.isPresent }?.get()?.asFile?.absolutePath
+                    ?: task.project.layout.ktorOutputDir.get().file("openapi/generated.json").asFile.absolutePath
+                ktorOption("openapi.enabled", true)
+                ktorOption("openapi.output", outputPath)
+                ktorOption("openapi.description", extension.description)
+                ktorOption("openapi.title", extension.title)
+                ktorOption("openapi.summary", extension.summary)
+                ktorOption("openapi.contact", extension.contact)
+                ktorOption("openapi.termsOfService", extension.termsOfService)
+                ktorOption("openapi.license", extension.license)
+                ktorOption("openapi.version", extension.version)
+            })
+        }
+    }
+}
+
+private fun <T> CompilerPluginConfig.ktorOption(key: String, value: Property<T>) {
+    value.orNull?.let {
+        ktorOption(key, it.toString())
+    }
+}
+private fun <T: Any> CompilerPluginConfig.ktorOption(key: String, value: T) {
+    addPluginArgument(KtorGradlePlugin.COMPILER_PLUGIN_ID, SubpluginOption(key, value.toString()))
 }

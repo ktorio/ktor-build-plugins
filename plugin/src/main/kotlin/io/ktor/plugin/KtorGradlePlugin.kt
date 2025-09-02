@@ -6,7 +6,10 @@ import io.ktor.plugin.internal.*
 import io.ktor.plugin.internal.KotlinPluginType.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.file.Directory
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.provider.Provider
 
 public abstract class KtorGradlePlugin : Plugin<Project> {
@@ -35,7 +38,7 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
 
             project.extensions.getByType(org.gradle.api.tasks.SourceSetContainer::class.java).forEach { sourceSet ->
                 if (sourceSet.name == "main") {
-                    sourceSet.resources.srcDir(project.ktorOutputDir)
+                    sourceSet.resources.srcDir(project.layout.ktorOutputDir)
                 }
             }
         }
@@ -78,6 +81,9 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
 
         /** The group name used for Ktor tasks. */
         public const val TASK_GROUP: String = "Ktor"
+
+        /** The name of the compiler plugin */
+        public const val COMPILER_PLUGIN_ID: String = "io.ktor.ktor-compiler-plugin"
     }
 }
 
@@ -90,5 +96,8 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
 )
 public const val KTOR_VERSION: String = KtorGradlePlugin.VERSION
 
-internal val Project.ktorOutputDir: Provider<Directory>
-    get() = project.layout.buildDirectory.dir("ktor")
+public val ProjectLayout.ktorOutputDir: Provider<Directory>
+    get() = buildDirectory.dir("ktor")
+
+public val ConfigurationContainer.ktorCompilerPlugins: Configuration
+    get() = maybeCreate("ktorCompilerPlugin")
