@@ -151,7 +151,8 @@ class KotlinPluginIntegrationTest : IntegrationTest() {
 
         val fatJarTasks = setOf("buildFatJar", "runFatJar")
         val jibTasks = setOf("buildImage", "publishImage", "publishImageToLocalRegistry", "runDocker")
-        val allTasks = fatJarTasks + jibTasks
+        val openApiTasks = setOf("buildOpenApi")
+        val allTasks = fatJarTasks + jibTasks + openApiTasks
 
         fun BuildResult.assertNoKtorTasksAdded() {
             assertKtorTasksAdded(emptySet())

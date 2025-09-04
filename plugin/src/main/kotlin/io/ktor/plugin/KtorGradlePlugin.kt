@@ -1,10 +1,16 @@
 package io.ktor.plugin
 
 import io.ktor.plugin.features.*
+import io.ktor.plugin.generated.BuildConfig
 import io.ktor.plugin.internal.*
 import io.ktor.plugin.internal.KotlinPluginType.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ConfigurationContainer
+import org.gradle.api.file.Directory
+import org.gradle.api.file.ProjectLayout
+import org.gradle.api.provider.Provider
 
 public abstract class KtorGradlePlugin : Plugin<Project> {
     override fun apply(project: Project): Unit = with(project) {
@@ -13,6 +19,7 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
         configureFatJar()
         configureDocker()
         configureBomFile()
+        configureOpenApi()
         // Disabled until the native image generation is not possible with a single task with default configs
         // See https://youtrack.jetbrains.com/issue/KTOR-4596/Disable-Native-image-related-tasks
         // configureNativeImage()
@@ -24,7 +31,16 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
         }
 
         afterEvaluate {
-            if (!kotlinPluginApplied) reportKotlinPluginMissingWarning()
+            if (!kotlinPluginApplied) {
+                reportKotlinPluginMissingWarning()
+                return@afterEvaluate
+            }
+
+            project.extensions.getByType(org.gradle.api.tasks.SourceSetContainer::class.java).forEach { sourceSet ->
+                if (sourceSet.name == "main") {
+                    sourceSet.resources.srcDir(project.layout.ktorOutputDir)
+                }
+            }
         }
     }
 
@@ -57,10 +73,17 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
 
     public companion object {
         /** The Ktor plugin version. Usually it is equal to the Ktor version used in a project. */
-        public const val VERSION: String = "3.2.3"
+        public const val VERSION: String = BuildConfig.VERSION
+
+        /** The Ktor library version, used i
+         *  the bom, this can differ for EAP's **/
+        public const val KTOR_VERSION: String = BuildConfig.KTOR_VERSION
 
         /** The group name used for Ktor tasks. */
         public const val TASK_GROUP: String = "Ktor"
+
+        /** The name of the compiler plugin */
+        public const val COMPILER_PLUGIN_ID: String = "io.ktor:ktor-compiler-plugin"
     }
 }
 
@@ -72,3 +95,9 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
     )
 )
 public const val KTOR_VERSION: String = KtorGradlePlugin.VERSION
+
+public val ProjectLayout.ktorOutputDir: Provider<Directory>
+    get() = buildDirectory.dir("ktor")
+
+public val ConfigurationContainer.ktorCompilerPlugins: Configuration
+    get() = maybeCreate("ktorCompilerPlugin")

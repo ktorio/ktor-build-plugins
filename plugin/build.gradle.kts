@@ -1,19 +1,20 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.gradle.kotlin.dsl.maven
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.pluginPublish)
     alias(libs.plugins.binaryCompatibilityValidator)
+    alias(libs.plugins.buildconfig)
 }
 
 group = libs.plugins.ktor.get().pluginId
-version = libs.plugins.ktor.get().version
-
-if (hasProperty("versionSuffix")) {
-    val suffix = property("versionSuffix")
-    version = "$version-$suffix"
-}
+version = listOfNotNull(
+    libs.plugins.ktor.get().version,
+    System.getenv("GIT_BRANCH")?.let(Regex("^.*/(.*)-eap$")::matchEntire)?.groupValues?.get(1)?.takeIf { it != "main" },
+    findProperty("versionSuffix")
+).joinToString("-")
 
 dependencies {
     implementation(gradleApi())
@@ -47,12 +48,19 @@ kotlin {
     }
 }
 
+// Include the project version for referencing the compiler plugin
+buildConfig {
+    packageName("io.ktor.plugin.generated")
+    buildConfigField("String", "VERSION", "\"${project.version}\"")
+    buildConfigField("String", "KTOR_VERSION", "\"${libs.ktor.server.core.get().version}\"")
+}
+
 gradlePlugin {
     website = "https://ktor.io"
     vcsUrl = "https://github.com/ktorio/ktor"
 
     plugins {
-        create("ktor") {
+        create("ktor").apply {
             id = "io.ktor.plugin"
             displayName = "Ktor Gradle Plugin"
             implementationClass = "io.ktor.plugin.KtorGradlePlugin"
@@ -99,13 +107,17 @@ tasks.withType<Test>().configureEach {
 }
 
 if (hasProperty("space")) {
+    val publishingUrl = System.getenv("PUBLISHING_URL")
+    val publishingUser = System.getenv("PUBLISHING_USER")
+    if (publishingUrl == null || publishingUser == null) {
+        throw GradleException("Missing publishing credentials")
+    }
     publishing {
         repositories {
-            maven {
-                name = "SpacePackages"
-                url = uri(System.getenv("PUBLISHING_URL"))
+            maven(url = publishingUrl) {
+                name = "space"
                 credentials {
-                    username = System.getenv("PUBLISHING_USER")
+                    username = publishingUser
                     password = System.getenv("PUBLISHING_PASSWORD")
                 }
             }
