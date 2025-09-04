@@ -41,42 +41,6 @@
                 }
             }
         },
-        "/api/data/messages": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Message2"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "requestBody": {
-                    "description": "",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Message2"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": ""
-                    }
-                }
-            }
-        },
         "/api/data/users/{id}": {
             "get": {
                 "parameters": [
@@ -122,52 +86,6 @@
                     }
                 }
             }
-        },
-        "/api/data/messages/{id}": {
-            "get": {
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "404": {
-                        "description": ""
-                    },
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Message2"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": ""
-                    }
-                }
-            }
         }
     },
     "components": {
@@ -179,17 +97,6 @@
                         "type": "string"
                     },
                     "name": {
-                        "type": "string"
-                    }
-                }
-            },
-            "Message2": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string"
-                    },
-                    "text": {
                         "type": "string"
                     }
                 }

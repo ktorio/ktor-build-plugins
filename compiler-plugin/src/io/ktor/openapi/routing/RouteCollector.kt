@@ -34,12 +34,12 @@ object RouteCollector {
         var stack = RouteStack(session)
         var fields = emptyList<RouteField>()
         for (ancestor in parents) {
-            fields = ancestor.fields(stack).merge(fields)
+            fields = ancestor.resolve(stack).merge(fields)
             stack += ancestor
         }
 
         for (child in children) {
-            fields = fields.merge(child.fields(stack))
+            fields = fields.merge(child.resolve(stack))
         }
 
         val path = fields.path ?: return null

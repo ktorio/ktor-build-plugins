@@ -79,16 +79,17 @@ class OpenApiExtension(
 
 abstract class OpenApiRouteCallReader(
     private val adapters: List<RoutingCallInterpreter> = listOf(
-        EndpointInterpreter(),
-        CallRespondInterpreter(),
-        CallReceiveInterpreter(),
-        ParameterGetInterpreter(),
-        QueryParameterGetInterpreter(),
-        CustomFunctionInterpreter(),
-        ContentNegotiationInterpreter(),
         AuthenticationInterpreter(),
         AuthenticateRouteInterpreter(),
+        CallRespondInterpreter(),
+        CallReceiveInterpreter(),
+        ContentNegotiationInterpreter(),
+        CustomFunctionInterpreter(),
+        EndpointInterpreter(),
+        ParameterInterpreter(),
+        RequestHeaderInterpreter(),
         ResourceRoutingCallInterpreter(),
+        ResponseHeaderInterpreter(),
     )
 ) : FirFunctionCallChecker(MppCheckerKind.Common) {
     abstract fun onRoutingReference(reference: RouteNode)

@@ -27,9 +27,12 @@ sealed interface RouteField {
         val description: String?
     }
 
-    sealed interface Parameter : SchemaHolder {
+    sealed interface ParameterOrHeader : SchemaHolder {
         val name: String
         val description: String?
+    }
+
+    sealed interface Parameter : ParameterOrHeader {
         val `in`: String
     }
 
@@ -168,6 +171,13 @@ sealed interface RouteField {
                 attributes = other.attributes + attributes,
             ) else null
     }
+
+    data class ResponseHeader(
+        override val name: String,
+        override val schema: SchemaReference? = null,
+        override val description: String? = null,
+        override val attributes: Map<String, JsonElement> = emptyMap(),
+    ) : ParameterOrHeader
 
     /**
      * Documents a response code with optional type and description.

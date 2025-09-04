@@ -1,0 +1,91 @@
+{
+    "openapi": "3.1.1",
+    "info": {
+        "title": "Open API Document",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/json": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/binary": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "X-Question": {
+                            "description": ""
+                        }
+                    }
+                }
+            }
+        },
+        "/file": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "Content-Disposition": {
+                            "description": ""
+                        }
+                    }
+                }
+            }
+        },
+        "/audio": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "audio/mpeg": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dudes": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Dude"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Dude": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

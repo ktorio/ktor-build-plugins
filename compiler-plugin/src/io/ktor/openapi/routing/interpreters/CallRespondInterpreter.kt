@@ -1,7 +1,7 @@
 package io.ktor.openapi.routing.interpreters
 
 import io.ktor.compiler.utils.*
-import io.ktor.openapi.model.JsonSchema
+import io.ktor.openapi.model.*
 import io.ktor.openapi.model.JsonSchema.Companion.asJsonSchema
 import io.ktor.openapi.model.JsonSchema.Companion.findSchemaDefinitions
 import io.ktor.openapi.routing.*
@@ -52,8 +52,8 @@ class CallRespondInterpreter : RoutingCallInterpreter {
 
     private fun isCallRespond(call: FirFunctionCall): Boolean =
         call.getFunctionName().startsWith("respond") &&
-            call.extensionReceiver?.resolvedType?.classId?.shortClassName?.asString() == "ApplicationCall" &&
-            call.isInPackage("io.ktor.server.response")
+                call.extensionReceiver?.source?.text == "call" &&
+                call.isInPackage("io.ktor.server.response")
 
     context(context: CheckerContext)
     private fun findResponseBodyArgument(expression: FirFunctionCall): ConeKotlinType? {
@@ -91,13 +91,10 @@ class CallRespondInterpreter : RoutingCallInterpreter {
             else -> null
         }
 
-    private fun getSchemaFromContentType(contentType: String): SchemaReference =
-        SchemaReference.Resolved(
-            if (contentType.startsWith("text"))
-                JsonSchema.String
-            else
-                JsonSchema.Binary
-        )
+    private fun getSchemaFromContentType(contentType: String): SchemaReference? =
+        if (contentType.startsWith("text"))
+            SchemaReference.Resolved(JsonSchema.String)
+        else null
 
     private fun FirExpression.toCode(): String? {
         val expr = this as? FirPropertyAccessExpression ?: return null
@@ -169,6 +166,11 @@ class CallRespondInterpreter : RoutingCallInterpreter {
         }
     }
 
+    /**
+     * Very simplified attempt at getting content type string from reference.
+     *
+     * Note: this will not work for many cases and will need to be replaced with runtime substitution.
+     */
     private fun FirExpression.toContentTypeString(): String? {
         val expr = this as? FirPropertyAccessExpression ?: return null
         val text = expr.source.text ?: return null
