@@ -14,9 +14,9 @@ object OpenApiSpecGenerator {
         securitySchemes: List<RoutingReferenceResult.SecurityScheme>,
         json: Json,
     ): JsonObject {
-        val routes = RouteCollector.collectRoutes(routes)
-        val routesByPath = routes.groupBy { it.path }
-        val schemaJson = JsonObject(routes.flatMap {
+        val resolvedRoutes = RouteCollector.collectRoutes(routes)
+        val routesByPath = resolvedRoutes.groupBy { it.path }
+        val schemaJson = JsonObject(resolvedRoutes.flatMap {
             it.fields.filterIsInstance<Schema>()
         }.associate { (name, schema) ->
             name to Json.encodeToJsonElement(schema)
@@ -28,7 +28,7 @@ object OpenApiSpecGenerator {
                     for (call in calls) {
                         put(
                             call.method,
-                            JsonObject(call.fields.toSpecParametersMap(defaultContentType))
+                            JsonObject(call.fields.toOperationInfo(defaultContentType))
                         )
                     }
                 }
@@ -64,11 +64,13 @@ object OpenApiSpecGenerator {
         }
     }
 
-    fun RouteFieldList.toSpecParametersMap(
+    fun RouteFieldList.toOperationInfo(
         defaultContentType: String,
         securitySchemes: List<RoutingReferenceResult.SecurityScheme> = emptyList(),
     ): Map<String, JsonElement> = buildMap {
-        for (param in this@toSpecParametersMap) {
+        val responseHeaders = mutableListOf<ResponseHeader>()
+
+        for (param in this@toOperationInfo) {
             when(param) {
                 is Summary -> put("summary", param.text)
                 is Description -> put("description", param.text)
@@ -89,8 +91,13 @@ object OpenApiSpecGenerator {
                 is RouteField.Deprecated -> {
                     put("deprecated", JsonPrimitive(true))
                 }
+                is ResponseHeader -> {
+                    responseHeaders += param
+                }
                 is Response -> {
-                    appendObject("responses", param.code, param.asContentJson(defaultContentType))
+                    val headersJson = responseHeaders.asJsonMap()
+                    val contentJson = param.asContentJson(defaultContentType, headersJson)
+                    appendObject("responses", param.code, contentJson)
                 }
                 is Security -> {
                     when (param.scheme) {
@@ -112,14 +119,38 @@ object OpenApiSpecGenerator {
         }
     }
 
-    private fun Content.asContentJson(defaultContentType: String) = buildJsonObject {
+    private fun Content.asContentJson(defaultContentType: String, appendEntries: Map<String, JsonElement>? = null) = buildJsonObject {
         put("description", description ?: "")
-        val type = asSchema() ?: return@buildJsonObject
+
+        appendEntries?.forEach { (name, element) ->
+            put(name, element)
+        }
+
+        val schema = asSchema()
         val contentType = this@asContentJson.contentType
+        // when both content type and schema are null, we assume this is an empty response
+        if (contentType == null && schema == null) {
+            return@buildJsonObject
+        }
         putJsonObject("content") {
             put(contentType ?: defaultContentType, buildJsonObject {
-                put("schema", type)
+                schema?.let {
+                    put("schema", schema)
+                }
             })
+        }
+    }
+
+    private fun List<ResponseHeader>.asJsonMap(): Map<String, JsonElement>? {
+        if (isEmpty())
+            return null
+        return associate { header ->
+            header.name to buildJsonObject {
+                put("description", header.description ?: "")
+                header.asSchema()?.let {
+                    put("schema", it)
+                }
+            }
         }
     }
 

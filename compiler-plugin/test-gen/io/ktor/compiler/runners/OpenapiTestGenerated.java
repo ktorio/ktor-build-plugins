@@ -40,9 +40,21 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
+  @TestMetadata("Parameters.kt")
+  public void testParameters() {
+    runTest("compiler-plugin/testData/openapi/Parameters.kt");
+  }
+
+  @Test
   @TestMetadata("Resources.kt")
   public void testResources() {
     runTest("compiler-plugin/testData/openapi/Resources.kt");
+  }
+
+  @Test
+  @TestMetadata("Responses.kt")
+  public void testResponses() {
+    runTest("compiler-plugin/testData/openapi/Responses.kt");
   }
 
   @Test

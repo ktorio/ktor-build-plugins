@@ -107,6 +107,14 @@ private fun Project.configureOpenApiGenerationTask(
                     - Please report any issues at https://youtrack.jetbrains.com/newIssue?project=KTOR
                 """.trimIndent())
             }
+            // Drop the class files after each run
+            task.doLast {
+                val directory = task.destinationDirectory.get().asFile
+                if (directory.exists()) {
+                    directory.deleteRecursively()
+                    directory.mkdirs()
+                }
+            }
 
             task.group = KtorGradlePlugin.TASK_GROUP
             task.description = OPENAPI_TASK_DESCRIPTION
@@ -118,7 +126,7 @@ private fun Project.configureOpenApiGenerationTask(
             // Update to use classpath configuration from the main task
             task.friendPaths.setFrom(mainCompileTask.friendPaths)
             task.libraries.setFrom(mainCompileTask.libraries)
-            task.destinationDirectory.set(task.project.layout.buildDirectory.dir("tmp/openapi-frontend"))
+            task.destinationDirectory.set(task.project.layout.buildDirectory.dir("ktor-compile/openapi"))
             // Configure the compiler to only run the frontend (skip code generation)
             task.compilerOptions {
                 // Copy relevant options from main compile task
@@ -131,7 +139,6 @@ private fun Project.configureOpenApiGenerationTask(
                 // Free compiler args to disable incremental compilation
                 freeCompilerArgs.addAll(mainCompileTask.compilerOptions.freeCompilerArgs.get())
                 freeCompilerArgs.add("-Xenable-incremental-compilation=false")
-                // TODO seems that disabling back-end compilation is impossible
             }
 
             task.pluginClasspath.from(configurations.ktorCompilerPlugins)

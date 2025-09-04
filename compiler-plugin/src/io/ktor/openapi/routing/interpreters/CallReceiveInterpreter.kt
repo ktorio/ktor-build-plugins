@@ -1,14 +1,12 @@
 package io.ktor.openapi.routing.interpreters
 
-import io.ktor.compiler.utils.getFunctionName
-import io.ktor.compiler.utils.isInPackage
-import io.ktor.openapi.model.JsonSchema.Companion.findSchemaDefinitions
+import io.ktor.compiler.utils.*
 import io.ktor.openapi.model.JsonSchema.Companion.asJsonSchema
+import io.ktor.openapi.model.JsonSchema.Companion.findSchemaDefinitions
 import io.ktor.openapi.routing.*
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
-import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.resolvedType
 import org.jetbrains.kotlin.text
 
@@ -39,6 +37,6 @@ class CallReceiveInterpreter : RoutingCallInterpreter {
 
     private fun isCallReceive(call: FirFunctionCall): Boolean =
         call.getFunctionName() == "receive" &&
-                call.extensionReceiver?.resolvedType?.classId?.shortClassName?.asString() == "ApplicationCall" &&
+                call.extensionReceiver?.source?.text == "call" &&
                 call.isInPackage("io.ktor.server.request")
 }
