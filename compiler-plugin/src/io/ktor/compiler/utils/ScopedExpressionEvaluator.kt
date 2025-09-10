@@ -1,5 +1,6 @@
 package io.ktor.compiler.utils
 
+import org.jetbrains.kotlin.codegen.StackValue
 import org.jetbrains.kotlin.contracts.description.LogicOperationKind
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.fir.FirElement
@@ -7,6 +8,7 @@ import org.jetbrains.kotlin.fir.FirEvaluatorResult
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.builder.*
+import org.jetbrains.kotlin.fir.expressions.impl.FirExpressionStub
 import org.jetbrains.kotlin.fir.expressions.impl.FirResolvedArgumentList
 import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.references.resolved
@@ -24,9 +26,11 @@ import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.psi.expressionVisitor
 import org.jetbrains.kotlin.resolve.constants.evaluate.CompileTimeType
 import org.jetbrains.kotlin.resolve.constants.evaluate.evalBinaryOp
 import org.jetbrains.kotlin.resolve.constants.evaluate.evalUnaryOp
+import org.jetbrains.kotlin.text
 import org.jetbrains.kotlin.types.ConstantValueKind
 import org.jetbrains.kotlin.util.OperatorNameConventions
 
@@ -276,7 +280,25 @@ internal class ScopedExpressionEvaluationVisitor(
     }
 
     override fun visitElement(element: FirElement, data: Nothing?): FirEvaluatorResult {
-        error("FIR element \"${element::class}\" is not supported in constant evaluation")
+        when (element) {
+            // String parts of string concatenations appear as these, so we just grab the source value
+            is FirExpressionStub -> {
+                // Try to extract the source text or return a default
+                val sourceText = element.source?.text?.toString()
+                if (sourceText != null) {
+                    return FirEvaluatorResult.Evaluated(
+                        buildLiteralExpression(
+                            source = element.source,
+                            kind = ConstantValueKind.String,
+                            value = sourceText.trim('"'),
+                            setType = false,
+                        )
+                    )
+                }
+                return FirEvaluatorResult.NotEvaluated
+            }
+            else -> error("FIR element \"${element::class}\" is not supported in constant evaluation")
+        }
     }
 
     override fun visitLiteralExpression(literalExpression: FirLiteralExpression, data: Nothing?): FirEvaluatorResult {
@@ -534,7 +556,8 @@ internal class ScopedExpressionEvaluationVisitor(
 
     override fun visitStringConcatenationCall(stringConcatenationCall: FirStringConcatenationCall, data: Nothing?): FirEvaluatorResult {
         val strings = stringConcatenationCall.argumentList.arguments.map {
-            evaluate(it).unwrapOr<FirLiteralExpression> { return it } ?: return FirEvaluatorResult.NotEvaluated
+            evaluate(it).unwrapOr<FirLiteralExpression> { literal -> literal }
+                ?: return FirEvaluatorResult.NotEvaluated
         }
         val result = strings.joinToString(separator = "") { it.value.toString() }
         return result.toConstExpression(ConstantValueKind.String, stringConcatenationCall).wrap()
