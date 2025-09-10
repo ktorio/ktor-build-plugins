@@ -4,7 +4,6 @@ import io.ktor.plugin.*
 import io.ktor.plugin.KtorGradlePlugin.Companion.COMPILER_PLUGIN_ID
 import io.ktor.plugin.KtorGradlePlugin.Companion.VERSION
 import io.ktor.plugin.internal.*
-import io.ktor.plugin.ktorOutputDir
 import org.gradle.api.Project
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Property
