@@ -9,7 +9,7 @@ subprojects {
             substitute(
                 module("io.ktor:ktor-compiler-plugin")
             ).using(
-                project(":compiler-plugin")
+                project(":ktor-compiler-plugin")
             )
         }
     }

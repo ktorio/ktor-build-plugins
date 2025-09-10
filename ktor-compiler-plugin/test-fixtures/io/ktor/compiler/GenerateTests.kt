@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.generators.generateTestGroupSuiteWithJUnit5
 
 fun main() {
     generateTestGroupSuiteWithJUnit5 {
-        testGroup(testDataRoot = "compiler-plugin/testData", testsRoot = "compiler-plugin/test-gen") {
+        testGroup(testDataRoot = "ktor-compiler-plugin/testData", testsRoot = "ktor-compiler-plugin/test-gen") {
             testClass<AbstractOpenapiTest> {
                 model("openapi")
             }
