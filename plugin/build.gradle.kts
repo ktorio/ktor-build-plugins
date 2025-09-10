@@ -10,11 +10,8 @@ plugins {
 }
 
 group = libs.plugins.ktor.get().pluginId
-version = listOfNotNull(
-    libs.plugins.ktor.get().version,
-    System.getenv("GIT_BRANCH")?.let(Regex("^.*/(.*)-eap$")::matchEntire)?.groupValues?.get(1)?.takeIf { it != "main" },
-    findProperty("versionSuffix")
-).joinToString("-")
+version = resolveVersion(libs.versions.ktor.plugin.get())
+description = "Ktor Gradle plugin"
 
 dependencies {
     implementation(gradleApi())
