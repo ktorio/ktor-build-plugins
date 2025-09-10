@@ -13,6 +13,8 @@ dependencyResolutionManagement {
     }
 }
 
+includeBuild("build-logic")
+
 include("compiler-plugin")
 include("samples:ktor-fatjar-sample")
 include("samples:ktor-docker-sample")
