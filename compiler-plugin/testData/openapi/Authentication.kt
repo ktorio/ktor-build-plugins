@@ -72,3 +72,6 @@ fun Application.routingWithAuthentication() {
 }
 
 data class UserSession(val accessToken: String)
+
+/* GENERATED_FIR_TAGS: classDeclaration, data, funWithExtensionReceiver, functionDeclaration, primaryConstructor,
+propertyDeclaration */

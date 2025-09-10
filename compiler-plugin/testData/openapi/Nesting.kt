@@ -86,3 +86,6 @@ interface Repository0<E> {
 }
 
 data class User0(val id: Int, val name: String)
+
+/* GENERATED_FIR_TAGS: classDeclaration, data, funWithExtensionReceiver, functionDeclaration, interfaceDeclaration,
+nullableType, primaryConstructor, propertyDeclaration, typeParameter */

@@ -19,8 +19,8 @@ fun getAllPropertiesFromType(
 ): List<FirCallableSymbol<*>> {
     // Normalize aliases and flexible types before resolving the symbol.
     val expanded = coneType
-        .lowerBoundIfFlexible()           // peel off flexible types
-        .fullyExpandedType(context.session) // expand typealiases
+        .lowerBoundIfFlexible() // peel off flexible types
+        .fullyExpandedType()    // expand typealiases
 
     val classSymbol =
         (expanded.toSymbol(context.session) as? FirClassSymbol<*>)

@@ -58,7 +58,7 @@ context(context: CheckerContext)
 fun FirExpression.getLocation(): SourceTextRange? {
     return SourceTextRange(
         context.containingFilePath ?: return null,
-        context.containingFile?.source?.text ?: return null,
+        context.containingFileSymbol?.source?.text ?: return null,
         source?.range ?: return null,
     )
 }

@@ -23,3 +23,5 @@ fun Application.parameters() {
         }
     }
 }
+
+/* GENERATED_FIR_TAGS: funWithExtensionReceiver, functionDeclaration */

@@ -48,3 +48,6 @@ object EntityTypes {
 interface ReportService {
     fun getReport(id: Long): Map<String, Number>
 }
+
+/* GENERATED_FIR_TAGS: const, funWithExtensionReceiver, functionDeclaration, interfaceDeclaration, objectDeclaration,
+propertyDeclaration */

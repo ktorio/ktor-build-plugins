@@ -405,14 +405,14 @@ internal class ScopedExpressionEvaluationVisitor(
                 }.wrap()
             }
         }
-
+        val callableId = propertySymbol.callableId
         return when (propertySymbol) {
             is FirPropertySymbol -> {
                 when {
-                    propertySymbol.callableId.isStringLength || propertySymbol.callableId.isCharCode -> {
+                    callableId != null && (callableId.isStringLength || callableId.isCharCode) -> {
                         evaluate(propertyAccessExpression.explicitReceiver).let { receiver ->
                             val unaryArg = receiver.unwrapOr<FirExpression> { return it } ?: return FirEvaluatorResult.NotEvaluated
-                            evaluateUnary(unaryArg, propertySymbol.callableId)
+                            evaluateUnary(unaryArg, callableId)
                                 .adjustTypeAndConvertToLiteral(propertyAccessExpression)
                         }
                     }
