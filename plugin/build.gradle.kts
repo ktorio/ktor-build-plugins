@@ -1,12 +1,13 @@
+
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.gradle.kotlin.dsl.maven
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.pluginPublish)
     alias(libs.plugins.binaryCompatibilityValidator)
     alias(libs.plugins.buildconfig)
+    id("ktorbuild.publish")
 }
 
 group = libs.plugins.ktor.get().pluginId
@@ -101,23 +102,4 @@ tasks.withType<Test>().configureEach {
     // The plugin should be published to MavenLocal to be available in integration tests
     // We can't use GradleRunner.withPluginClasspath() because of https://github.com/gradle/gradle/issues/22466
     dependsOn(publishToMavenLocal)
-}
-
-if (hasProperty("space")) {
-    val publishingUrl = System.getenv("PUBLISHING_URL")
-    val publishingUser = System.getenv("PUBLISHING_USER")
-    if (publishingUrl == null || publishingUser == null) {
-        throw GradleException("Missing publishing credentials")
-    }
-    publishing {
-        repositories {
-            maven(url = publishingUrl) {
-                name = "space"
-                credentials {
-                    username = publishingUser
-                    password = System.getenv("PUBLISHING_PASSWORD")
-                }
-            }
-        }
-    }
 }

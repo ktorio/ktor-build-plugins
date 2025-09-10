@@ -1,12 +1,10 @@
-import org.gradle.kotlin.dsl.provideDelegate
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.buildconfig)
     alias(libs.plugins.kotlinx.serialization)
-    `maven-publish`
     `java-test-fixtures`
     idea
+    id("ktorbuild.publish")
 }
 
 val artifact = "ktor-compiler-plugin"
@@ -137,32 +135,6 @@ tasks {
 
     compileTestKotlin {
         dependsOn(generateTests)
-    }
-}
-
-publishing {
-    if (hasProperty("space")) {
-        val publishingUrl = System.getenv("PUBLISHING_URL")
-        val publishingUser = System.getenv("PUBLISHING_USER")
-        val publishingPassword = System.getenv("PUBLISHING_PASSWORD")
-        if (publishingUrl == null || publishingUser == null || publishingPassword == null) {
-            throw GradleException("Missing publishing credentials (PUBLISHING_URL / PUBLISHING_USER / PUBLISHING_PASSWORD)")
-        }
-        repositories {
-            maven(url = publishingUrl) {
-                name = "space"
-                credentials {
-                    username = publishingUser
-                    password = publishingPassword
-                }
-            }
-        }
-    }
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = artifact
-            from(components["java"])
-        }
     }
 }
 
