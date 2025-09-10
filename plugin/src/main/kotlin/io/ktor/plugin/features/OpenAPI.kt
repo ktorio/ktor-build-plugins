@@ -102,7 +102,7 @@ private fun Project.configureOpenApiGenerationTask(
             task.doFirst {
                 logger.warn("Ktor's OpenAPI generation is ** experimental **")
                 logger.lifecycle("""
-                    - It may be incompatible with Kotlin versions outside 2.2.*
+                    - It may be incompatible with Kotlin versions outside 2.2.20
                     - Behavior will likely change in future releases
                     - Please report any issues at https://youtrack.jetbrains.com/newIssue?project=KTOR
                 """.trimIndent())

@@ -118,3 +118,6 @@ fun Application.resources() {
         }
     }
 }
+
+/* GENERATED_FIR_TAGS: classDeclaration, data, funWithExtensionReceiver, functionDeclaration, integerLiteral,
+nestedClass, primaryConstructor, propertyDeclaration, stringLiteral */

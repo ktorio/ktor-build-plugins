@@ -66,3 +66,6 @@ interface Repository2<E> {
 
 data class User2(val id: String, val name: String)
 data class Message2(val id: String, val text: String)
+
+/* GENERATED_FIR_TAGS: classDeclaration, data, funWithExtensionReceiver, functionDeclaration, interfaceDeclaration,
+nullableType, primaryConstructor, propertyDeclaration, typeParameter */

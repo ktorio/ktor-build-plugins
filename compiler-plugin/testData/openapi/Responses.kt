@@ -56,3 +56,6 @@ fun Application.responses(fs: FileSystem) {
 }
 
 data class Dude(val id: Int, val name: String)
+
+/* GENERATED_FIR_TAGS: classDeclaration, classReference, data, funWithExtensionReceiver, functionDeclaration,
+primaryConstructor, propertyDeclaration */
