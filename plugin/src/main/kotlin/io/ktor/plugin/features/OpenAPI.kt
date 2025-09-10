@@ -99,8 +99,8 @@ private fun Project.configureOpenApiGenerationTask(
     ).also { provider ->
         provider.configure { task ->
             task.doFirst {
-                logger.warn("Ktor's OpenAPI generation is ** experimental **")
-                logger.lifecycle("""
+                task.logger.warn("Ktor's OpenAPI generation is ** experimental **")
+                task.logger.lifecycle("""
                     - It may be incompatible with Kotlin versions outside 2.2.20
                     - Behavior will likely change in future releases
                     - Please report any issues at https://youtrack.jetbrains.com/newIssue?project=KTOR
