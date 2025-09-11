@@ -2,8 +2,8 @@
 
 enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 
-pluginManagement {
-    includeBuild("plugin")
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention").version("1.0.0")
 }
 
 dependencyResolutionManagement {
@@ -14,6 +14,7 @@ dependencyResolutionManagement {
 }
 
 includeBuild("build-logic")
+includeBuild("plugin")
 
 include("ktor-compiler-plugin")
 include("samples:ktor-fatjar-sample")
