@@ -88,7 +88,9 @@ internal inline fun <reified T> Project.createKtorExtension(name: String): T =
 internal inline fun <reified T> Project.getKtorExtension(): T =
     ktorExtensions.getByType(T::class.java)
 
-internal inline fun <reified T> Project.property(defaultValue: T?): Property<T> =
-    objects.property(T::class.java).convention(defaultValue)
+internal inline fun <reified T : Any> Project.property(defaultValue: T?): Property<T> = objects.property<T>(defaultValue)
+
+internal inline fun <reified T : Any> ObjectFactory.property(defaultValue: T?): Property<T> =
+    property(T::class.java).convention(defaultValue)
 
 internal val Project.javaVersion: JavaVersion get() = extensions.getByType(JavaPluginExtension::class.java).targetCompatibility
