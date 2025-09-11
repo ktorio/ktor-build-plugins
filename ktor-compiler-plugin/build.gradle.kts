@@ -7,8 +7,6 @@ plugins {
     id("ktorbuild.publish")
 }
 
-val artifact = "ktor-compiler-plugin"
-
 group = "io.ktor"
 version = resolveVersion(libs.versions.ktor.plugin.get())
 description = "Ktor Compiler Plugin"
@@ -68,7 +66,7 @@ buildConfig {
     }
 
     packageName(rootProject.group.toString())
-    buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"${rootProject.group}.$artifact\"")
+    buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"${rootProject.group}.${project.name}\"")
 }
 
 kotlin {

@@ -99,6 +99,11 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     testLogging.events(*TestLogEvent.values())
 
+    javaLauncher = javaToolchains.launcherFor {
+        // Running Gradle 9.0+ requires at least Java 17
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+
     // The plugin should be published to MavenLocal to be available in integration tests
     // We can't use GradleRunner.withPluginClasspath() because of https://github.com/gradle/gradle/issues/22466
     dependsOn(publishToMavenLocal)

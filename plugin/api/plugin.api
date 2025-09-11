@@ -1,5 +1,7 @@
 public abstract class io/ktor/plugin/KtorGradlePlugin : org/gradle/api/Plugin {
+	public static final field COMPILER_PLUGIN_ID Ljava/lang/String;
 	public static final field Companion Lio/ktor/plugin/KtorGradlePlugin$Companion;
+	public static final field KTOR_VERSION Ljava/lang/String;
 	public static final field TASK_GROUP Ljava/lang/String;
 	public static final field VERSION Ljava/lang/String;
 	public fun <init> ()V
@@ -12,6 +14,11 @@ public final class io/ktor/plugin/KtorGradlePlugin$Companion {
 
 public final class io/ktor/plugin/KtorGradlePluginKt {
 	public static final field KTOR_VERSION Ljava/lang/String;
+	public static final fun getKtorCompilerPlugins (Lorg/gradle/api/artifacts/ConfigurationContainer;)Lorg/gradle/api/artifacts/Configuration;
+	public static final fun getKtorOutputDir (Lorg/gradle/api/file/ProjectLayout;)Lorg/gradle/api/provider/Provider;
+}
+
+public abstract interface annotation class io/ktor/plugin/OpenApiPreview : java/lang/annotation/Annotation {
 }
 
 public final class io/ktor/plugin/features/DockerEnvironmentVariable {
@@ -122,11 +129,6 @@ public final class io/ktor/plugin/features/KtorKt {
 	public static final field KTOR_TASK_GROUP_NAME Ljava/lang/String;
 }
 
-public final class io/ktor/plugin/features/KtorKt$sam$i$org_gradle_api_Action$0 : org/gradle/api/Action {
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
-	public final synthetic fun execute (Ljava/lang/Object;)V
-}
-
 public abstract class io/ktor/plugin/features/NativeImageExtension {
 	public static final field Companion Lio/ktor/plugin/features/NativeImageExtension$Companion;
 	public static final field NAME Ljava/lang/String;
@@ -143,5 +145,17 @@ public final class io/ktor/plugin/features/NativeImageExtension$Companion {
 
 public final class io/ktor/plugin/features/NativeImageKt {
 	public static final field BUILD_NATIVE_IMAGE_TASK_NAME Ljava/lang/String;
+}
+
+public abstract class io/ktor/plugin/features/OpenApiExtension {
+	public fun <init> (Lorg/gradle/api/model/ObjectFactory;Lorg/gradle/api/file/ProjectLayout;)V
+	public final fun getContact ()Lorg/gradle/api/provider/Property;
+	public final fun getDescription ()Lorg/gradle/api/provider/Property;
+	public final fun getLicense ()Lorg/gradle/api/provider/Property;
+	public final fun getSummary ()Lorg/gradle/api/provider/Property;
+	public final fun getTarget ()Lorg/gradle/api/provider/Property;
+	public final fun getTermsOfService ()Lorg/gradle/api/provider/Property;
+	public final fun getTitle ()Lorg/gradle/api/provider/Property;
+	public final fun getVersion ()Lorg/gradle/api/provider/Property;
 }
 

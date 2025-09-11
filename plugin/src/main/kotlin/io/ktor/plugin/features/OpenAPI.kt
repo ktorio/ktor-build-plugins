@@ -5,7 +5,9 @@ import io.ktor.plugin.KtorGradlePlugin.Companion.COMPILER_PLUGIN_ID
 import io.ktor.plugin.KtorGradlePlugin.Companion.VERSION
 import io.ktor.plugin.internal.*
 import org.gradle.api.Project
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
@@ -16,47 +18,55 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 @OpenApiPreview
-public abstract class OpenApiExtension(project: Project) {
+public abstract class OpenApiExtension(
+    objects: ObjectFactory,
+    layout: ProjectLayout,
+) {
+
+    @Suppress("unused") // Used for injection
+    internal constructor(project: Project) : this(project.objects, project.layout)
+
     /**
      * The output path for the generated OpenAPI specification.
      * Defaults to "build/resources/main/openapi/generated.json"
      */
-    public val target: Property<RegularFile?> = project.objects.fileProperty()
+    public val target: Property<RegularFile> = objects.fileProperty()
+        .convention(layout.ktorOutputDir.map { it.file("openapi/generated.json") })
 
     /**
      * The title of the API.
      */
-    public val title: Property<String?> = project.property<String?>(null)
+    public val title: Property<String> = objects.property(defaultValue = null)
 
     /**
      * A short summary of the API.
      */
-    public val summary: Property<String?> = project.property<String?>(null)
+    public val summary: Property<String> = objects.property(defaultValue = null)
 
     /**
      * A description of the API. CommonMark syntax MAY be used for rich text representation.
      */
-    public val description: Property<String?> = project.property<String?>(null)
+    public val description: Property<String> = objects.property(defaultValue = null)
 
     /**
      * A URI for the Terms of Service for the API. This MUST be in the form of a URI.
      */
-    public val termsOfService: Property<String?> = project.property<String?>(null)
+    public val termsOfService: Property<String> = objects.property(defaultValue = null)
 
     /**
      * The contact information for the exposed API.
      */
-    public val contact: Property<String?> = project.property<String?>(null)
+    public val contact: Property<String> = objects.property(defaultValue = null)
 
     /**
      * The license information for the exposed API.
      */
-    public val license: Property<String?> = project.property<String?>(null)
+    public val license: Property<String> = objects.property(defaultValue = null)
 
     /**
      * The version of the OpenAPI Document (which is distinct from the OpenAPI Specification version or the version of the API being described or the version of the OpenAPI Description).
      */
-    public val version: Property<String?> = project.property<String?>(null)
+    public val version: Property<String> = objects.property(defaultValue = null)
 }
 
 internal const val OPENAPI_TASK_NAME = "buildOpenApi"
@@ -143,8 +153,7 @@ private fun Project.configureOpenApiGenerationTask(
             task.pluginClasspath.from(configurations.ktorCompilerPlugins)
 
             task.pluginOptions.add(CompilerPluginConfig().apply {
-                val outputPath = extension.target.takeIf { it.isPresent }?.get()?.asFile?.absolutePath
-                    ?: task.project.layout.ktorOutputDir.get().file("openapi/generated.json").asFile.absolutePath
+                val outputPath = extension.target.get().asFile.absolutePath
                 ktorOption("openapi.enabled", true)
                 ktorOption("openapi.output", outputPath)
                 ktorOption("openapi.description", extension.description)
@@ -159,11 +168,10 @@ private fun Project.configureOpenApiGenerationTask(
     }
 }
 
-private fun <T> CompilerPluginConfig.ktorOption(key: String, value: Property<T>) {
-    value.orNull?.let {
-        ktorOption(key, it.toString())
-    }
+private fun <T : Any> CompilerPluginConfig.ktorOption(key: String, value: Property<T>) {
+    value.orNull?.let { ktorOption(key, it) }
 }
-private fun <T: Any> CompilerPluginConfig.ktorOption(key: String, value: T) {
+
+private fun <T : Any> CompilerPluginConfig.ktorOption(key: String, value: T) {
     addPluginArgument(COMPILER_PLUGIN_ID.replace(':', '.'), SubpluginOption(key, value.toString()))
 }
