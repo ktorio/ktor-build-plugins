@@ -20,7 +20,7 @@ plugins {
 
 Requirements:
 
-- Gradle 8.3+ 
+- Gradle 8.11+ 
 - JVM 11+
 
 ### EAP builds

@@ -4,7 +4,11 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+> [!WARNING]
+> The minimum supported Gradle version now is 8.11 as it is required for the Shadow plugin
+
 - Update Gradle to 9.0.0
+- Update Shadow plugin to v9.1.0
 
 ## [3.2.3] - 2025-07-29
 
