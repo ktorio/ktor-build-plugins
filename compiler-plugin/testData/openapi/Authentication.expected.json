@@ -51,6 +51,239 @@
                     }
                 }
             }
+        },
+        "/protected-multi-auth": {
+            "get": {
+                "summary": "Protected endpoint with multiple auth methods",
+                "responses": {
+                    "200": {
+                        "description": "Authentication successful",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication failed"
+                    }
+                },
+                "security": [
+                    {
+                        "auth-jwt": []
+                    },
+                    {
+                        "auth-api-key-header": []
+                    },
+                    {
+                        "auth-api-key-basic": []
+                    }
+                ]
+            }
+        },
+        "/admin": {
+            "get": {
+                "summary": "Admin-only endpoint\nRequires ADMIN role",
+                "responses": {
+                    "200": {
+                        "description": "Admin access granted",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication failed"
+                    },
+                    "403": {
+                        "description": "Authorization failed, requires ADMIN role",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "auth-jwt": []
+                    }
+                ]
+            }
+        },
+        "/user-content": {
+            "get": {
+                "summary": "User or admin endpoint\nRequires USER or ADMIN role",
+                "responses": {
+                    "200": {
+                        "description": "Access granted",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication failed"
+                    },
+                    "403": {
+                        "description": "Authorization failed, requires USER or ADMIN role",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "auth-jwt": []
+                    }
+                ]
+            }
+        },
+        "/api/data": {
+            "get": {
+                "summary": "Read-only API endpoint\nRequires 'api:read' scope",
+                "responses": {
+                    "200": {
+                        "description": "Read access granted",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication failed"
+                    },
+                    "403": {
+                        "description": "Authorization failed, requires api:read scope",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "auth-jwt": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Write API endpoint\nRequires 'api:write' scope",
+                "responses": {
+                    "200": {
+                        "description": "Write access granted",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication failed"
+                    },
+                    "403": {
+                        "description": "Authorization failed, requires api:write scope",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "auth-jwt": []
+                    }
+                ]
+            }
+        },
+        "/conditional": {
+            "get": {
+                "summary": "Public endpoint for GET, authenticated for POST",
+                "responses": {
+                    "200": {
+                        "description": "Access granted",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "POST requires authentication",
+                "responses": {
+                    "200": {
+                        "description": "Authenticated access",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication failed"
+                    }
+                },
+                "security": [
+                    {
+                        "auth-api-key-header": []
+                    }
+                ]
+            }
+        },
+        "/combined-auth": {
+            "get": {
+                "security": [
+                    {
+                        "auth-api-key-header": []
+                    },
+                    {
+                        "auth-jwt": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -63,14 +296,10 @@
                         "authorizationUrl": "https://accounts.google.com/o/oauth2/auth",
                         "tokenUrl": "https://accounts.google.com/o/oauth2/token",
                         "scopes": {
-                            "https://www.googleapis.com/auth/userinfo.profile": "https://www.googleapis.com/auth/userinfo.profile"
+                            "null": "null"
                         }
                     }
                 }
-            },
-            "bearerAuth": {
-                "type": "http",
-                "scheme": "bearer"
             }
         }
     }

@@ -7,17 +7,50 @@
     "paths": {
         "/articles": {
             "get": {
-                "summary": "Basic resource routes",
+                "summary": "Get all articles",
+                "parameters": [
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sort field (title, date, views)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[title, date, views]",
+                            "default": "date"
+                        }
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "description": "Sort direction",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[asc, desc]",
+                            "default": "desc"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Number of articles to return",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": "20"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "List of articles",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Post"
-                                    }
+                                    "$ref": "#/components/schemas/ArticleListResponse"
                                 }
                             }
                         }
@@ -27,10 +60,12 @@
         },
         "/articles/{id}": {
             "get": {
+                "summary": "Get a specific article by ID",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "The article ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -38,22 +73,32 @@
                     }
                 ],
                 "responses": {
-                    "404": {
-                        "description": "",
+                    "200": {
+                        "description": "The requested article",
                         "content": {
-                            "text/plain": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Article"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Article not found",
+                        "content": {
+                            "application/json": {
                                 "schema": {
                                     "type": "string"
                                 }
                             }
                         }
                     },
-                    "200": {
+                    "400": {
                         "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Post"
+                                    "type": "string"
                                 }
                             }
                         }
@@ -63,23 +108,68 @@
         },
         "/articles/{id}/comments": {
             "get": {
+                "summary": "Get comments for an article",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "The article ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": "1"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "Page size",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 50,
+                            "default": "10"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
+                        "description": "List of comments",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CommentListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Article not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
                         "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Comments"
+                                    "type": "string"
                                 }
                             }
                         }
@@ -89,16 +179,25 @@
         },
         "/articles/featured": {
             "get": {
+                "summary": "Get featured articles",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Category filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "List of featured articles",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Post"
-                                    }
+                                    "$ref": "#/components/schemas/ArticleListResponse"
                                 }
                             }
                         }
@@ -106,13 +205,316 @@
                 }
             }
         },
-        "/users/search": {
+        "/articles/search": {
             "get": {
-                "summary": "Resources with query parameters",
+                "summary": "Search articles",
                 "parameters": [
                     {
                         "name": "query",
                         "in": "query",
+                        "description": "Search term",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "inTitle",
+                        "in": "query",
+                        "description": "Search in title",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": "true"
+                        }
+                    },
+                    {
+                        "name": "inContent",
+                        "in": "query",
+                        "description": "Search in content",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": "true"
+                        }
+                    },
+                    {
+                        "name": "inTags",
+                        "in": "query",
+                        "description": "Search in tags",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": "false"
+                        }
+                    },
+                    {
+                        "name": "fromDate",
+                        "in": "query",
+                        "description": "Start date (ISO format)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "toDate",
+                        "in": "query",
+                        "description": "End date (ISO format)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SearchResultResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users": {
+            "get": {
+                "summary": "Get all users",
+                "parameters": [
+                    {
+                        "name": "userRole",
+                        "in": "query",
+                        "description": "Filter by role",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[admin, editor, author, user]"
+                        }
+                    },
+                    {
+                        "name": "userStatus",
+                        "in": "query",
+                        "description": "Filter by status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[active, inactive, banned, pending]"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of users",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiUserListResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{id}": {
+            "get": {
+                "summary": "Get user by ID",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiUser"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{id}/profile": {
+            "get": {
+                "summary": "Get user profile details",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiUserProfile"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{id}/articles": {
+            "get": {
+                "summary": "Get articles written by user",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Article status filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[draft, published, archived]"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": "1"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "Page size",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 50,
+                            "default": "10"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of user's articles",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ArticleListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/search": {
+            "get": {
+                "summary": "Search users",
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "Search term",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -121,25 +523,100 @@
                     {
                         "name": "limit",
                         "in": "query",
+                        "description": "Number of results",
                         "required": false,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": "10"
                         }
                     },
                     {
                         "name": "offset",
                         "in": "query",
+                        "description": "Result offset",
                         "required": false,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": "0"
+                        }
+                    },
+                    {
+                        "name": "userRole",
+                        "in": "query",
+                        "description": "Filter by role",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[admin, editor, author, user]"
+                        }
+                    },
+                    {
+                        "name": "userStatus",
+                        "in": "query",
+                        "description": "Filter by status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[active, inactive, banned, pending]"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
+                        "description": "Search results",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiUserSearchResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
                         "description": "",
                         "content": {
-                            "text/plain": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/validate/{username}": {
+            "get": {
+                "summary": "Check if username is available",
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "description": "Username to check",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Validation result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UsernameValidationResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
                                 "schema": {
                                     "type": "string"
                                 }
@@ -150,10 +627,46 @@
             }
         },
         "/posts": {
+            "get": {
+                "summary": "Get all posts",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[draft, published, archived]"
+                        }
+                    },
+                    {
+                        "name": "featured",
+                        "in": "query",
+                        "description": "Filter featured posts",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of posts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostListResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
-                "summary": "Resources with request body",
+                "summary": "Create a new post",
                 "requestBody": {
-                    "description": "",
+                    "description": "Post Post data",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -163,8 +676,8 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "",
+                    "201": {
+                        "description": "Post created successfully",
                         "content": {
                             "text/plain": {
                                 "schema": {
@@ -172,16 +685,67 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "description": "Invalid post data"
                     }
                 }
             }
         },
         "/posts/{id}": {
-            "put": {
+            "get": {
+                "summary": "Get post by ID",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "Post ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Post details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Post"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update a post",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Post ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -189,7 +753,7 @@
                     }
                 ],
                 "requestBody": {
-                    "description": "",
+                    "description": "Post Updated post data",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -200,9 +764,29 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Post updated successfully",
                         "content": {
                             "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid post data",
+                        "content": {
+                            "application/json": {
                                 "schema": {
                                     "type": "string"
                                 }
@@ -213,22 +797,132 @@
             }
         },
         "/posts/{id}/comments": {
-            "post": {
+            "get": {
+                "summary": "Get comments for a post",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "Post ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": "1"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "Page size",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 50,
+                            "default": "10"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
+                        "description": "List of comments",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CommentListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
                         "description": "",
                         "content": {
-                            "text/plain": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/resources": {
+            "get": {
+                "summary": "Get a collection of different resource types",
+                "responses": {
+                    "200": {
+                        "description": "Collection of resources",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResourceCollection"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/resources/{id}": {
+            "get": {
+                "summary": "Get a specific resource by ID",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Resource ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resource details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResourceDetail"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
                                 "schema": {
                                     "type": "string"
                                 }
@@ -241,6 +935,373 @@
     },
     "components": {
         "schemas": {
+            "ArticleListResponse": {
+                "type": "object",
+                "properties": {
+                    "articles": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "content": {
+                                    "type": "string"
+                                },
+                                "authorId": {
+                                    "type": "integer"
+                                },
+                                "publishDate": {
+                                    "type": "string"
+                                },
+                                "category": {
+                                    "type": "string"
+                                },
+                                "tags": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "featured": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "totalCount": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "pageSize": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "Article": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "authorId": {
+                        "type": "integer"
+                    },
+                    "publishDate": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "featured": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "CommentListResponse": {
+                "type": "object",
+                "properties": {
+                    "comments": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "postId": {
+                                    "type": "integer"
+                                },
+                                "parentCommentId": {
+                                    "type": "integer"
+                                },
+                                "authorId": {
+                                    "type": "integer"
+                                },
+                                "content": {
+                                    "type": "string"
+                                },
+                                "createdAt": {
+                                    "type": "string"
+                                },
+                                "updatedAt": {
+                                    "type": "string"
+                                },
+                                "likes": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
+                    "totalCount": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "pageSize": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "SearchResultResponse": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "snippet": {
+                                    "type": "string"
+                                },
+                                "relevance": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    },
+                    "totalCount": {
+                        "type": "integer"
+                    },
+                    "executionTimeMs": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "ApiUserListResponse": {
+                "type": "object",
+                "properties": {
+                    "users": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "username": {
+                                    "type": "string"
+                                },
+                                "email": {
+                                    "type": "string"
+                                },
+                                "fullName": {
+                                    "type": "string"
+                                },
+                                "userRole": {
+                                    "type": "string"
+                                },
+                                "userStatus": {
+                                    "type": "string"
+                                },
+                                "joinDate": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "totalCount": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "pageSize": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "ApiUser": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "userRole": {
+                        "type": "string"
+                    },
+                    "userStatus": {
+                        "type": "string"
+                    },
+                    "joinDate": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ApiUserProfile": {
+                "type": "object",
+                "properties": {
+                    "userId": {
+                        "type": "integer"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "avatarUrl": {
+                        "type": "string"
+                    },
+                    "socialLinks": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "preferences": {
+                        "type": "object",
+                        "properties": {
+                            "theme": {
+                                "type": "string"
+                            },
+                            "emailNotifications": {
+                                "type": "boolean"
+                            },
+                            "language": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "ApiUserSearchResponse": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string"
+                    },
+                    "users": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "username": {
+                                    "type": "string"
+                                },
+                                "email": {
+                                    "type": "string"
+                                },
+                                "fullName": {
+                                    "type": "string"
+                                },
+                                "userRole": {
+                                    "type": "string"
+                                },
+                                "userStatus": {
+                                    "type": "string"
+                                },
+                                "joinDate": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "totalCount": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "UsernameValidationResponse": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "available": {
+                        "type": "boolean"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            },
+            "PostListResponse": {
+                "type": "object",
+                "properties": {
+                    "posts": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "content": {
+                                    "type": "string"
+                                },
+                                "authorId": {
+                                    "type": "integer"
+                                },
+                                "status": {
+                                    "type": "string"
+                                },
+                                "publishDate": {
+                                    "type": "string"
+                                },
+                                "updateDate": {
+                                    "type": "string"
+                                },
+                                "viewCount": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
+                    "totalCount": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "pageSize": {
+                        "type": "integer"
+                    }
+                }
+            },
             "Post": {
                 "type": "object",
                 "properties": {
@@ -255,23 +1316,39 @@
                     },
                     "authorId": {
                         "type": "integer"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "publishDate": {
+                        "type": "string"
+                    },
+                    "updateDate": {
+                        "type": "string"
+                    },
+                    "viewCount": {
+                        "type": "integer"
                     }
                 }
             },
-            "Comments": {
+            "ResourceCollection": {
                 "type": "object",
                 "properties": {
-                    "parent": {
-                        "type": "object",
-                        "properties": {
-                            "parent": {
-                                "type": "object",
-                                "properties": {}
-                            },
-                            "id": {
-                                "type": "integer"
-                            }
+                    "resources": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {}
                         }
+                    }
+                }
+            },
+            "ResourceDetail": {
+                "type": "object",
+                "properties": {
+                    "resource": {
+                        "type": "object",
+                        "properties": {}
                     }
                 }
             }

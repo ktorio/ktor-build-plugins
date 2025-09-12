@@ -20,22 +20,69 @@
                 },
                 "responses": {
                     "201": {
-                        "description": ""
+                        "description": "User created successfully"
+                    },
+                    "400": {
+                        "description": "Invalid user data"
                     }
                 }
             },
             "get": {
                 "summary": "Get a list of users.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination (defaults to 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "description": "Number of results per page (defaults to 20, max 100)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "nameFilter",
+                        "in": "query",
+                        "description": "Filter users by name (optional)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sortBy",
+                        "in": "query",
+                        "description": "Sort field (optional, one of \"id\", \"name\")",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sortOrder",
+                        "in": "query",
+                        "description": "Sort direction (optional, one of \"asc\", \"desc\")",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "A list of users.",
+                        "description": "A list of users with pagination information.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/User1"
-                                    }
+                                    "$ref": "#/components/schemas/PaginatedResponse"
                                 }
                             }
                         }
@@ -59,7 +106,112 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "User deleted successfully"
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update an existing user.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The user data to update",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User1"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Partially update a user.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The user fields to update",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserPatchRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User1"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -77,15 +229,139 @@
                     }
                 ],
                 "responses": {
-                    "404": {
-                        "description": "The user was not found"
-                    },
                     "200": {
-                        "description": "",
+                        "description": "The requested user",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/User1"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The user was not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/batch": {
+            "get": {
+                "summary": "Get multiple users by their IDs",
+                "parameters": [
+                    {
+                        "name": "ids",
+                        "in": "query",
+                        "description": "Comma-separated list of user IDs",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of found users",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/User1"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{id}/profile": {
+            "get": {
+                "summary": "Get user profile with extended information",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The user profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserProfile"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{id}/preferences": {
+            "put": {
+                "summary": "Update user preferences",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The preferences to update",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserPreferences"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated preferences",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserPreferences"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
                                 }
                             }
                         }
@@ -108,22 +384,69 @@
                 },
                 "responses": {
                     "201": {
-                        "description": ""
+                        "description": "Message created successfully"
+                    },
+                    "400": {
+                        "description": "Invalid message data"
                     }
                 }
             },
             "get": {
                 "summary": "Get a list of messages.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination (defaults to 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "description": "Number of results per page (defaults to 20, max 100)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "textFilter",
+                        "in": "query",
+                        "description": "Filter messages by text content (optional)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sortBy",
+                        "in": "query",
+                        "description": "Sort field (optional, one of \"id\", \"text\")",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sortOrder",
+                        "in": "query",
+                        "description": "Sort direction (optional, one of \"asc\", \"desc\")",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "A list of messages.",
+                        "description": "A list of messages with pagination information",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Message1"
-                                    }
+                                    "$ref": "#/components/schemas/PaginatedResponse"
                                 }
                             }
                         }
@@ -147,7 +470,59 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "Message deleted successfully"
+                    },
+                    "404": {
+                        "description": "Message not found"
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update an existing message.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the message",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The message data to update",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MessageUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Message updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Message1"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid message data"
+                    },
+                    "404": {
+                        "description": "Message not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -165,15 +540,316 @@
                     }
                 ],
                 "responses": {
-                    "404": {
-                        "description": "The message was not found"
-                    },
                     "200": {
-                        "description": "",
+                        "description": "The requested message",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Message1"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The message was not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/messages/by-status/{status}": {
+            "get": {
+                "summary": "Get messages by a specific status",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "path",
+                        "description": "The message status (one of: DRAFT, SENT, DELIVERED, READ)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of messages with the specified status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Message1"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/messages/search": {
+            "get": {
+                "summary": "Search messages by content",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search query (required)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Search type (optional, one of: EXACT, CONTAINS, FUZZY)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SearchResultT"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or invalid search parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/advanced/health": {
+            "get": {
+                "summary": "Get system health information",
+                "responses": {
+                    "200": {
+                        "description": "System health information",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SystemHealth"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/advanced/formats": {
+            "get": {
+                "summary": "Testing different response content types",
+                "parameters": [
+                    {
+                        "name": "format",
+                        "in": "query",
+                        "description": "Response format (one of: json, xml, html, text)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data in requested format",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/advanced/upload": {
+            "post": {
+                "summary": "File upload simulation",
+                "responses": {
+                    "200": {
+                        "description": "File upload success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FileUploadResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/advanced/complex-objects": {
+            "post": {
+                "summary": "Create a complex nested object",
+                "requestBody": {
+                    "description": "The complex object to create",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ComplexObject"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Object created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ComplexObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid object data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/advanced/resources/{type}": {
+            "get": {
+                "summary": "Get nested resources with polymorphic response",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "Resource type (one of: A, B, C)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resource of the specified type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Resource"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid resource type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/advanced/params/{id}": {
+            "get": {
+                "summary": "Test various parameter types",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Path parameter",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "flag",
+                        "in": "query",
+                        "description": "Boolean flag (true or false)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "count",
+                        "in": "query",
+                        "description": "Integer count",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tags",
+                        "in": "query",
+                        "description": "Array of string tags (comma separated)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Parameters received",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {}
                                 }
                             }
                         }
@@ -195,6 +871,119 @@
                     }
                 }
             },
+            "UserUpdateRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "details": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "timestamp": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UserPatchRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "PaginatedResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {}
+                    },
+                    "pagination": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "type": "integer"
+                            },
+                            "pageSize": {
+                                "type": "integer"
+                            },
+                            "totalItems": {
+                                "type": "integer"
+                            },
+                            "totalPages": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "UserProfile": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "joinDate": {
+                        "type": "string"
+                    },
+                    "lastActive": {
+                        "type": "string"
+                    },
+                    "preferences": {
+                        "type": "object",
+                        "properties": {
+                            "theme": {
+                                "type": "string"
+                            },
+                            "notifications": {
+                                "type": "boolean"
+                            },
+                            "language": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "UserPreferences": {
+                "type": "object",
+                "properties": {
+                    "theme": {
+                        "type": "string"
+                    },
+                    "notifications": {
+                        "type": "boolean"
+                    },
+                    "language": {
+                        "type": "string"
+                    }
+                }
+            },
             "Message1": {
                 "type": "object",
                 "properties": {
@@ -202,6 +991,149 @@
                         "type": "string"
                     },
                     "text": {
+                        "type": "string"
+                    }
+                }
+            },
+            "MessageUpdateRequest": {
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SearchResultT": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {}
+                    },
+                    "totalResults": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "SystemHealth": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string"
+                    },
+                    "components": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "details": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "metrics": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number"
+                        }
+                    }
+                }
+            },
+            "FileUploadResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "filename": {
+                        "type": "string"
+                    },
+                    "size": {
+                        "type": "integer"
+                    },
+                    "contentType": {
+                        "type": "string"
+                    },
+                    "uploadId": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ComplexObject": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "created": {
+                        "type": "string"
+                    },
+                    "flags": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "boolean"
+                        }
+                    },
+                    "nested": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "integer"
+                                },
+                                "properties": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "Resource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
                         "type": "string"
                     }
                 }

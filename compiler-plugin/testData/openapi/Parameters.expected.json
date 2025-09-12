@@ -7,22 +7,12 @@
     "paths": {
         "/parameters/{a}/{b}/{c}": {
             "get": {
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
+                "summary": "Basic parameter demonstration",
                 "parameters": [
                     {
                         "name": "a",
                         "in": "path",
+                        "description": "First path parameter",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -31,6 +21,7 @@
                     {
                         "name": "b",
                         "in": "path",
+                        "description": "Second path parameter",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -39,6 +30,7 @@
                     {
                         "name": "c",
                         "in": "path",
+                        "description": "Third path parameter",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -47,6 +39,7 @@
                     {
                         "name": "d",
                         "in": "query",
+                        "description": "First query parameter",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -55,6 +48,7 @@
                     {
                         "name": "e",
                         "in": "query",
+                        "description": "Second query parameter",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -63,6 +57,7 @@
                     {
                         "name": "f",
                         "in": "header",
+                        "description": "First header parameter",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -71,24 +66,1117 @@
                     {
                         "name": "g",
                         "in": "header",
+                        "description": "Multiple header parameters with same name",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "name": "h",
+                        "in": "header",
+                        "description": "Another header parameter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "All parameters as string",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/typed-parameters/int/{id}": {
+            "get": {
+                "summary": "Integer parameters",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Path ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 1000
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Max number of items",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": "20"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": "1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with parsed values",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TypedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/typed-parameters/float/{value}": {
+            "get": {
+                "summary": "Float parameters",
+                "parameters": [
+                    {
+                        "name": "value",
+                        "in": "path",
+                        "description": "Floating point value",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "minimum": 0.0,
+                            "maximum": 100.0
+                        }
+                    },
+                    {
+                        "name": "factor",
+                        "in": "query",
+                        "description": "Multiplication factor",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "minimum": 0.1,
+                            "maximum": 10.0,
+                            "default": "1.0"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with parsed values",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TypedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/typed-parameters/boolean": {
+            "get": {
+                "summary": "Boolean parameters",
+                "parameters": [
+                    {
+                        "name": "enabled",
+                        "in": "query",
+                        "description": "Feature flag",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": "false"
+                        }
+                    },
+                    {
+                        "name": "verbose",
+                        "in": "query",
+                        "description": "Verbose output",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": "false"
+                        }
+                    },
+                    {
+                        "name": "debug",
+                        "in": "header",
+                        "description": "Debug mode",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": "false"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with parsed values",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TypedResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/typed-parameters/pattern/{code}": {
+            "get": {
+                "summary": "String parameters with pattern constraints",
+                "parameters": [
+                    {
+                        "name": "code",
+                        "in": "path",
+                        "description": "Product code",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[A-Z]{2}\\d{4}$"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "User email",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+                        }
+                    },
+                    {
+                        "name": "phone",
+                        "in": "query",
+                        "description": "Phone number",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^\\+\\d{1,3}-\\d{3,14}$"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with parsed values",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TypedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/typed-parameters/enum/{status}": {
+            "get": {
+                "summary": "Enum parameters",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "path",
+                        "description": "Order status",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED]"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sort direction",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[asc, desc]",
+                            "default": "asc"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Result filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[all, active, inactive]",
+                            "default": "all"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with parsed values",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TypedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/typed-parameters/array": {
+            "get": {
+                "summary": "Array parameters",
+                "parameters": [
+                    {
+                        "name": "ids",
+                        "in": "query",
+                        "description": "List of IDs",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    {
+                        "name": "tags",
+                        "in": "query",
+                        "description": "List of tags",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "name": "flags",
+                        "in": "query",
+                        "description": "List of flags",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "boolean"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with parsed arrays",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TypedResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/typed-parameters/datetime": {
+            "get": {
+                "summary": "Date and time parameters",
+                "parameters": [
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Date in ISO format",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        }
+                    },
+                    {
+                        "name": "time",
+                        "in": "query",
+                        "description": "Time in ISO format",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^\\d{2}:\\d{2}(:\\d{2})?$"
+                        }
+                    },
+                    {
+                        "name": "datetime",
+                        "in": "query",
+                        "description": "DateTime in ISO format",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?(Z|[+-]\\d{2}:\\d{2})?$"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with parsed date/time values",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TypedResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/multi-value": {
+            "get": {
+                "summary": "Multiple parameters with the same name",
+                "parameters": [
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Multiple filter parameters",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "name": "x-custom",
+                        "in": "header",
+                        "description": "Multiple custom headers",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with all parameter values",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MultiValueResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/required-optional/{id}": {
+            "get": {
+                "summary": "Required vs Optional parameters",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Required path parameter",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "required",
+                        "in": "query",
+                        "description": "Required query parameter",
                         "required": false,
                         "schema": {
                             "type": "string"
                         }
                     },
                     {
-                        "name": "h",
+                        "name": "optional",
+                        "in": "query",
+                        "description": "Optional query parameter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "x-required",
                         "in": "header",
+                        "description": "Required header",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "x-optional",
+                        "in": "header",
+                        "description": "Optional header",
                         "required": false,
                         "schema": {
                             "type": "string"
                         }
                     }
-                ]
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with all parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RequiredOptionalResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing required parameter",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/defaults": {
+            "get": {
+                "summary": "Parameters with default values",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": "1"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "Page size",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": "20"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sort field",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "id"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Sort order",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[asc, desc]",
+                            "default": "asc"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "all"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with default or provided values",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DefaultValuesResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/combined/{id}": {
+            "get": {
+                "summary": "Combined parameter sources",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Resource ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "fields",
+                        "in": "query",
+                        "description": "Fields to include",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "name": "expand",
+                        "in": "query",
+                        "description": "Related resources to expand",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "name": "if-modified-since",
+                        "in": "header",
+                        "description": "Only return if modified since this date",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "x-api-key",
+                        "in": "header",
+                        "description": "API key for authentication",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with all parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CombinedParametersResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid API key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/encoding-styles": {
+            "get": {
+                "summary": "Parameter encoding styles",
+                "parameters": [
+                    {
+                        "name": "simple",
+                        "in": "query",
+                        "description": "Simple style parameter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "array",
+                        "in": "query",
+                        "description": "Array of values",
+                        "required": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "name": "object",
+                        "in": "query",
+                        "description": "Object parameter (serialized as JSON)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with parsed parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EncodingStylesResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/headers": {
+            "get": {
+                "summary": "Header parameters with special handling",
+                "parameters": [
+                    {
+                        "name": "user-agent",
+                        "in": "header",
+                        "description": "Client user agent",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "accept",
+                        "in": "header",
+                        "description": "Accepted content types",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "accept-language",
+                        "in": "header",
+                        "description": "Accepted languages",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "content-type",
+                        "in": "header",
+                        "description": "Content type of the request",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "authorization",
+                        "in": "header",
+                        "description": "Authorization header",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with parsed headers",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HeaderParametersResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/uuid/{uuid}": {
+            "get": {
+                "summary": "Path parameter with regex pattern",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "description": "UUID parameter",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UUID is valid",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid UUID format",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/cookies": {
+            "get": {
+                "summary": "Cookie parameters",
+                "parameters": [
+                    {
+                        "name": "session-id",
+                        "in": "cookie",
+                        "description": "Session identifier",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "preferences",
+                        "in": "cookie",
+                        "description": "User preferences",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response with parsed cookies",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CookieParametersResponse"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
     "components": {
-        "schemas": {}
+        "schemas": {
+            "TypedResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "limit": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "doubleValue": {
+                        "type": "number"
+                    },
+                    "floatValue": {
+                        "type": "number"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "verbose": {
+                        "type": "boolean"
+                    },
+                    "debug": {
+                        "type": "boolean"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "sort": {
+                        "type": "string"
+                    },
+                    "filter": {
+                        "type": "string"
+                    },
+                    "ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "flags": {
+                        "type": "array",
+                        "items": {
+                            "type": "boolean"
+                        }
+                    },
+                    "date": {
+                        "type": "string"
+                    },
+                    "time": {
+                        "type": "string"
+                    },
+                    "datetime": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            },
+            "MultiValueResponse": {
+                "type": "object",
+                "properties": {
+                    "filters": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "customHeaders": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "RequiredOptionalResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "required": {
+                        "type": "string"
+                    },
+                    "optional": {
+                        "type": "string"
+                    },
+                    "requiredHeader": {
+                        "type": "string"
+                    },
+                    "optionalHeader": {
+                        "type": "string"
+                    }
+                }
+            },
+            "DefaultValuesResponse": {
+                "type": "object",
+                "properties": {
+                    "page": {
+                        "type": "integer"
+                    },
+                    "size": {
+                        "type": "integer"
+                    },
+                    "sort": {
+                        "type": "string"
+                    },
+                    "order": {
+                        "type": "string"
+                    },
+                    "filter": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CombinedParametersResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "expand": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "ifModifiedSince": {
+                        "type": "string"
+                    },
+                    "apiKey": {
+                        "type": "string"
+                    }
+                }
+            },
+            "EncodingStylesResponse": {
+                "type": "object",
+                "properties": {
+                    "simple": {
+                        "type": "string"
+                    },
+                    "array": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "objectParam": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "HeaderParametersResponse": {
+                "type": "object",
+                "properties": {
+                    "userAgent": {
+                        "type": "string"
+                    },
+                    "accept": {
+                        "type": "string"
+                    },
+                    "acceptLanguage": {
+                        "type": "string"
+                    },
+                    "contentType": {
+                        "type": "string"
+                    },
+                    "authorization": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CookieParametersResponse": {
+                "type": "object",
+                "properties": {
+                    "sessionId": {
+                        "type": "string"
+                    },
+                    "preferences": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
     }
 }

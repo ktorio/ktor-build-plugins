@@ -5,6 +5,23 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/v1/reports": {
+            "get": {
+                "summary": "Get all reports.",
+                "responses": {
+                    "200": {
+                        "description": "List of reports",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/List<Report>"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/reports/{id}": {
             "get": {
                 "summary": "Get report by ID.",
@@ -12,7 +29,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Report ID.",
+                        "description": "Report ID",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -24,16 +41,575 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Report details.",
+                        "description": "Report details",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "type": "number"
-                                    }
+                                    "$ref": "#/components/schemas/Report"
                                 }
                             }
+                        }
+                    },
+                    "404": {
+                        "description": "Report not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{userId}/reports": {
+            "get": {
+                "summary": "Get user reports.",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User reports",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/List<Report>"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{userId}/reports/{date}": {
+            "get": {
+                "summary": "Get filtered user reports for a specific date.",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "path",
+                        "description": "Report date (YYYY-MM-DD)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "$DATE_REGEX"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Report type",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Filtered user reports",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/List<Report>"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{version}/info": {
+            "get": {
+                "summary": "Get API information for specific version.",
+                "parameters": [
+                    {
+                        "name": "version",
+                        "in": "path",
+                        "description": "API version",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[v1, v2, latest]"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "API information",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiInfo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/items/{uuid}": {
+            "get": {
+                "summary": "Get item by UUID.",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "description": "Item UUID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "$UUID_REGEX"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Item details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Item"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Item not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/analytics/{type}/{metric}": {
+            "get": {
+                "summary": "Get analytics data.",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "Analytics type",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[daily, weekly, monthly, yearly]"
+                        }
+                    },
+                    {
+                        "name": "metric",
+                        "in": "path",
+                        "description": "Metric name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Analytics data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AnalyticsData"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/documents": {
+            "get": {
+                "summary": "Search documents.",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Document type",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/List<Document>"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/documents/{id}": {
+            "get": {
+                "summary": "Get document by ID.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Document ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Document"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Document not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/documents/{id}/content/{format}": {
+            "get": {
+                "summary": "Get document content.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Document ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "format",
+                        "in": "path",
+                        "description": "Content format",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[html, text, pdf]"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document content",
+                        "content": {
+                            "contenttype": {}
+                        }
+                    },
+                    "404": {
+                        "description": "Document not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "summary": "Get all users.",
+                "parameters": [
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sort field",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[name, created, role]"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Sort order",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[asc, desc]"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of users",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/List<UserProfileTemplate>"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "summary": "Get user by ID.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserProfileTemplate"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}/items": {
+            "get": {
+                "summary": "Get user items.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Item filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User items",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/List<Item>"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/{year}/{month}/{day}.{format}": {
+            "get": {
+                "summary": "Get custom report.",
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "path",
+                        "description": "Report year",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 2000,
+                            "maximum": 2030
+                        }
+                    },
+                    {
+                        "name": "month",
+                        "in": "path",
+                        "description": "Report month",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 12
+                        }
+                    },
+                    {
+                        "name": "day",
+                        "in": "path",
+                        "description": "Report day",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 31
+                        }
+                    },
+                    {
+                        "name": "format",
+                        "in": "path",
+                        "description": "Report format",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": "[json, csv, xml]"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Custom report",
+                        "content": {
+                            "contenttype": {}
                         }
                     }
                 }
@@ -41,6 +617,117 @@
         }
     },
     "components": {
-        "schemas": {}
+        "schemas": {
+            "Report": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "date": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number"
+                        }
+                    }
+                }
+            },
+            "ApiInfo": {
+                "type": "object",
+                "properties": {
+                    "version": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Item": {
+                "type": "object",
+                "properties": {
+                    "uuid": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "type": "number"
+                    }
+                }
+            },
+            "AnalyticsData": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "metric": {
+                        "type": "string"
+                    },
+                    "values": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "label": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Document": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UserProfileTemplate": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
     }
 }
