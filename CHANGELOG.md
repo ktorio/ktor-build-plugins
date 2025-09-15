@@ -4,11 +4,19 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+*No changes yet*
+
+## [3.3.0] - 2025-09-12
+
 > [!WARNING]
 > The minimum supported Gradle version now is 8.11 as it is required for the Shadow plugin
 
+- Update Ktor to [v3.3.0](https://github.com/ktorio/ktor/releases/tag/3.3.0)
 - Update Gradle to 9.0.0
 - Update Shadow plugin to v9.1.0
+- [KTOR-8721] OpenAPI generation build extension preview
+
+[KTOR-8721]: https://youtrack.jetbrains.com/issue/KTOR-8721
 
 ## [3.2.3] - 2025-07-29
 
@@ -85,7 +93,8 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 - Bump default JRE in Docker to 21 (current LTS version)
 - Set Kotlin API and language level to 1.8 for compatibility with Gradle 8.0+
 
-[unreleased]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.3...main
+[unreleased]: https://github.com/ktorio/ktor-build-plugins/compare/v3.3.0...main
+[3.3.0]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.3...v3.3.0
 [3.2.3]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.2...v3.2.3
 [3.2.2]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.1...v3.2.2
 [3.2.1]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.0...v3.2.1
