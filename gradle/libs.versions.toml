@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.2.20"
 ktor-plugin = "3.3.0"
-ktor = "3.3.0"
+ktor = "3.3.1"
 logback = "1.5.18"
 pluginPublish = "1.3.1"
 gradlePlugin-shadow = "9.1.0"
