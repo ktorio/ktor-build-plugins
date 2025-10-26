@@ -27,7 +27,10 @@
             "Resp": {
                 "type": "object",
                 "properties": {
-                    "dt": {}
+                    "dt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
                 }
             }
         }
