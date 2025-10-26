@@ -5,90 +5,31 @@
         "version": "1.0.0"
     },
     "paths": {
-        "/parameters/{a}/{b}/{c}": {
+        "/contextual": {
             "get": {
                 "responses": {
                     "200": {
                         "description": "",
                         "content": {
-                            "text/plain": {
+                            "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/Resp"
                                 }
                             }
                         }
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "a",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "b",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "c",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "d",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "e",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "f",
-                        "in": "header",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "g",
-                        "in": "header",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "h",
-                        "in": "header",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
+                }
             }
         }
     },
     "components": {
-        "schemas": {}
+        "schemas": {
+            "Resp": {
+                "type": "object",
+                "properties": {
+                    "dt": {}
+                }
+            }
+        }
     }
 }
