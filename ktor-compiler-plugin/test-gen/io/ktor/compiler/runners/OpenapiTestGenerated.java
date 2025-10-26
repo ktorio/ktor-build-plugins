@@ -28,6 +28,12 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
+  @TestMetadata("Contextual.kt")
+  public void testContextual() {
+    runTest("ktor-compiler-plugin/testData/openapi/Contextual.kt");
+  }
+
+  @Test
   @TestMetadata("Functions.kt")
   public void testFunctions() {
     runTest("ktor-compiler-plugin/testData/openapi/Functions.kt");
