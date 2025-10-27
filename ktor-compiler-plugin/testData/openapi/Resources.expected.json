@@ -1,29 +1,12 @@
 {
     "openapi": "3.1.1",
     "info": {
-        "title": "Open API Document",
+        "title": "OpenAPI Document",
         "version": "1.0.0"
     },
     "paths": {
         "/articles": {
-            "get": {
-                "summary": "Basic resource routes",
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Post"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            "get": {}
         },
         "/articles/{id}": {
             "get": {
@@ -31,34 +14,9 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "required": true
                     }
-                ],
-                "responses": {
-                    "404": {
-                        "description": "",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Post"
-                                }
-                            }
-                        }
-                    }
-                }
+                ]
             }
         },
         "/articles/{id}/comments": {
@@ -67,114 +25,35 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "required": true
                     }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Comments"
-                                }
-                            }
-                        }
-                    }
-                }
+                ]
             }
         },
         "/articles/featured": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Post"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            "get": {}
         },
         "/users/search": {
             "get": {
-                "summary": "Resources with query parameters",
                 "parameters": [
                     {
-                        "name": "query",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "name": "offset",
+                        "in": "query"
                     },
                     {
                         "name": "limit",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "in": "query"
                     },
                     {
-                        "name": "offset",
+                        "name": "query",
                         "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "required": true
                     }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                }
+                ]
             }
         },
         "/posts": {
-            "post": {
-                "summary": "Resources with request body",
-                "requestBody": {
-                    "description": "",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Post"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            "post": {}
         },
         "/posts/{id}": {
             "put": {
@@ -182,34 +61,9 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "required": true
                     }
-                ],
-                "requestBody": {
-                    "description": "",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Post"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                }
+                ]
             }
         },
         "/posts/{id}/comments": {
@@ -218,59 +72,18 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "required": true
                     }
-                ],
+                ]
+            }
+        },
+        "/openapi.json": {
+            "get": {
                 "responses": {
                     "200": {
                         "description": "",
                         "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },
-    "components": {
-        "schemas": {
-            "Post": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer"
-                    },
-                    "title": {
-                        "type": "string"
-                    },
-                    "content": {
-                        "type": "string"
-                    },
-                    "authorId": {
-                        "type": "integer"
-                    }
-                }
-            },
-            "Comments": {
-                "type": "object",
-                "properties": {
-                    "parent": {
-                        "type": "object",
-                        "properties": {
-                            "parent": {
-                                "type": "object",
-                                "properties": {}
-                            },
-                            "id": {
-                                "type": "integer"
-                            }
+                            "text/plain": {}
                         }
                     }
                 }

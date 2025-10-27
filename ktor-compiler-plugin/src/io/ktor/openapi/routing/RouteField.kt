@@ -1,13 +1,22 @@
 package io.ktor.openapi.routing
 
-import io.ktor.compiler.utils.resolveTypeLink
-import io.ktor.openapi.model.JsonSchema
-import io.ktor.openapi.model.JsonSchema.Companion.findSchemaDefinitions
-import io.ktor.openapi.model.JsonType
-import io.ktor.openapi.routing.RouteField.Schema
-import kotlinx.serialization.json.JsonElement
-import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
-import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
+import io.ktor.openapi.JsonPrimitive
+import io.ktor.openapi.ir.LambdaBuilderContext
+import io.ktor.openapi.ir.toConst
+import io.ktor.openapi.model.ExtensionAttribute
+import io.ktor.openapi.model.ModelAttribute
+import io.ktor.openapi.model.SchemaAttribute
+import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.ir.declarations.IrDeclarationParent
+import org.jetbrains.kotlin.ir.expressions.IrConst
+import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.types.IrType
+import org.jetbrains.kotlin.ir.types.defaultType
+import org.jetbrains.kotlin.ir.types.makeNullable
+import org.jetbrains.kotlin.ir.types.typeWith
+import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
+import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.FqName
 
 /**
  * Sealed class representing different KDoc parameters for OpenAPI documentation.
@@ -18,50 +27,48 @@ sealed interface RouteField {
         if (this::class == other::class) this else null
 
     sealed interface SchemaHolder : RouteField {
-        val schema: SchemaReference?
-        val attributes: Map<String, JsonElement>
+        val typeReference: TypeReference?
+        val attributes: Map<ModelAttribute, String>
+
+        @Suppress("UNCHECKED_CAST")
+        val extensionAttributes: Map<ExtensionAttribute, String> get() =
+            attributes.filterKeys { it is ExtensionAttribute } as Map<ExtensionAttribute, String>
+
+        @Suppress("UNCHECKED_CAST")
+        val schemaAttributes: Map<SchemaAttribute, String> get() =
+            attributes.filterKeys { it is SchemaAttribute } as Map<SchemaAttribute, String>
     }
 
     sealed interface Content : SchemaHolder {
-        val contentType: String?
+        val contentType: LocalReference?
         val description: String?
     }
 
     sealed interface ParameterOrHeader : SchemaHolder {
-        val name: String
+        val name: LocalReference
         val description: String?
     }
 
-    sealed interface Parameter : ParameterOrHeader {
-        val `in`: String
-    }
-
     /**
-     * Built into the OpenAPI JSON structure, so ignored when building the path item.
+     * Query parameter, path variable, header, or cookie.
      */
-    sealed interface Transient : RouteField
-
-    object Ignore: Transient
-
-    data class Method(val method: String) : Transient {
+    data class Parameter(
+        val `in`: ParamIn? = null,
+        override val name: LocalReference,
+        override val typeReference: TypeReference? = null,
+        override val description: String? = null,
+        override val attributes: Map<ModelAttribute, String> = emptyMap(),
+    ) : ParameterOrHeader {
         override fun merge(other: RouteField): RouteField? =
-            if (other is Method && method == other.method) this else null
+            if (other is Parameter && name.stringValue == other.name.stringValue) copy(
+                `in` = `in` ?: other.`in`,
+                typeReference = typeReference ?: other.typeReference,
+                description = description ?: other.description,
+                attributes = other.attributes + attributes,
+            ) else null
     }
 
-    data class Path(val path: String) : Transient {
-        override fun merge(other: RouteField): RouteField? =
-            if (other is Path)
-                Path("${other.path}/$path".replace("//", "/"))
-            else null
-    }
-
-    data class Schema(
-        val name: String,
-        val schema: JsonSchema
-    ) : Transient {
-        override fun merge(other: RouteField): RouteField? =
-            if (other is Schema && other.name == name) this else null
-    }
+    object Ignore: RouteField
 
     data class OperationId(val value: String) : RouteField {
         override fun merge(other: RouteField): RouteField? =
@@ -79,109 +86,30 @@ sealed interface RouteField {
     }
 
     /**
-     * Describes a path parameter.
-     *
-     * Format: `@path name description`
-     */
-    data class PathParam(
-        override val name: String,
-        override val schema: SchemaReference? = null,
-        override val description: String? = null,
-        override val attributes: Map<String, JsonElement> = emptyMap(),
-    ) : Parameter {
-        override val `in`: String = "path"
-        override fun merge(other: RouteField): RouteField? =
-            if (other is PathParam && name == other.name) copy(
-                schema = schema ?: other.schema,
-                description = description ?: other.description,
-                attributes = other.attributes + attributes,
-            ) else null
-    }
-
-    /**
-     * Describes a query parameter.
-     *
-     * Format: `@query name description`
-     */
-    data class QueryParam(
-        override val name: String,
-        override val schema: SchemaReference? = null,
-        override val description: String? = null,
-        override val attributes: Map<String, JsonElement> = emptyMap(),
-    ) : Parameter {
-        override val `in`: String = "query"
-        override fun merge(other: RouteField): RouteField? =
-            if (other is QueryParam && name == other.name) copy(
-                schema = schema ?: other.schema,
-                description = description ?: other.description,
-                attributes = other.attributes + attributes,
-            ) else null
-    }
-
-    /**
-     * Describes a header parameter.
-     *
-     * Format: `@header name description`
-     */
-    data class Header(
-        override val name: String,
-        override val schema: SchemaReference? = null,
-        override val description: String? = null,
-        override val attributes: Map<String, JsonElement> = emptyMap(),
-    ) : Parameter {
-        override val `in`: String = "header"
-        override fun merge(other: RouteField): RouteField? =
-            if (other is Header && name == other.name) copy(
-                schema = schema ?: other.schema,
-                description = description ?: other.description,
-            ) else null
-    }
-
-    /**
-     * Describes a cookie parameter.
-     *
-     * Format: `@cookie name description`
-     */
-    data class Cookie(
-        override val name: String,
-        override val schema: SchemaReference? = null,
-        override val description: String? = null,
-        override val attributes: Map<String, JsonElement> = emptyMap(),
-    ) : Parameter {
-        override val `in`: String = "cookie"
-        override fun merge(other: RouteField): RouteField? =
-            if (other is Cookie && name == other.name) copy(
-                schema = schema ?: other.schema,
-                description = description ?: other.description,
-                attributes = other.attributes + attributes,
-            ) else null
-    }
-
-    /**
      * Documents the request body type.
      *
      * Format: `@body [Type] description`
      */
     data class Body(
-        override val contentType: String? = null,
-        override val schema: SchemaReference? = null,
+        override val contentType: LocalReference? = null,
+        override val typeReference: TypeReference? = null,
         override val description: String? = null,
-        override val attributes: Map<String, JsonElement> = emptyMap(),
+        override val attributes: Map<ModelAttribute, String> = emptyMap(),
     ) : Content {
         override fun merge(other: RouteField): RouteField? =
             if (other is Body) copy(
                 contentType = contentType ?: other.contentType,
-                schema = schema ?: other.schema,
+                typeReference = typeReference ?: other.typeReference,
                 description = description ?: other.description,
                 attributes = other.attributes + attributes,
             ) else null
     }
 
     data class ResponseHeader(
-        override val name: String,
-        override val schema: SchemaReference? = null,
+        override val name: LocalReference,
+        override val typeReference: TypeReference? = null,
         override val description: String? = null,
-        override val attributes: Map<String, JsonElement> = emptyMap(),
+        override val attributes: Map<ModelAttribute, String> = emptyMap(),
     ) : ParameterOrHeader
 
     /**
@@ -190,17 +118,17 @@ sealed interface RouteField {
      * Format: `@response code [Type] description`
      */
     data class Response(
-        val code: String,
-        override val contentType: String? = null,
-        override val schema: SchemaReference? = null,
+        val code: LocalReference? = null,
+        override val contentType: LocalReference? = null,
+        override val typeReference: TypeReference? = null,
         override val description: String? = null,
-        override val attributes: Map<String, JsonElement> = emptyMap(),
+        override val attributes: Map<ModelAttribute, String> = emptyMap(),
     ) : Content {
         override fun merge(other: RouteField): RouteField? =
-            if (other is Response && code == other.code)
+            if (other is Response && code?.stringValue == other.code?.stringValue)
                 copy(
                     contentType = contentType ?: other.contentType,
-                    schema = schema ?: other.schema,
+                    typeReference = typeReference ?: other.typeReference,
                     description = description ?: other.description,
                     attributes = other.attributes + attributes,
                 )
@@ -224,9 +152,9 @@ sealed interface RouteField {
     /**
      * Provides a link to external documentation.
      *
-     * Format: `@externalDocs url`
+     * Format: `@externalDocs url description`
      */
-    data class ExternalDocs(val url: String): RouteField
+    data class ExternalDocs(val url: String, val description: String?): RouteField
 
     /**
      * Provides a summary of the endpoint.
@@ -241,7 +169,10 @@ sealed interface RouteField {
      *
      * Format: `@security scheme`
      */
-    data class Security(val scheme: String?) : RouteField {
+    data class Security(
+        val scheme: String?,
+        val scopes: List<String>? = null,
+    ) : RouteField {
         companion object {
             val All = Security("*")
             val Optional = Security(null)
@@ -254,94 +185,130 @@ sealed interface RouteField {
 
 typealias RouteFieldList = List<RouteField>
 
-val RouteFieldList.path: String?
-    get() = firstIsInstanceOrNull<RouteField.Path>()?.path
-
-val RouteFieldList.method: String?
-    get() = firstIsInstanceOrNull<RouteField.Method>()?.method
-
 /**
  * Merges two lists of route fields into a new list.
  */
 fun RouteFieldList.merge(other: RouteFieldList) = buildList {
     val otherMutable = other.toMutableList()
     for (field in this@merge) {
-        val match = otherMutable.indices.firstNotNullOfOrNull { i ->
+        val mergedField = otherMutable.indices.firstNotNullOfOrNull { i ->
             field.merge(otherMutable[i])?.also {
                 otherMutable.removeAt(i)
-                add(it)
             }
         }
-        // if no compatible field was found, add this field to the result
-        if (match == null) add(field)
+        add(mergedField ?: field)
     }
-    // add all remaining unmerged fields to the result
-    addAll(otherMutable.filterNot { it is RouteField.Summary })
+    // include unmatched fields from the other list
+    addAll(otherMutable)
 }
 
-context(stack: RouteStack, context: CheckerContext)
-fun RouteFieldList.resolveSchemaReferences(): RouteFieldList =
-    this + sequence<RouteField> {
-        for (field in asSequence().filterIsInstance<RouteField.Content>()) {
-            val reference = field.schema?.getReference() ?: continue
-            val coneType = resolveTypeLink(reference) ?: continue
-
-            yieldAll(coneType.findSchemaDefinitions().map { (name, schema) ->
-                Schema(name, schema)
-            })
-        }
-    }.toList()
-
-sealed interface SchemaReference {
-
-    fun asSchema(): JsonSchema
-
-    data class Resolved(
-        val schema: JsonSchema
-    ) : SchemaReference {
-        override fun asSchema(): JsonSchema = schema
+sealed interface LocalReference {
+    companion object {
+        fun of(expression: IrExpression) =
+            Expression(expression)
+        fun of(stringValue: String) =
+            StringValue(stringValue)
+        fun of(intValue: Int) =
+            IntValue(intValue)
     }
 
-    sealed interface Link: SchemaReference {
+    context(context: LambdaBuilderContext)
+    fun evaluate(): IrExpression
+
+    val stringValue: String?
+
+    data class Expression(val expression: IrExpression): LocalReference {
+        context(context: LambdaBuilderContext)
+        override fun evaluate(): IrExpression =
+            expression.deepCopyWithSymbols(
+                context.parentDeclaration as? IrDeclarationParent
+            )
+        override val stringValue: String?
+            get() = (expression as? IrConst)?.value as? String
+    }
+    data class IntValue(val intValue: Int): LocalReference {
+        context(context: LambdaBuilderContext)
+        override fun evaluate(): IrConst =
+            intValue.toConst()
+        override val stringValue: String
+            get() = intValue.toString()
+    }
+    data class StringValue(override val stringValue: String): LocalReference {
+        context(context: LambdaBuilderContext)
+        override fun evaluate(): IrConst =
+            stringValue.toConst()
+    }
+}
+
+sealed interface TypeReference {
+    companion object {
+        fun IrType.asReference() =
+            Resolved(this)
+    }
+
+    context(context: IrPluginContext)
+    fun asIrType(): IrType?
+
+    data class Resolved(val type: IrType) : TypeReference {
+        context(context: IrPluginContext)
+        override fun asIrType(): IrType = type
+    }
+
+    object StringType: TypeReference {
+        context(context: IrPluginContext)
+        override fun asIrType(): IrType =
+            context.irBuiltIns.stringType
+    }
+
+    sealed interface Link: TypeReference {
         val name: String
 
-        data class Simple(override val name: String, val jsonType: JsonType) : Link {
-            override fun asSchema(): JsonSchema =
-                JsonSchema(jsonType)
-        }
         data class Reference(override val name: String) : Link {
-            override fun asSchema(): JsonSchema =
-                JsonSchema(ref = "#/components/schemas/$name")
+            context(context: IrPluginContext)
+            override fun asIrType(): IrType? =
+                context.referenceClass(
+                    ClassId.topLevel(FqName(name))
+                )?.defaultType
+        }
+        data class Primitive(override val name: String, val jsonPrimitive: JsonPrimitive) : Link {
+            context(context: IrPluginContext)
+            override fun asIrType(): IrType =
+                when(jsonPrimitive) {
+                    JsonPrimitive.STRING -> context.irBuiltIns.stringType
+                    JsonPrimitive.NUMBER -> context.irBuiltIns.doubleType
+                    JsonPrimitive.INTEGER -> context.irBuiltIns.intType
+                    JsonPrimitive.BOOLEAN -> context.irBuiltIns.booleanType
+                }
         }
         data class Array(val element: Link) : Link by element {
-            override fun asSchema(): JsonSchema =
-                JsonSchema(
-                    type = JsonType.array,
-                    items = element.asSchema()
-                )
+            context(context: IrPluginContext)
+            override fun asIrType(): IrType? {
+                val elementType = element.asIrType() ?: return null
+                return context.irBuiltIns.listClass.typeWith(elementType)
+            }
         }
         data class Map(val valueType: Link) : Link by valueType {
-            override fun asSchema(): JsonSchema =
-                JsonSchema(
-                    type = JsonType.`object`,
-                    additionalProperties = valueType.asSchema()
+            context(context: IrPluginContext)
+            override fun asIrType(): IrType? {
+                val valueIrType = valueType.asIrType() ?: return null
+                return context.irBuiltIns.mapClass.typeWith(
+                    context.irBuiltIns.stringType,
+                    valueIrType
                 )
+            }
         }
         data class Optional(val delegate: Link) : Link by delegate {
-            override fun asSchema(): JsonSchema =
-                delegate.asSchema()
-                    .copy(required = false)
+            context(context: IrPluginContext)
+            override fun asIrType(): IrType? {
+                return delegate.asIrType()?.makeNullable()
+            }
         }
     }
 }
 
-fun SchemaReference.hasReference(): Boolean = getReference() != null
-
-fun SchemaReference.getReference(): String? = when(this) {
-    is SchemaReference.Resolved -> schema.ref?.substringAfterLast('/')
-    is SchemaReference.Link.Array -> element.getReference()
-    is SchemaReference.Link.Optional -> delegate.getReference()
-    is SchemaReference.Link.Map -> valueType.getReference()
-    is SchemaReference.Link.Reference -> name
-    is SchemaReference.Link.Simple -> null
+enum class ParamIn {
+    PATH,
+    QUERY,
+    HEADER,
+    COOKIE,
 }

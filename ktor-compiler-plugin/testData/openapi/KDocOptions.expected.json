@@ -1,0 +1,116 @@
+{
+    "openapi": "3.1.1",
+    "info": {
+        "title": "OpenAPI Document",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/type-references": {
+            "get": {
+                "summary": "This endpoint is for testing type references.",
+                "responses": {
+                    "429": {
+                        "description": "Who you gonna call?",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/attributes": {
+            "get": {
+                "summary": "Let's use some attributes.",
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "my input",
+                        "schema": {
+                            "type": "string",
+                            "nullable": true,
+                            "pattern": "[a-z0-9_&+]+"
+                        }
+                    },
+                    {
+                        "name": "count",
+                        "in": "query",
+                        "description": "",
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100.0
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "",
+                    "content": {
+                        "application/json": {}
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/License"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/openapi.json": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "License": {
+                "type": "object",
+                "title": "io.ktor.openapi.OpenApiInfo.License",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "extensions": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

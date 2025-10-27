@@ -10,74 +10,74 @@ class KtorCommandLineProcessor : CommandLineProcessor {
     companion object {
         const val PLUGIN_ID = "io.ktor.ktor-compiler-plugin"
 
-        val OPENAPI_ENABLED_KEY = CompilerConfigurationKey<String>("openapi.enabled")
-        val OPENAPI_OUTPUT_KEY = CompilerConfigurationKey<String>("openapi.output")
-        val OPENAPI_DESCRIPTION_KEY = CompilerConfigurationKey<String>("openapi.description")
-        val OPENAPI_TITLE_KEY = CompilerConfigurationKey<String>("openapi.title")
-        val OPENAPI_SUMMARY_KEY = CompilerConfigurationKey<String>("openapi.summary")
-        val OPENAPI_TERMS_OF_SERVICE_KEY = CompilerConfigurationKey<String>("openapi.termsOfService")
-        val OPENAPI_CONTACT_KEY = CompilerConfigurationKey<String>("openapi.contact")
-        val OPENAPI_LICENSE_KEY = CompilerConfigurationKey<String>("openapi.license")
-        val OPENAPI_VERSION_KEY = CompilerConfigurationKey<String>("openapi.version")
+        val OPENAPI_ENABLED_KEY = CompilerConfigurationKey<String>("openapiEnabled")
+        val OPENAPI_OUTPUT_KEY = CompilerConfigurationKey<String>("openapiOutput")
+        val OPENAPI_DESCRIPTION_KEY = CompilerConfigurationKey<String>("openapiDescription")
+        val OPENAPI_TITLE_KEY = CompilerConfigurationKey<String>("openapiTitle")
+        val OPENAPI_SUMMARY_KEY = CompilerConfigurationKey<String>("openapiSummary")
+        val OPENAPI_TERMS_OF_SERVICE_KEY = CompilerConfigurationKey<String>("openapiTermsOfService")
+        val OPENAPI_CONTACT_KEY = CompilerConfigurationKey<String>("openapiContact")
+        val OPENAPI_LICENSE_KEY = CompilerConfigurationKey<String>("openapiLicense")
+        val OPENAPI_VERSION_KEY = CompilerConfigurationKey<String>("openapiVersion")
 
         val OPENAPI_ENABLED_OPTION = CliOption(
-            "openapi.enabled",
+            "openapiEnabled",
             "<boolean>",
             "Enables the OpenAPI generation",
             required = false
         )
 
         val OPENAPI_OUTPUT_OPTION = CliOption(
-            "openapi.output",
+            "openapiOutput",
             "<path>",
             "The output path for the generated OpenAPI specification",
             required = false
         )
 
         val OPENAPI_DESCRIPTION_OPTION = CliOption(
-            "openapi.description",
+            "openapiDescription",
             "<text>",
             "A description of the API. CommonMark syntax MAY be used for rich text representation",
             required = false
         )
 
         val OPENAPI_TITLE_OPTION = CliOption(
-            "openapi.title",
+            "openapiTitle",
             "<text>",
             "The title of the API",
             required = false
         )
 
         val OPENAPI_SUMMARY_OPTION = CliOption(
-            "openapi.summary",
+            "openapiSummary",
             "<text>",
             "A short summary of the API",
             required = false
         )
 
         val OPENAPI_TERMS_OF_SERVICE_OPTION = CliOption(
-            "openapi.termsOfService",
+            "openapiTermsOfService",
             "<uri>",
             "A URI for the Terms of Service for the API",
             required = false
         )
 
         val OPENAPI_CONTACT_OPTION = CliOption(
-            "openapi.contact",
+            "openapiContact",
             "<info>",
             "The contact information for the exposed API",
             required = false
         )
 
         val OPENAPI_LICENSE_OPTION = CliOption(
-            "openapi.license",
+            "openapiLicense",
             "<info>",
             "The license information for the exposed API",
             required = false
         )
 
         val OPENAPI_VERSION_OPTION = CliOption(
-            "openapi.version",
+            "openapiVersion",
             "<version>",
             "The version of the OpenAPI Document",
             required = false

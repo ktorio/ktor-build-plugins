@@ -1,94 +1,90 @@
 {
     "openapi": "3.1.1",
     "info": {
-        "title": "Open API Document",
+        "title": "OpenAPI Document",
         "version": "1.0.0"
     },
     "paths": {
         "/parameters/{a}/{b}/{c}": {
             "get": {
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
+                "tags": [
+                    "parameters"
+                ],
                 "parameters": [
                     {
                         "name": "a",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "text/plain": {}
                         }
                     },
                     {
                         "name": "b",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "text/plain": {}
                         }
                     },
                     {
                         "name": "c",
                         "in": "path",
                         "required": true,
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "text/plain": {}
                         }
                     },
                     {
                         "name": "d",
                         "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "text/plain": {}
                         }
                     },
                     {
                         "name": "e",
                         "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "text/plain": {}
                         }
                     },
                     {
                         "name": "f",
                         "in": "header",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "text/plain": {}
                         }
                     },
                     {
                         "name": "g",
                         "in": "header",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "h",
-                        "in": "header",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "text/plain": {}
                         }
                     }
-                ]
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/openapi.json": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    }
+                }
             }
         }
-    },
-    "components": {
-        "schemas": {}
     }
 }

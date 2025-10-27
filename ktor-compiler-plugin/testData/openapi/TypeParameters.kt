@@ -10,8 +10,12 @@ import io.ktor.server.request.receive
 import io.ktor.server.routing.*
 import io.ktor.server.response.*
 import io.ktor.util.toMap
+import kotlinx.serialization.Serializable
 
-fun Application.complexExtension(userRepository: Repository2<User2>, messageRepository: Repository2<Message2>) {
+fun Application.installTypeParameters() {
+    val userRepository = Repository2<User2>()
+    val messageRepository = Repository2<Message2>()
+
     install(ContentNegotiation) {
         json()
     }
@@ -24,7 +28,7 @@ fun Application.complexExtension(userRepository: Repository2<User2>, messageRepo
     }
 }
 
-private fun <E> Route.crudEndpoints(path: String, repository: Repository2<E>) {
+private inline fun <reified E> Route.crudEndpoints(path: String, repository: Repository2<E>) {
     route("data/$path") {
         readEndpoints(repository)
         modificationEndpoints(repository)
@@ -32,7 +36,7 @@ private fun <E> Route.crudEndpoints(path: String, repository: Repository2<E>) {
 }
 
 
-private fun <E> Route.readEndpoints(repository: Repository2<E>) {
+private inline fun <reified E> Route.readEndpoints(repository: Repository2<E>) {
     get {
         val query = call.request.queryParameters.toMap()
         val list = repository.list(query)
@@ -45,7 +49,7 @@ private fun <E> Route.readEndpoints(repository: Repository2<E>) {
     }
 }
 
-private fun <E> Route.modificationEndpoints(repository: Repository2<E>) {
+private inline fun <reified E> Route.modificationEndpoints(repository: Repository2<E>) {
     post {
         repository.save(call.receive())
         call.respond(HttpStatusCode.Created)
@@ -57,14 +61,17 @@ private fun <E> Route.modificationEndpoints(repository: Repository2<E>) {
     }
 }
 
-interface Repository2<E> {
-    fun get(id: String): E?
-    fun save(entity: E)
-    fun delete(id: String)
-    fun list(query: Map<String, List<String>>): List<E>
+class Repository2<E> {
+    fun get(id: String): E? = null
+    fun save(entity: E) = Unit
+    fun delete(id: String) = Unit
+    fun list(query: Map<String, List<String>>): List<E> = emptyList()
 }
 
+@Serializable
 data class User2(val id: String, val name: String)
+
+@Serializable
 data class Message2(val id: String, val text: String)
 
 /* GENERATED_FIR_TAGS: classDeclaration, data, funWithExtensionReceiver, functionDeclaration, interfaceDeclaration,

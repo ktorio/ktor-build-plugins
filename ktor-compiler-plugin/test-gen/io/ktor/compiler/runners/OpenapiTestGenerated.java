@@ -22,21 +22,15 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
-  @TestMetadata("Authentication.kt")
-  public void testAuthentication() {
-    runTest("ktor-compiler-plugin/testData/openapi/Authentication.kt");
-  }
-
-  @Test
-  @TestMetadata("Contextual.kt")
-  public void testContextual() {
-    runTest("ktor-compiler-plugin/testData/openapi/Contextual.kt");
-  }
-
-  @Test
   @TestMetadata("Functions.kt")
   public void testFunctions() {
     runTest("ktor-compiler-plugin/testData/openapi/Functions.kt");
+  }
+
+  @Test
+  @TestMetadata("KDocOptions.kt")
+  public void testKDocOptions() {
+    runTest("ktor-compiler-plugin/testData/openapi/KDocOptions.kt");
   }
 
   @Test

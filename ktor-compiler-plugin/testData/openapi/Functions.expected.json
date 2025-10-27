@@ -1,7 +1,7 @@
 {
     "openapi": "3.1.1",
     "info": {
-        "title": "Open API Document",
+        "title": "OpenAPI Document",
         "version": "1.0.0"
     },
     "paths": {
@@ -52,8 +52,8 @@
                         "in": "path",
                         "description": "The ID of the user",
                         "required": true,
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "text/plain": {}
                         }
                     }
                 ],
@@ -71,14 +71,14 @@
                         "in": "path",
                         "description": "The ID of the user",
                         "required": true,
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "text/plain": {}
                         }
                     }
                 ],
                 "responses": {
                     "404": {
-                        "description": "The user was not found"
+                        "description": ""
                     },
                     "200": {
                         "description": "",
@@ -140,8 +140,8 @@
                         "in": "path",
                         "description": "The ID of the message",
                         "required": true,
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "text/plain": {}
                         }
                     }
                 ],
@@ -159,14 +159,14 @@
                         "in": "path",
                         "description": "The ID of the message",
                         "required": true,
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "text/plain": {}
                         }
                     }
                 ],
                 "responses": {
                     "404": {
-                        "description": "The message was not found"
+                        "description": ""
                     },
                     "200": {
                         "description": "",
@@ -180,12 +180,29 @@
                     }
                 }
             }
+        },
+        "/openapi.json": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
         "schemas": {
             "User1": {
                 "type": "object",
+                "title": "openapi.User1",
+                "required": [
+                    "id",
+                    "name"
+                ],
                 "properties": {
                     "id": {
                         "type": "string"
@@ -197,6 +214,11 @@
             },
             "Message1": {
                 "type": "object",
+                "title": "openapi.Message1",
+                "required": [
+                    "id",
+                    "text"
+                ],
                 "properties": {
                     "id": {
                         "type": "string"

@@ -1,13 +1,17 @@
 package io.ktor.compiler
 
-import io.ktor.openapi.OpenApiExtension
+import io.ktor.openapi.Logger
+import io.ktor.openapi.fir.OpenApiAnalysisExtension
+import io.ktor.openapi.ir.OpenApiCodeGenerationExtension
 import io.ktor.openapi.OpenApiProcessorConfig
 import io.ktor.openapi.model.SpecInfo
+import io.ktor.openapi.routing.RouteCallLookup
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
+import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
+import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
+import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
-import org.jetbrains.kotlin.config.incrementalCompilation
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -21,14 +25,12 @@ class KtorCompilerPluginRegistrar : CompilerPluginRegistrar() {
             return
         }
 
-        val extension = OpenApiExtension(openApiConfig)
-        FirExtensionRegistrarAdapter.registerExtension(extension)
-        registerDisposable {
-            extension.saveSpecification(Json {
-                prettyPrint = true
-                prettyPrintIndent = "    "
-            })
-        }
+        val logger = Logger.wrap(configuration.get(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE))
+        val routes: RouteCallLookup = mutableMapOf()
+        // Analysis FIR plugin reads the comments and caches them to the routes graph
+        FirExtensionRegistrarAdapter.registerExtension(OpenApiAnalysisExtension(logger, routes))
+        // Code generation plugin introduces calls to the routing annotation API
+        IrGenerationExtension.registerExtension(OpenApiCodeGenerationExtension(logger, routes))
     }
 
     private fun readConfiguration(
@@ -37,7 +39,6 @@ class KtorCompilerPluginRegistrar : CompilerPluginRegistrar() {
         with(KtorCommandLineProcessor) {
             OpenApiProcessorConfig(
                 enabled = cc[OPENAPI_ENABLED_KEY]?.toBooleanStrictOrNull() ?: false,
-                outputFile = cc[OPENAPI_OUTPUT_KEY] ?: "openapi.json",
                 info = SpecInfo(
                     title = cc[OPENAPI_TITLE_KEY] ?: "API Documentation",
                     version = cc[OPENAPI_VERSION_KEY] ?: "1.0.0",

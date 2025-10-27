@@ -1,29 +1,44 @@
 package io.ktor.samples.openapi
 
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.install
-import io.ktor.server.cio.CIO
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.plugins.openapi.openAPI
-import io.ktor.server.request.receive
+import io.ktor.annotate.*
+import io.ktor.http.*
+import io.ktor.openapi.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
+import io.ktor.server.cio.*
+import io.ktor.server.engine.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.util.toMap
+import io.ktor.util.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 fun main() {
     embeddedServer(CIO, port = 8080) {
         install(ContentNegotiation) {
-            json()
+            json(Json {
+                encodeDefaults = false
+            })
         }
 
         routing {
             // Main page for marketing
             get("/") {
                 call.respondText("<html><body><h1>Hello, World</h1></body></html>", ContentType.Text.Html)
+            }
+
+            get("/spec.json") {
+                val spec = generateOpenApiSpec(
+                    info = OpenApiInfo("My API", version = "1.0.0"),
+                    route = call.application.routingRoot
+                ).let {
+                    it.copy(
+                        paths = it.paths - "/spec.json"
+                    )
+                }
+                call.respond(spec)
             }
 
             /**
@@ -34,7 +49,7 @@ fun main() {
             /**
              * Get the OpenAPI specification.
              */
-            openAPI("/docs", swaggerFile = "openapi/generated.json")
+            // openAPI("/docs", swaggerFile = "openapi/generated.json")
         }
     }.start(wait = true)
 }

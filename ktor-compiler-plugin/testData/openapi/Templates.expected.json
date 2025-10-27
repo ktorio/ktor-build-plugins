@@ -1,24 +1,33 @@
 {
     "openapi": "3.1.1",
     "info": {
-        "title": "Open API Document",
+        "title": "OpenAPI Document",
         "version": "1.0.0"
     },
     "paths": {
-        "/api/v1/reports/{id}": {
+        "/api/v1/reports/{report-id}": {
             "get": {
                 "summary": "Get report by ID.",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "report-id",
                         "in": "path",
                         "description": "Report ID.",
                         "required": true,
                         "schema": {
                             "type": "integer",
-                            "minimum": 1,
-                            "maximum": 999999999999,
-                            "required": true
+                            "maximum": 9.99999999999E11,
+                            "minimum": 1.0
+                        },
+                        "content": {
+                            "text/plain": {}
+                        }
+                    },
+                    {
+                        "name": "x-view",
+                        "in": "header",
+                        "content": {
+                            "text/plain": {}
                         }
                     }
                 ],
@@ -28,19 +37,25 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "type": "number"
-                                    }
+                                    "type": "number"
                                 }
                             }
                         }
                     }
                 }
             }
+        },
+        "/openapi.json": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    }
+                }
+            }
         }
-    },
-    "components": {
-        "schemas": {}
     }
 }

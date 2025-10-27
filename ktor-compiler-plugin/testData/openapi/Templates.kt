@@ -11,21 +11,33 @@ import io.ktor.utils.io.writeByte
 import io.ktor.utils.io.writeString
 
 const val ROOT = "/api/v1"
+const val REPORT = "report"
 const val ID = "id"
+const val VIEW = "view"
 
-fun Application.routingWithConstants(reportService: ReportService) {
+fun Application.installTemplates() {
+    val reportService = ReportService()
+
     routing {
         route(ROOT) {
             /**
              * Get report by ID.
-             * @path id [Long] Report ID.
+             * @path report-id [Long] Report ID.
              *   minimum: 1
              *   maximum: 999999999999
              *   required: true
              * @response 200 application/json :[Number] Report details.
              */
-            get("${EntityTypes.REPORTS}/{$ID}") {
-                val report = reportService.getReport(call.parameters[ID]!!.toLong())
+            get("${EntityTypes.REPORTS}/{$REPORT-$ID}") {
+                val view = call.request.headers.get("x-$VIEW")
+                val report = reportService.getReport(
+                    call.parameters["$REPORT-$ID"]!!.toLong()
+                ).let { report ->
+                    when(view) {
+                        "NO-MULLIGANS" -> report.filterKeys { it != "mulligans" }
+                        else -> report
+                    }
+                }
                 call.respondBytesWriter {
                     writeByte('{'.code.toByte())
                     var i = 0
@@ -45,8 +57,8 @@ object EntityTypes {
     const val REPORTS = "reports"
 }
 
-interface ReportService {
-    fun getReport(id: Long): Map<String, Number>
+class ReportService {
+    fun getReport(id: Long): Map<String, Number> = emptyMap()
 }
 
 /* GENERATED_FIR_TAGS: const, funWithExtensionReceiver, functionDeclaration, interfaceDeclaration, objectDeclaration,
