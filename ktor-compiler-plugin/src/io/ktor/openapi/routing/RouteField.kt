@@ -216,6 +216,12 @@ sealed interface RouteField {
      */
     data class Description(val text: String) : RouteField
 
+    /**
+     * Provides a link to external documentation.
+     *
+     * Format: `@externalDocs url`
+     */
+    data class ExternalDocs(val url: String): RouteField
 
     /**
      * Provides a summary of the endpoint.

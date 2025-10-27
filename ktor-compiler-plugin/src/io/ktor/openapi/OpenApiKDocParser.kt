@@ -135,15 +135,18 @@ fun parseParameter(text: CharSequence): RouteField? {
     }
 
     return when (next()) {
+        "body" -> Body(contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
+        "cookie" -> Cookie(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
+        "deprecated" -> Deprecated(remaining())
+        "description" -> Description(remaining())
+        "externalDocs" -> ExternalDocs(remaining())
+        "header" -> Header(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
         "ignore" -> Ignore
-        "tag" -> Tag(next())
         "path" -> PathParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
         "query" -> QueryParam(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
-        "header" -> Header(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
-        "cookie" -> Cookie(next(), schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
-        "body" -> Body(contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
         "response" -> Response(next(), contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
-        "deprecated" -> Deprecated(remaining())
+        "security" -> Security(remaining())
+        "tag" -> Tag(next())
         else -> null // ignore unknown tags
     }
 }

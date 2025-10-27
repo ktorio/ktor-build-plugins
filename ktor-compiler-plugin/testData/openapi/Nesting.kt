@@ -19,6 +19,9 @@ fun Application.simpleNested(repository: Repository0<User0>) {
     routing {
         route("/api") {
 
+            /**
+             * @tag admin
+             */
             route("/users") {
 
                 /**
@@ -63,6 +66,7 @@ fun Application.simpleNested(repository: Repository0<User0>) {
 
                 /**
                  * Delete a user.
+                 * @tag danger
                  * @path id [Int] The ID of the user
                  * @response 400 Bad ID argument
                  * @response 204 The user was deleted
