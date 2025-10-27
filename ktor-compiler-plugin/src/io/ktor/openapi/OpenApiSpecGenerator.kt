@@ -74,6 +74,7 @@ object OpenApiSpecGenerator {
             when(param) {
                 is Summary -> put("summary", param.text)
                 is Description -> put("description", param.text)
+                is ExternalDocs -> put("externalDocs", buildJsonObject { put("url", param.url) })
                 is Body -> {
                     put("requestBody", param.asContentJson(defaultContentType))
                 }

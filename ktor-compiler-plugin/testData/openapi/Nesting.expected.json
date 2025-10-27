@@ -44,7 +44,10 @@
                             }
                         }
                     }
-                }
+                },
+                "tags": [
+                    "admin"
+                ]
             },
             "post": {
                 "summary": "Save a new user.",
@@ -58,6 +61,9 @@
                         }
                     }
                 },
+                "tags": [
+                    "admin"
+                ],
                 "responses": {
                     "201": {
                         "description": ""
@@ -96,10 +102,17 @@
                             }
                         }
                     }
-                }
+                },
+                "tags": [
+                    "admin"
+                ]
             },
             "delete": {
                 "summary": "Delete a user.",
+                "tags": [
+                    "danger",
+                    "admin"
+                ],
                 "parameters": [
                     {
                         "name": "id",
