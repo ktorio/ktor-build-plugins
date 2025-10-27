@@ -26,7 +26,7 @@ class ParameterInterpreter : RoutingCallInterpreter {
                 val key = key.evaluate().asString() ?: return@CallFeature emptyList()
                 val keyIsInPath = {
                     stack.flatMap {
-                        it.resolvedFields?.filterIsInstance<RouteField.Path>().orEmpty()
+                        it.resolve(this).filterIsInstance<RouteField.Path>()
                     }.any { "{$key}" in it.path }
                 }
                 listOf(when {
