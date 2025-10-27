@@ -2,16 +2,20 @@
 
 package openapi
 
-import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.kotlinx.json.json
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.request.receive
-import io.ktor.server.routing.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
-import io.ktor.util.toMap
+import io.ktor.server.routing.*
+import io.ktor.util.*
+import kotlinx.serialization.Serializable
 
-fun Application.extracted(userRepository: Repository1<User1>, messageRepository: Repository1<Message1>) {
+fun Application.installFunctions() {
+    val userRepository = Repository1<User1>()
+    val messageRepository = Repository1<Message1>()
+
     install(ContentNegotiation) {
         json()
     }
@@ -131,14 +135,17 @@ private fun Route.messageReadEndpoints(repository: Repository1<Message1>) {
     }
 }
 
-interface Repository1<E> {
-    fun get(id: String): E?
-    fun save(entity: E)
-    fun delete(id: String)
-    fun list(query: Map<String, List<String>>): List<E>
+class Repository1<E> {
+    fun get(id: String): E? = null
+    fun save(entity: E) {}
+    fun delete(id: String) {}
+    fun list(query: Map<String, List<String>>): List<E> = emptyList()
 }
 
+@Serializable
 data class User1(val id: String, val name: String)
+
+@Serializable
 data class Message1(val id: String, val text: String)
 
 /* GENERATED_FIR_TAGS: classDeclaration, data, funWithExtensionReceiver, functionDeclaration, interfaceDeclaration,

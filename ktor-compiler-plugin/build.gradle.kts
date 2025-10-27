@@ -41,6 +41,7 @@ dependencies {
     testFixturesApi(libs.kotlin.compilerTestFramework)
     testFixturesApi(libs.kotlin.compiler)
     testFixturesApi(libs.kotlinx.json)
+    testFixturesApi(libs.kotlinx.serialization.compiler.embedded)
 
     testSamples(libs.ktor.server.core)
     testSamples(libs.ktor.server.cio)
@@ -48,10 +49,13 @@ dependencies {
     testSamples(libs.ktor.server.auth)
     testSamples(libs.ktor.server.authJwt)
     testSamples(libs.ktor.server.resources)
+    testSamples(libs.ktor.server.routing.annotate)
+    testSamples(libs.ktor.server.test.host)
     testSamples(libs.ktor.client.core)
     testSamples(libs.ktor.client.apache)
-
     testSamples(libs.ktor.json)
+    testSamples(libs.ktor.openApiSchema)
+    testSamples(libs.kotlin.test)
 
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.kotlin.test)

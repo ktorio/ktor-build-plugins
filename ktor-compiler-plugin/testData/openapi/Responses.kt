@@ -18,11 +18,15 @@ import io.ktor.server.routing.*
 import io.ktor.utils.io.writeInt
 import kotlinx.io.files.FileSystem
 import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
 import java.io.File
 
 @OptIn(ExperimentalSerializationApi::class)
-fun Application.responses(fs: FileSystem) {
+fun Application.installResponses() {
+    val fs: FileSystem = SystemFileSystem
+
     install(ContentNegotiation) {
         jsonIo()
     }
@@ -55,6 +59,7 @@ fun Application.responses(fs: FileSystem) {
     }
 }
 
+@Serializable
 data class Dude(val id: Int, val name: String)
 
 /* GENERATED_FIR_TAGS: classDeclaration, classReference, data, funWithExtensionReceiver, functionDeclaration,

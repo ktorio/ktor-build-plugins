@@ -1,0 +1,32 @@
+package io.ktor.openapi.ir.generators
+
+import io.ktor.openapi.Logger
+import io.ktor.openapi.ir.IrAnnotateExpressionGenerator
+import io.ktor.openapi.ir.assignProperty
+import io.ktor.openapi.ir.callFunctionWithScope
+import io.ktor.openapi.ir.unaryPlus
+import io.ktor.openapi.routing.RouteField
+
+val ParametersGenerator = IrAnnotateExpressionGenerator<RouteField.Parameter> { fields ->
+    if (fields.isEmpty()) return@IrAnnotateExpressionGenerator
+
+    +callFunctionWithScope("parameters") {
+        for (field in fields) {
+            try {
+                +callFunctionWithScope(field.functionName, field.name.evaluate()) {
+                    assignProperty("description", field.description)
+                    when(field.typeReference) {
+                        null -> contentTextPlain()
+                        else -> assignSchemaProperty(field.typeReference, field.schemaAttributes)
+                    }
+                    generateExtensionProperties(field)
+                }
+            } catch (e: Throwable) {
+                contextOf<Logger>().log("Failed generating parameters for $field: ${e.message}")
+            }
+        }
+    }
+}
+
+private val RouteField.Parameter.functionName get() =
+    `in`?.name?.lowercase() ?: "parameter"

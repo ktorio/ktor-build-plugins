@@ -1,7 +1,7 @@
 {
     "openapi": "3.1.1",
     "info": {
-        "title": "Open API Document",
+        "title": "OpenAPI Document",
         "version": "1.0.0"
     },
     "paths": {
@@ -22,8 +22,12 @@
                 "responses": {
                     "200": {
                         "description": "",
-                        "X-Question": {
-                            "description": ""
+                        "headers": {
+                            "X-Question": {
+                                "content": {
+                                    "text/plain": {}
+                                }
+                            }
                         }
                     }
                 }
@@ -34,8 +38,12 @@
                 "responses": {
                     "200": {
                         "description": "",
-                        "Content-Disposition": {
-                            "description": ""
+                        "headers": {
+                            "Content-Disposition": {
+                                "content": {
+                                    "text/plain": {}
+                                }
+                            }
                         }
                     }
                 }
@@ -71,12 +79,29 @@
                     }
                 }
             }
+        },
+        "/openapi.json": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
         "schemas": {
             "Dude": {
                 "type": "object",
+                "title": "openapi.Dude",
+                "required": [
+                    "id",
+                    "name"
+                ],
                 "properties": {
                     "id": {
                         "type": "integer"

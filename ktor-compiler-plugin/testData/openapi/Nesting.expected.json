@@ -1,55 +1,15 @@
 {
     "openapi": "3.1.1",
     "info": {
-        "title": "Open API Document",
+        "title": "OpenAPI Document",
         "version": "1.0.0"
     },
     "paths": {
         "/api/users": {
-            "get": {
-                "summary": "Get a list of users.",
-                "parameters": [
-                    {
-                        "name": "q",
-                        "in": "query",
-                        "description": "Search query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "limit",
-                        "in": "query",
-                        "description": "Max items to return",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 100
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "A list of users.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/User0"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
+            "post": {
                 "tags": [
                     "admin"
-                ]
-            },
-            "post": {
+                ],
                 "summary": "Save a new user.",
                 "requestBody": {
                     "description": "the user to save.",
@@ -61,18 +21,82 @@
                         }
                     }
                 },
-                "tags": [
-                    "admin"
-                ],
                 "responses": {
                     "201": {
                         "description": ""
                     }
                 }
+            },
+            "get": {
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Get a list of users.",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Max items to return",
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of users.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User0"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/users/{id}": {
+            "delete": {
+                "tags": [
+                    "danger",
+                    "admin"
+                ],
+                "summary": "Delete a user.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": ""
+                    },
+                    "204": {
+                        "description": ""
+                    }
+                }
+            },
             "get": {
+                "tags": [
+                    "admin"
+                ],
                 "summary": "Get a single user",
                 "parameters": [
                     {
@@ -87,10 +111,10 @@
                 ],
                 "responses": {
                     "400": {
-                        "description": "Bad ID argument"
+                        "description": ""
                     },
                     "404": {
-                        "description": "The user was not found"
+                        "description": ""
                     },
                     "200": {
                         "description": "",
@@ -102,34 +126,17 @@
                             }
                         }
                     }
-                },
-                "tags": [
-                    "admin"
-                ]
-            },
-            "delete": {
-                "summary": "Delete a user.",
-                "tags": [
-                    "danger",
-                    "admin"
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The ID of the user",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
+                }
+            }
+        },
+        "/openapi.json": {
+            "get": {
                 "responses": {
-                    "400": {
-                        "description": "Bad ID argument"
-                    },
-                    "204": {
-                        "description": "The user was deleted"
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
+                        }
                     }
                 }
             }
@@ -139,6 +146,11 @@
         "schemas": {
             "User0": {
                 "type": "object",
+                "title": "openapi.User0",
+                "required": [
+                    "id",
+                    "name"
+                ],
                 "properties": {
                     "id": {
                         "type": "integer"
