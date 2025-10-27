@@ -13,10 +13,9 @@ sealed interface RouteNode: SourceCoordinates {
     val fir: FirFunctionCall
 
     fun resolve(stack: RouteStack): RouteFieldList =
-        resolvedFields ?: stack.fields().also { resolvedFields = it }
+        stack.fields()
 
     val fields: RouteStack.() -> RouteFieldList
-    var resolvedFields: RouteFieldList?
 
     val id: String get() = filePath.orEmpty() + startOffset.toString()
     val functionName: String get() = fir.getFunctionName()
@@ -35,8 +34,6 @@ sealed interface RouteNode: SourceCoordinates {
     ): RouteNode {
         val method: String? get() =
             functionName.takeIf { it in RoutingFunctionConstants.HTTP_METHODS }
-
-        override var resolvedFields: RouteFieldList? = null
 
         override fun toString(): String = buildString {
             append(fir.getFunctionName())
@@ -60,8 +57,6 @@ sealed interface RouteNode: SourceCoordinates {
         override val fir: FirFunctionCall,
         override val fields: RouteStack.() -> RouteFieldList,
     ) : RouteNode {
-        override var resolvedFields: RouteFieldList? = null
-
         override fun equals(other: Any?): Boolean =
             other is CallFeature && id == other.id
 
@@ -79,8 +74,6 @@ sealed interface RouteNode: SourceCoordinates {
         val declaration: SourceCoordinates,
         override val fields: RouteStack.() -> RouteFieldList,
     ): RouteNode {
-        override var resolvedFields: RouteFieldList? = null
-
         override fun contains(other: SourceCoordinates): Boolean =
             other in declaration && other != this
 
