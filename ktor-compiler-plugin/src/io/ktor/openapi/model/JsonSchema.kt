@@ -31,6 +31,10 @@ data class JsonSchema(
         val String = JsonSchema(type = JsonType.string)
         val Binary = JsonSchema(type = JsonType.string, format = "binary")
         val StringObject = JsonObject(mapOf("type" to JsonPrimitive("string")))
+        val ContextualClassId = ClassId(
+            FqName("kotlinx.serialization"),
+            Name.identifier("Contextual")
+        )
 
         context(context: RouteStack)
         fun ConeKotlinType.findSchemaDefinitions(): Sequence<Pair<String, JsonSchema>> {
@@ -87,17 +91,12 @@ data class JsonSchema(
 
         context(context: RouteStack)
         private fun schemaDefinitionForType(coneType: ConeClassLikeType): JsonSchema {
-            val contextualClassId = ClassId(
-                FqName("kotlinx.serialization"),
-                Name.identifier("Contextual")
-            )
-
             return JsonSchema(
                 type = JsonType.`object`,
                 properties = getAllPropertiesFromType(coneType)
                     .associate {
                         val propertyName = it.name.asString()
-                        val propertySchema = if (it.getAnnotationByClassId(contextualClassId, context.session) != null) {
+                        val propertySchema = if (it.getAnnotationByClassId(ContextualClassId, context.session) != null) {
                             // For @Contextual properties, generate schema based on the underlying type
                             // but don't recursively process it to avoid infinite recursion
                             it.resolvedReturnType.asContextualJsonSchema()
@@ -112,29 +111,53 @@ data class JsonSchema(
         context(context: RouteStack)
         private fun ConeKotlinType.asContextualJsonSchema(): JsonSchema {
             if (this !is ConeClassLikeType) {
-                return resolveType()?.asContextualJsonSchema() ?: JsonSchema(type = JsonType.string)
+
+                return resolveType()?.asContextualJsonSchema() ?: JsonSchema() // unknown "any"
             }
 
             val classId = lookupTag.classId
 
-            // Check if it's a known primitive type
+            // Known primitive-like types
             val jsonType = classId.toJsonType()
-            if (jsonType != null && jsonType != JsonType.`object`) {
-                return JsonSchema(type = jsonType)
+            when (jsonType) {
+                JsonType.array -> return JsonSchema(type = JsonType.array, items = JsonSchema())
+                JsonType.`object` -> {
+                    // Treat maps/objects as open object with arbitrary values
+                    if (classId == StandardClassIds.Map || classId == StandardClassIds.MutableMap) {
+                        return JsonSchema(type = JsonType.`object`, additionalProperties = JsonSchema())
+                    }
+                    // Fall through for custom objects
+                }
+
+                null -> { /* continue */ }
+
+                else -> return JsonSchema(type = jsonType)
             }
 
-            // For common contextual types, provide specific schemas
-            val className = classId.asFqNameString()
-            return when {
-                // Java Time API types - typically serialized as strings
-                className.startsWith("java.time.") -> JsonSchema(type = JsonType.string, format = "date-time")
+            // Contextual well-known types
+            val fqName = classId.asFqNameString()
+            return when (fqName) {
+                "kotlin.time.Instant",
+                "java.time.LocalDate" -> JsonSchema(type = JsonType.string, format = "date")
+                "java.time.LocalTime", "java.time.OffsetTime" -> JsonSchema(type = JsonType.string, format = "time")
+                "java.time.LocalDateTime",
+                "java.time.OffsetDateTime",
+                "java.time.ZonedDateTime",
+                "java.time.Instant" -> JsonSchema(type = JsonType.string, format = "date-time")
 
-                // UUID - typically serialized as string
-                className == "java.util.UUID" -> JsonSchema(type = JsonType.string, format = "uuid")
+                "kotlin.time.Duration",
+                "java.time.Duration" -> JsonSchema(type = JsonType.string, format = "duration")
 
-                // For unknown contextual types, use a flexible schema that accepts any type
-                // This is the safest option for runtime-defined serializers
-                else -> JsonSchema(type = JsonType.string)
+                "kotlinx.datetime.LocalDate" -> JsonSchema(type = JsonType.string, format = "date")
+                "kotlinx.datetime.LocalTime" -> JsonSchema(type = JsonType.string, format = "time")
+                "kotlinx.datetime.LocalDateTime",
+                "kotlinx.datetime.Instant" -> JsonSchema(type = JsonType.string, format = "date-time")
+
+                "kotlin.uuid.Uuid",
+                "java.util.UUID" -> JsonSchema(type = JsonType.string, format = "uuid")
+
+                // Unknown contextual: safest is "any"
+                else -> JsonSchema()
             }
         }
     }
