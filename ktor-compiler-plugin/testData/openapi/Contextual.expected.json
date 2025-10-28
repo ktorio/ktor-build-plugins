@@ -30,6 +30,21 @@
                     "dt": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "kUuid": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "duration": {
+                        "type": "string",
+                        "format": "duration"
+                    },
+                    "any": {
+                        "type": "any"
                     }
                 }
             }
