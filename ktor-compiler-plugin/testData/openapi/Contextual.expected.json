@@ -1,0 +1,38 @@
+{
+    "openapi": "3.1.1",
+    "info": {
+        "title": "Open API Document",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/contextual": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Resp"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Resp": {
+                "type": "object",
+                "properties": {
+                    "dt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            }
+        }
+    }
+}

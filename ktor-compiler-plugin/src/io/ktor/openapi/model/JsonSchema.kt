@@ -7,10 +7,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import org.jetbrains.kotlin.fir.declarations.getAnnotationByClassId
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.type
 import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 
@@ -84,13 +86,57 @@ data class JsonSchema(
             }
 
         context(context: RouteStack)
-        private fun schemaDefinitionForType(coneType: ConeClassLikeType): JsonSchema = JsonSchema(
-            type = JsonType.`object`,
-            properties = getAllPropertiesFromType(coneType)
-                .associate {
-                    it.name.asString() to it.resolvedReturnType.asJsonSchema()
-                }
-        )
+        private fun schemaDefinitionForType(coneType: ConeClassLikeType): JsonSchema {
+            val contextualClassId = ClassId(
+                FqName("kotlinx.serialization"),
+                Name.identifier("Contextual")
+            )
+
+            return JsonSchema(
+                type = JsonType.`object`,
+                properties = getAllPropertiesFromType(coneType)
+                    .associate {
+                        val propertyName = it.name.asString()
+                        val propertySchema = if (it.getAnnotationByClassId(contextualClassId, context.session) != null) {
+                            // For @Contextual properties, generate schema based on the underlying type
+                            // but don't recursively process it to avoid infinite recursion
+                            it.resolvedReturnType.asContextualJsonSchema()
+                        } else {
+                            it.resolvedReturnType.asJsonSchema()
+                        }
+                        propertyName to propertySchema
+                    }
+            )
+        }
+
+        context(context: RouteStack)
+        private fun ConeKotlinType.asContextualJsonSchema(): JsonSchema {
+            if (this !is ConeClassLikeType) {
+                return resolveType()?.asContextualJsonSchema() ?: JsonSchema(type = JsonType.string)
+            }
+
+            val classId = lookupTag.classId
+
+            // Check if it's a known primitive type
+            val jsonType = classId.toJsonType()
+            if (jsonType != null && jsonType != JsonType.`object`) {
+                return JsonSchema(type = jsonType)
+            }
+
+            // For common contextual types, provide specific schemas
+            val className = classId.asFqNameString()
+            return when {
+                // Java Time API types - typically serialized as strings
+                className.startsWith("java.time.") -> JsonSchema(type = JsonType.string, format = "date-time")
+
+                // UUID - typically serialized as string
+                className == "java.util.UUID" -> JsonSchema(type = JsonType.string, format = "uuid")
+
+                // For unknown contextual types, use a flexible schema that accepts any type
+                // This is the safest option for runtime-defined serializers
+                else -> JsonSchema(type = JsonType.string)
+            }
+        }
     }
 }
 
