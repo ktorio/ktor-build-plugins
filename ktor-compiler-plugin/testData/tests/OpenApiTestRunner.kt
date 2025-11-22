@@ -52,7 +52,7 @@ fun box(): String {
                     route = root,
                 )
                 call.respondText(json.encodeToString(routes.copy(
-                    paths = routes.paths - "/routes"
+                    paths = routes.paths - "/openapi.json"
                 )))
             }
         }

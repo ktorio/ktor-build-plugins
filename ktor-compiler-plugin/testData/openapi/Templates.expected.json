@@ -37,21 +37,12 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "number"
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "number"
+                                    }
                                 }
                             }
-                        }
-                    }
-                }
-            }
-        },
-        "/openapi.json": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "text/plain": {}
                         }
                     }
                 }

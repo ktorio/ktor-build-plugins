@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.visitors.IrVisitor
 
 class CallHandlerAnalyzer(
-    val callInterpreter: IrCallHandlerInterpreter,
+    val callInterpreter: IrCallHandlerInference,
     val context: CodeGenContext,
 ): IrVisitor<Unit, MutableList<RouteField>>(), CodeGenContext by context {
     fun analyze(element: IrElement): List<RouteField> =
@@ -17,7 +17,7 @@ class CallHandlerAnalyzer(
 
     override fun visitCall(expression: IrCall, data: MutableList<RouteField>) {
         try {
-            callInterpreter.interpret(expression)?.let {
+            callInterpreter.findRouteDetails(expression)?.let {
                 data.addAll(it)
             }
         } catch (e: Throwable) {

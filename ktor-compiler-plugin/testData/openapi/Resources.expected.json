@@ -14,7 +14,10 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "required": true
+                        "required": true,
+                        "content": {
+                            "text/plain": {}
+                        }
                     }
                 ]
             }
@@ -25,7 +28,10 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "required": true
+                        "required": true,
+                        "content": {
+                            "text/plain": {}
+                        }
                     }
                 ]
             }
@@ -38,16 +44,25 @@
                 "parameters": [
                     {
                         "name": "offset",
-                        "in": "query"
+                        "in": "query",
+                        "content": {
+                            "text/plain": {}
+                        }
                     },
                     {
                         "name": "limit",
-                        "in": "query"
+                        "in": "query",
+                        "content": {
+                            "text/plain": {}
+                        }
                     },
                     {
                         "name": "query",
                         "in": "query",
-                        "required": true
+                        "required": true,
+                        "content": {
+                            "text/plain": {}
+                        }
                     }
                 ]
             }
@@ -61,7 +76,10 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "required": true
+                        "required": true,
+                        "content": {
+                            "text/plain": {}
+                        }
                     }
                 ]
             }
@@ -72,21 +90,12 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "required": true
-                    }
-                ]
-            }
-        },
-        "/openapi.json": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "",
+                        "required": true,
                         "content": {
                             "text/plain": {}
                         }
                     }
-                }
+                ]
             }
         }
     }

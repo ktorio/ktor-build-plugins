@@ -13,13 +13,13 @@ import org.jetbrains.kotlin.ir.util.packageFqName
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.name.FqName
 
-val ResourceRouteCallInterpreter = IrCallHandlerInterpreter { call: IrCall ->
-    if (!isResourceRouteFunction(call)) return@IrCallHandlerInterpreter null
+val ResourceRouteCallInference = IrCallHandlerInference { call: IrCall ->
+    if (!isResourceRouteFunction(call)) return@IrCallHandlerInference null
 
     // Extract the resource type from the type parameters
-    val resourceType = call.typeArguments.getOrNull(0) ?: return@IrCallHandlerInterpreter null
-    val resourceClass = resourceType.classOrNull?.owner ?: return@IrCallHandlerInterpreter null
-    val fullPath = getFullResourcePath(resourceClass) ?: return@IrCallHandlerInterpreter null
+    val resourceType = call.typeArguments.getOrNull(0) ?: return@IrCallHandlerInference null
+    val resourceClass = resourceType.classOrNull?.owner ?: return@IrCallHandlerInference null
+    val fullPath = getFullResourcePath(resourceClass) ?: return@IrCallHandlerInference null
 
     buildList {
         // Extract path parameter placeholders from the full path

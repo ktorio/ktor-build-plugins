@@ -1,7 +1,6 @@
 package io.ktor.openapi.ir
 
 import io.ktor.openapi.routing.RouteField
-import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.expressions.IrCall
 
 /**
@@ -9,14 +8,14 @@ import org.jetbrains.kotlin.ir.expressions.IrCall
  * are processed for potential OpenAPI information that can be applied to the annotation
  * chained call.
  */
-fun interface IrCallHandlerInterpreter {
+fun interface IrCallHandlerInference {
     companion object {
-        fun of(vararg interpreters: IrCallHandlerInterpreter) =
-            IrCallHandlerInterpreter { call ->
-                interpreters.firstNotNullOfOrNull { it.interpret(call) }
+        fun of(vararg inferences: IrCallHandlerInference) =
+            IrCallHandlerInference { call ->
+                inferences.firstNotNullOfOrNull { it.findRouteDetails(call) }
             }
     }
 
     context(context: CodeGenContext)
-    fun interpret(call: IrCall): List<RouteField>?
+    fun findRouteDetails(call: IrCall): List<RouteField>?
 }

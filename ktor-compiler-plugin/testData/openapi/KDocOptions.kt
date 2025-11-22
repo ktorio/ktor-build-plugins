@@ -30,6 +30,7 @@ fun Application.installKDocOptions() {
          *   pattern: [a-z0-9_&+]+
          *   nullable: true
          * @query count [Int]
+         *   minimum: 1
          *   maximum: 100
          * @body [io.ktor.openapi.OpenApiInfo]+
          *   maxItems: 10
@@ -46,8 +47,11 @@ fun Application.installKDocOptions() {
          *
          * @header X-Rate-Limit-Limit [Int] The number of allowed requests in the current period
          * @cookie token A token
-         * @path id The user ID
-         * @query q A search query
+         *   x-sensitive: true
+         * @path   id      The user ID
+         * @query  q       A search query
+         * @header X-Type  The type of a thing
+         *   enum: [String, Int]
          */
         get("/parameters/{id}") {
             call.respond(HttpStatusCode.NoContent)

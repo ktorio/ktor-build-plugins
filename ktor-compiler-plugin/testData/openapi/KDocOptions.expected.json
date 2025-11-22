@@ -7,12 +7,19 @@
     "paths": {
         "/type-references": {
             "get": {
+                "tags": [
+                    "references"
+                ],
                 "summary": "This endpoint is for testing type references.",
                 "responses": {
                     "429": {
-                        "description": "Who you gonna call?",
+                        "description": "Is it tea time already?",
                         "content": {
-                            "application/json": {}
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
                     "200": {
@@ -20,7 +27,13 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -30,6 +43,9 @@
         },
         "/attributes": {
             "get": {
+                "tags": [
+                    "attributes"
+                ],
                 "summary": "Let's use some attributes.",
                 "parameters": [
                     {
@@ -48,14 +64,37 @@
                         "description": "",
                         "schema": {
                             "type": "integer",
-                            "maximum": 100.0
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        }
+                    },
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    },
+                    {
+                        "name": "count",
+                        "in": "query",
+                        "content": {
+                            "text/plain": {}
                         }
                     }
                 ],
                 "requestBody": {
                     "description": "",
                     "content": {
-                        "application/json": {}
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/OpenApiInfo"
+                                },
+                                "maxItems": 10
+                            }
+                        }
                     }
                 },
                 "responses": {
@@ -64,7 +103,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/License"
+                                    "$ref": "#/components/schemas/OpenApiInfo"
                                 }
                             }
                         }
@@ -72,14 +111,56 @@
                 }
             }
         },
-        "/openapi.json": {
+        "/parameters/{id}": {
             "get": {
-                "responses": {
-                    "200": {
-                        "description": "",
+                "summary": "Let's try some parameters.",
+                "parameters": [
+                    {
+                        "name": "X-Rate-Limit-Limit",
+                        "in": "header",
+                        "description": "The number of allowed requests in the current period",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "token",
+                        "in": "cookie",
+                        "description": "A token",
+                        "content": {
+                            "text/plain": {}
+                        },
+                        "x-sensitive": "true"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The user ID",
+                        "required": true,
                         "content": {
                             "text/plain": {}
                         }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "A search query",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    },
+                    {
+                        "name": "X-Type",
+                        "in": "header",
+                        "description": "The type of a thing",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
                     }
                 }
             }
@@ -87,21 +168,70 @@
     },
     "components": {
         "schemas": {
-            "License": {
+            "OpenApiInfo": {
                 "type": "object",
-                "title": "io.ktor.openapi.OpenApiInfo.License",
+                "title": "io.ktor.openapi.OpenApiInfo",
                 "required": [
-                    "name"
+                    "title",
+                    "version"
                 ],
                 "properties": {
-                    "name": {
+                    "title": {
                         "type": "string"
                     },
-                    "url": {
+                    "version": {
                         "type": "string"
                     },
-                    "identifier": {
+                    "description": {
                         "type": "string"
+                    },
+                    "termsOfService": {
+                        "type": "string"
+                    },
+                    "contact": {
+                        "type": "object",
+                        "title": "io.ktor.openapi.OpenApiInfo.Contact?",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "extensions": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "license": {
+                        "type": "object",
+                        "title": "io.ktor.openapi.OpenApiInfo.License?",
+                        "required": [
+                            "name"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "identifier": {
+                                "type": "string"
+                            },
+                            "extensions": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "extensions": {
                         "type": "object",
