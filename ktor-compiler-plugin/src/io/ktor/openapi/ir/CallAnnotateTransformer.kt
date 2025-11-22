@@ -38,14 +38,14 @@ class CallAnnotateTransformer(
 
     private val callHandlerAnalyzer: CallHandlerAnalyzer =
         CallHandlerAnalyzer(
-            IrCallHandlerInterpreter.of(
-                CallRespondInterpreter,
-                CallReceiveInterpreter,
-                ParameterInterpreter,
-                RequestHeaderExtensionInterpreter,
-                AppendResponseHeaderInterpreter,
-                ResponseHeaderExtensionInterpreter,
-                ResourceRouteCallInterpreter,
+            IrCallHandlerInference.of(
+                CallRespondInference,
+                CallReceiveInference,
+                ParameterInference,
+                RequestHeaderInference,
+                AppendResponseHeaderInference,
+                ResponseHeaderExtensionInference,
+                ResourceRouteCallInference,
             ),
             this,
         )
@@ -65,6 +65,8 @@ class CallAnnotateTransformer(
     private var currentFile: IrFile? = null
     // required for building new declarations from function scopes
     private var functionStack = mutableListOf<IrFunction>()
+
+    override val irFile: IrFile? get() = currentFile
 
     override fun visitFile(declaration: IrFile): IrFile {
         try {

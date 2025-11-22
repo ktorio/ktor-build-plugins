@@ -56,7 +56,7 @@ fun contentTextPlain() {
         context.parentDeclaration.symbol,
         contentTypeText,
         contentTypePlaintext
-    ).evaluateToContentType()?.let { contentType ->
+    )?.evaluateToContentType()?.let { contentType ->
         +callFunctionWithScope("invoke", contentType) {}
     }
 }

@@ -7,15 +7,15 @@ import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.types.classFqName
 import org.jetbrains.kotlin.ir.types.isString
 
-val ParameterInterpreter = IrCallHandlerInterpreter { call: IrCall ->
-    if (!call.symbol.owner.name.asString().startsWith("get")) return@IrCallHandlerInterpreter null
-    val receiver = call.functionReceiver ?: return@IrCallHandlerInterpreter null
-    if (receiver.type.classFqName?.asString() != "io.ktor.util.StringValues") return@IrCallHandlerInterpreter null
+val ParameterInference = IrCallHandlerInference { call: IrCall ->
+    if (!call.symbol.owner.name.asString().startsWith("get")) return@IrCallHandlerInference null
+    val receiver = call.functionReceiver ?: return@IrCallHandlerInference null
+    if (receiver.type.classFqName?.asString() != "io.ktor.util.StringValues") return@IrCallHandlerInference null
     val getParameter = call.symbol.owner.parameters.firstOrNull {
         it.kind == IrParameterKind.Regular && it.type.isString()
-    } ?: return@IrCallHandlerInterpreter null
+    } ?: return@IrCallHandlerInference null
     val key = call.arguments[getParameter.indexInParameters]
-        ?: return@IrCallHandlerInterpreter null
+        ?: return@IrCallHandlerInference null
 
     val receiverName = call.arguments.filterIsInstance<IrCall>()
         .firstOrNull()?.symbol?.owner?.name?.asString()

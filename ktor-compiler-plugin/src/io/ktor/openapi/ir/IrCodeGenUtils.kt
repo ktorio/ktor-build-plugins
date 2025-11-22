@@ -11,6 +11,10 @@ import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.expressions.impl.IrCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrFunctionExpressionImpl
 import org.jetbrains.kotlin.ir.expressions.impl.fromSymbolOwner
+import org.jetbrains.kotlin.ir.interpreter.IrInterpreter
+import org.jetbrains.kotlin.ir.interpreter.IrInterpreterEnvironment
+import org.jetbrains.kotlin.ir.interpreter.checker.EvaluationMode
+import org.jetbrains.kotlin.ir.interpreter.transformer.transformConst
 import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
@@ -194,6 +198,15 @@ fun callFunctionWithScope(
             bodyGen = body
         )
     }
+}
+
+context(context: CodeGenContext)
+fun IrExpression.evaluateToConst(): IrConst? {
+    val interpreter = IrInterpreter(IrInterpreterEnvironment(context.irBuiltIns))
+    val mode = EvaluationMode.Full
+    val result = interpreter.interpret(this, context.irFile)
+
+    return result as? IrConst
 }
 
 context(context: CodeGenContext)

@@ -22,7 +22,6 @@ internal val contentTypeClass = ClassId(
     packageFqName = FqName("io.ktor.http"),
     topLevelName = Name.identifier("ContentType"),
 )
-
 internal val contentTypeText = ClassId(
     packageFqName = FqName("io.ktor.http"),
     relativeClassName = FqName("ContentType.Text"),
@@ -63,7 +62,7 @@ internal fun LocalReference.evaluateToContentType(): IrExpression? =
     when(this) {
         // Call something like ContentType("text", "plain")
         is LocalReference.StringValue -> {
-            val (category, subType) = stringValue.split('/', limit = 2)
+            val (category, subType) = key.split('/', limit = 2)
             val declaration = DeclarationIrBuilder(context, context.parentDeclaration.symbol)
             val constructor = context.referenceConstructors(contentTypeClass).minByOrNull {
                 it.owner.parameters.size
@@ -74,7 +73,7 @@ internal fun LocalReference.evaluateToContentType(): IrExpression? =
                 arguments[1] = declaration.irString(subType)
             }
         }
-        is LocalReference.Expression -> evaluate()
+        is LocalReference.Expression -> asExpression()
         else -> null
     }
 
@@ -83,26 +82,22 @@ internal fun buildContentTypeReference(
     parentSymbol: IrSymbol,
     classId: ClassId,
     callableId: CallableId,
-): LocalReference.Expression {
+): LocalReference {
     val property: IrSimpleFunctionSymbol = context.referenceProperties(callableId)
-        .first()
-        .owner
-        .getter!!
-        .symbol
+        .first().owner.getter!!.symbol
     val objectClass: IrClassSymbol = context.referenceClass(classId)!!
     val builder = DeclarationIrBuilder(context, parentSymbol)
-    return LocalReference.of(
-        builder.irCall(property).apply {
-            dispatchReceiver = builder.irGetObject(objectClass)
-        })
+    return LocalReference.of(builder.irCall(property).apply {
+        dispatchReceiver = builder.irGetObject(objectClass)
+    })
 }
 
 fun getContentTypeArgument(call: IrCall): LocalReference? {
     for (i in 0 until call.arguments.size) {
         val arg = call.arguments[i] ?: continue
-        val argClass = arg.type.classOrNull?.owner?.name?.asString()
-        if (argClass == "ContentType") {
-            return LocalReference.Expression(arg)
+        val argClass = arg.type.classOrNull?.owner
+        if (argClass?.name?.asString() == "ContentType") {
+            return LocalReference.of(arg)
         }
     }
     return null

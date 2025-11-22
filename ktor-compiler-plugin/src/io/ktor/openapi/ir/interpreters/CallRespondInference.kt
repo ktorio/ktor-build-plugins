@@ -1,11 +1,10 @@
 package io.ktor.openapi.ir.interpreters
 
 import io.ktor.openapi.ir.CodeGenContext
-import io.ktor.openapi.ir.IrCallHandlerInterpreter
+import io.ktor.openapi.ir.IrCallHandlerInference
 import io.ktor.openapi.ir.isApplicationCall
 import io.ktor.openapi.routing.*
 import io.ktor.openapi.routing.TypeReference.Companion.asReference
-import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
@@ -13,16 +12,16 @@ import org.jetbrains.kotlin.ir.util.kotlinFqName
 
 private const val HTTP_STATUS_CODE = "HttpStatusCode"
 
-val CallRespondInterpreter = IrCallHandlerInterpreter { call: IrCall ->
-    if (!call.isApplicationCall()) return@IrCallHandlerInterpreter null
+val CallRespondInference = IrCallHandlerInference { call: IrCall ->
+    if (!call.isApplicationCall()) return@IrCallHandlerInference null
 
     val functionName = call.symbol.owner.name.asString()
 
     // Check if this is a respond* function on call receiver in io.ktor.server.response package
-    if (!functionName.startsWith("respond")) return@IrCallHandlerInterpreter null
+    if (!functionName.startsWith("respond")) return@IrCallHandlerInference null
 
     val packageFqName = call.symbol.owner.parent.kotlinFqName.asString()
-    if (packageFqName != "io.ktor.server.response") return@IrCallHandlerInterpreter null
+    if (packageFqName != "io.ktor.server.response") return@IrCallHandlerInference null
 
     // Extract response information
     val responseBodyType = findResponseBodyArgument(call)?.asReference()
@@ -45,9 +44,11 @@ private fun findResponseBodyArgument(call: IrCall): IrType? {
 }
 
 private fun getStatusArgument(call: IrCall): LocalReference? {
-    return call.arguments.firstOrNull {
+    val statusArgument = call.arguments.firstOrNull {
         it?.type?.classOrNull?.owner?.name?.asString() == HTTP_STATUS_CODE
-    }?.let(LocalReference::of)
+    } ?: return null
+
+    return LocalReference.of(statusArgument)
 }
 
 private fun getStatusFromFunction(functionName: String): LocalReference =

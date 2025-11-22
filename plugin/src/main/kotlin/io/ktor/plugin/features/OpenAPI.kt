@@ -1,7 +1,6 @@
 package io.ktor.plugin.features
 
 import io.ktor.plugin.*
-import io.ktor.plugin.internal.whenKotlinPluginApplied
 import org.gradle.api.Project
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
@@ -9,13 +8,31 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 
 internal fun Project.configureOpenApi() {
-    createKtorExtension<OpenApiExtension>("openApi")
-    try {
-        whenKotlinPluginApplied {
-            pluginManager.apply(CompilerPlugin::class.java)
+    val ext = createKtorExtension<OpenApiExtension>("openApi")
+    afterEvaluate {
+        try {
+            val enabled = ext.enabled.get()
+            if (enabled) {
+                if (!hasRoutingAnnotateDependency()) {
+                    logger.warn("OpenAPI inference needs ktor-server-routing-annotate dependency")
+                    return@afterEvaluate
+                }
+                // Apply compiler plugin
+                pluginManager.apply(CompilerPlugin::class.java)
+            } else {
+                logger.debug("OpenAPI inference is disabled")
+            }
+        } catch (_: Throwable) {
+            logger.warn("Could not apply compiler plugin. OpenAPI inference will not be available.")
         }
-    } catch (_: Throwable) {
-        logger.warn("Could not apply compiler plugin. OpenAPI generation might not work.")
+    }
+}
+
+private fun Project.hasRoutingAnnotateDependency(): Boolean {
+    return configurations.any { configuration ->
+        configuration.allDependencies.any {
+            it.name == "ktor-server-routing-annotate"
+        }
     }
 }
 
@@ -37,9 +54,9 @@ public abstract class OpenApiExtension(
 
     /**
      * Whether to generate an OpenAPI specification or not.
-     * Defaults to `true`.
+     * Defaults to `false`.
      */
-    public val enabled: Property<Boolean> = objects.property(defaultValue = true)
+    public val enabled: Property<Boolean> = objects.property(defaultValue = false)
 
     /**
      * The title of the API.

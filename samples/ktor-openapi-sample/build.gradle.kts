@@ -4,16 +4,16 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
 }
 
-application.mainClass = "io.ktor.samples.openapi.ApplicationKt"
-
 ktor {
     openApi {
-        enabled = true
         title = "OpenAPI example"
         version = "2.1"
         summary = "This is a sample API"
+        enabled = true
     }
 }
+
+application.mainClass = "io.ktor.samples.openapi.ApplicationKt"
 
 dependencies {
     implementation(libs.ktor.server.core)

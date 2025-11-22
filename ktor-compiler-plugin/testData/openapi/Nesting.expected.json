@@ -58,7 +58,10 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/User0"
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/User0"
+                                    }
                                 }
                             }
                         }
@@ -81,15 +84,18 @@
                         "required": true,
                         "schema": {
                             "type": "integer"
+                        },
+                        "content": {
+                            "text/plain": {}
                         }
                     }
                 ],
                 "responses": {
                     "400": {
-                        "description": ""
+                        "description": "Bad ID argument"
                     },
                     "204": {
-                        "description": ""
+                        "description": "The user was deleted"
                     }
                 }
             },
@@ -106,15 +112,18 @@
                         "required": true,
                         "schema": {
                             "type": "integer"
+                        },
+                        "content": {
+                            "text/plain": {}
                         }
                     }
                 ],
                 "responses": {
                     "400": {
-                        "description": ""
+                        "description": "Bad ID argument"
                     },
                     "404": {
-                        "description": ""
+                        "description": "The user was not found"
                     },
                     "200": {
                         "description": "",
@@ -124,18 +133,6 @@
                                     "$ref": "#/components/schemas/User0"
                                 }
                             }
-                        }
-                    }
-                }
-            }
-        },
-        "/openapi.json": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "text/plain": {}
                         }
                     }
                 }

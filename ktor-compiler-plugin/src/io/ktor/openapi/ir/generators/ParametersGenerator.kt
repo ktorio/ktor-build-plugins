@@ -13,7 +13,7 @@ val ParametersGenerator = IrAnnotateExpressionGenerator<RouteField.Parameter> { 
     +callFunctionWithScope("parameters") {
         for (field in fields) {
             try {
-                +callFunctionWithScope(field.functionName, field.name.evaluate()) {
+                +callFunctionWithScope(field.functionName, field.name.asExpression()) {
                     assignProperty("description", field.description)
                     when(field.typeReference) {
                         null -> contentTextPlain()

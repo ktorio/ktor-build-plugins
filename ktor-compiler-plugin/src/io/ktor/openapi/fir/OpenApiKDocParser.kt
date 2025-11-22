@@ -125,7 +125,7 @@ fun parseParameter(logger: Logger, packageName: FqName, text: CharSequence): Rou
             return Summary(text.toString().trim())
         val bodyAndAttributes = text.split(Regex("\n(?=\\s*\\$?\\p{Alpha}+)"), limit = 2)
         var i = 0
-        val words = bodyAndAttributes.first().trim().removePrefix("@").split(" ")
+        val words = bodyAndAttributes.first().trim().removePrefix("@").split(Regex("\\s+"))
         val next = { words[i++] }
         val nextReference = { LocalReference.StringValue(next()) }
         val tryMatchNext: Regex.() -> MatchResult? = {

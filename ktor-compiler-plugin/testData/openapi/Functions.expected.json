@@ -78,7 +78,7 @@
                 ],
                 "responses": {
                     "404": {
-                        "description": ""
+                        "description": "The user was not found"
                     },
                     "200": {
                         "description": "",
@@ -166,7 +166,7 @@
                 ],
                 "responses": {
                     "404": {
-                        "description": ""
+                        "description": "The message was not found"
                     },
                     "200": {
                         "description": "",
@@ -176,18 +176,6 @@
                                     "$ref": "#/components/schemas/Message1"
                                 }
                             }
-                        }
-                    }
-                }
-            }
-        },
-        "/openapi.json": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "text/plain": {}
                         }
                     }
                 }
