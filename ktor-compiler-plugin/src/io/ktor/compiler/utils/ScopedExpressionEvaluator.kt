@@ -179,13 +179,13 @@ class FirScopedEvaluator(val session: FirSession) {
     fun resolveTypeProjection(projection: ConeTypeProjection): ConeKotlinType? {
         // If it's already a type, make sure any type parameters in it are resolved
         if (projection is ConeKotlinType) {
-            return resolveType(projection)
+            return resolveType(projection, mutableSetOf())
         }
 
         // Handle different kinds of projections
         return when (projection) {
             is ConeKotlinTypeProjection -> {
-                val resolvedType = resolveType(projection.type)
+                val resolvedType = resolveType(projection.type, mutableSetOf())
 
                 // Apply projection kind if needed
                 when (projection.kind) {
@@ -202,7 +202,11 @@ class FirScopedEvaluator(val session: FirSession) {
     /**
      * Resolves type parameters within a type using the current type scope
      */
-    fun resolveType(type: ConeKotlinType): ConeKotlinType? {
+    private fun resolveType(type: ConeKotlinType, seen: MutableSet<String>): ConeKotlinType? {
+        if (!seen.add(type.renderReadableWithFqNames())){
+            return null
+        }
+
         // Handle different kinds of types
         return when (type) {
             // Handle type parameters by substituting with their resolved types
@@ -216,7 +220,7 @@ class FirScopedEvaluator(val session: FirSession) {
                 val resolvedTypeArgs = type.typeArguments.map { arg ->
                     when (arg) {
                         is ConeKotlinTypeProjection -> {
-                            val resolvedArgType = resolveType(arg.type)
+                            val resolvedArgType = resolveType(arg.type, seen)
                             resolvedArgType?.let {
                                 when (arg.kind) {
                                     ProjectionKind.INVARIANT -> it
@@ -236,8 +240,8 @@ class FirScopedEvaluator(val session: FirSession) {
 
             // For flexible types, resolve both bounds
             is ConeFlexibleType -> {
-                val resolvedLower = resolveType(type.lowerBound) as? ConeRigidType
-                val resolvedUpper = resolveType(type.upperBound) as? ConeRigidType
+                val resolvedLower = resolveType(type.lowerBound, seen) as? ConeRigidType
+                val resolvedUpper = resolveType(type.upperBound, seen) as? ConeRigidType
 
                 if (resolvedLower != null && resolvedUpper != null) {
                     ConeFlexibleType(resolvedLower, resolvedUpper, isTrivial = type.isTrivial)
@@ -249,7 +253,7 @@ class FirScopedEvaluator(val session: FirSession) {
             // Handle intersection types
             is ConeIntersectionType -> {
                 val resolvedTypes = type.intersectedTypes.mapNotNull {
-                    resolveType(it)
+                    resolveType(it, seen)
                 }
                 if (resolvedTypes.isNotEmpty()) {
                     ConeIntersectionType(resolvedTypes)
@@ -258,7 +262,7 @@ class FirScopedEvaluator(val session: FirSession) {
                 }
             }
 
-            is ConeDefinitelyNotNullType -> resolveType(type.original)
+            is ConeDefinitelyNotNullType -> resolveType(type.original, seen)
 
             // Other types can be returned as is
             else -> type
