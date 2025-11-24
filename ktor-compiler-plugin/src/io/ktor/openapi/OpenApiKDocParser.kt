@@ -147,6 +147,7 @@ fun parseParameter(text: CharSequence): RouteField? {
         "response" -> Response(next(), contentTypeArg.tryMatchNext()?.groupValues[1], schemaArg.tryMatchNext()?.getSchemaReference(), remaining(), attributes())
         "security" -> Security(remaining())
         "tag" -> Tag(next())
+        "operationId" -> OperationId(next())
         else -> null // ignore unknown tags
     }
 }
