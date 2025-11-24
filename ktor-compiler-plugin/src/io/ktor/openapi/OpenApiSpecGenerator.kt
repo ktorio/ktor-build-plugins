@@ -112,9 +112,8 @@ object OpenApiSpecGenerator {
                         else -> append("security", JsonObject(mapOf(param.scheme to JsonArray(emptyList()))))
                     }
                 }
-                is Tag -> {
-                    append("tags", param.name)
-                }
+                is Tag -> append("tags", param.name)
+                is OperationId -> put("operationId", param.value)
                 is Transient -> {}
             }
         }
