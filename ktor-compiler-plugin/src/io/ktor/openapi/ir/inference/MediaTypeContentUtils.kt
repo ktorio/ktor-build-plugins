@@ -1,4 +1,4 @@
-package io.ktor.openapi.ir.interpreters
+package io.ktor.openapi.ir.inference
 
 import io.ktor.openapi.ir.CodeGenContext
 import io.ktor.openapi.ir.LambdaBuilderContext

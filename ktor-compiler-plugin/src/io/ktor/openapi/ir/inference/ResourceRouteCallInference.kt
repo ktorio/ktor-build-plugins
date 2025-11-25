@@ -1,5 +1,5 @@
 
-package io.ktor.openapi.ir.interpreters
+package io.ktor.openapi.ir.inference
 
 import io.ktor.openapi.ir.*
 import io.ktor.openapi.routing.*
@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrConst
 import org.jetbrains.kotlin.ir.types.*
 import org.jetbrains.kotlin.ir.util.getAnnotation
+import org.jetbrains.kotlin.ir.util.kotlinFqName
 import org.jetbrains.kotlin.ir.util.packageFqName
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.name.FqName
@@ -49,13 +50,9 @@ val ResourceRouteCallInference = IrCallHandlerInference { call: IrCall ->
 }
 
 private fun isResourceRouteFunction(call: IrCall): Boolean {
-    val functionName = call.symbol.owner.name.asString()
-    val packageName = call.symbol.owner.parent.let { parent ->
-        when (parent) {
-            is IrClass -> parent.packageFqName?.asString()
-            else -> null
-        }
-    } ?: return false
+    val fqName = call.symbol.owner.kotlinFqName
+    val functionName = fqName.shortName().asString()
+    val packageName = fqName.parent().asString()
 
     return packageName == "io.ktor.server.resources" &&
             functionName in HTTP_METHODS &&
@@ -90,8 +87,10 @@ private fun getFullResourcePath(resourceClass: IrClass): String? {
     }
 
     // Combine paths, handling leading/trailing slashes correctly
-    return if (paths.isEmpty()) null else {
-        paths.joinToString("") { segment ->
+    return when(paths.size) {
+        0 -> null
+        1 -> paths.first()
+        else -> paths.joinToString("") { segment ->
             if (segment.isEmpty() || segment == "/") "" else {
                 if (segment.startsWith("/")) segment else "/$segment"
             }

@@ -1,4 +1,4 @@
-package io.ktor.openapi.ir.interpreters
+package io.ktor.openapi.ir.inference
 
 import io.ktor.openapi.ir.*
 import io.ktor.openapi.routing.*
@@ -14,18 +14,23 @@ val ParameterInference = IrCallHandlerInference { call: IrCall ->
     val getParameter = call.symbol.owner.parameters.firstOrNull {
         it.kind == IrParameterKind.Regular && it.type.isString()
     } ?: return@IrCallHandlerInference null
+
     val key = call.arguments[getParameter.indexInParameters]
         ?: return@IrCallHandlerInference null
 
-    val receiverName = call.arguments.filterIsInstance<IrCall>()
-        .firstOrNull()?.symbol?.owner?.name?.asString()
-    when(receiverName) {
+    val receiverArgCall = call.arguments[receiver.indexInParameters] as? IrCall
+
+    // we can sometimes infer what kind of parameter it is from the receiver
+    // this is not the case for the usual `call.parameters` reference,
+    // or when we're not using a property getter
+    when(receiverArgCall?.symbol?.owner?.name?.asString()) {
         "<get-headers>" -> listOf(RouteField.Parameter(ParamIn.HEADER, LocalReference.Expression(key)))
         "<get-pathVariables>",
         "<get-pathParameters>" -> listOf(RouteField.Parameter(ParamIn.PATH, LocalReference.Expression(key)))
         "<get-queryParameters>" -> listOf(RouteField.Parameter(ParamIn.QUERY, LocalReference.Expression(key)))
 
         // ambiguous scenario, we avoid defining `in` for now
+        // this can usually be inferred later at runtime
         else -> listOf(RouteField.Parameter(name = LocalReference.Expression(key)))
     }
 }

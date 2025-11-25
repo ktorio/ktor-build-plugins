@@ -1,6 +1,5 @@
 package io.ktor.plugin.features
 
-import io.ktor.plugin.KtorGradlePlugin.Companion.COMPILER_PLUGIN_ID
 import io.ktor.plugin.KtorGradlePlugin.Companion.VERSION
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
@@ -21,11 +20,6 @@ public class CompilerPlugin @Inject constructor(
         val project = kotlinCompilation.target.project
         val ktorExtension = project.extensions.getByType(KtorExtension::class.java)
         val extension = ktorExtension.getExtension<OpenApiExtension>()
-
-        kotlinCompilation.dependencies {
-            compileOnly("$COMPILER_PLUGIN_ID:$VERSION")
-            // annotate / openapi dependency
-        }
 
         return project.provider {
             buildList {
@@ -48,8 +42,17 @@ public class CompilerPlugin @Inject constructor(
             version = VERSION
         )
 
-    override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean =
-        kotlinCompilation.target.project.plugins.hasPlugin(CompilerPlugin::class.java)
+    override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean {
+        try {
+            val ktorExtension = kotlinCompilation.target.project.extensions.findByType(KtorExtension::class.java)
+                ?: return false
+            val openApiExtension = ktorExtension.getExtension<OpenApiExtension>()
+            return openApiExtension.enabled.getOrElse(false)
+        } catch (e: Exception) {
+            kotlinCompilation.target.project.logger.warn("Failed to check if OpenAPI is enabled: ${e.message}")
+            return false
+        }
+    }
 }
 
 private fun <T : Any> MutableList<SubpluginOption>.ktorOption(key: String, value: T?) {

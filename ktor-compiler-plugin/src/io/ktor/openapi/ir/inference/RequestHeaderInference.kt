@@ -1,4 +1,4 @@
-package io.ktor.openapi.ir.interpreters
+package io.ktor.openapi.ir.inference
 
 import io.ktor.openapi.ir.*
 import io.ktor.openapi.routing.*

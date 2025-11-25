@@ -18,9 +18,6 @@
                             "type": "integer",
                             "maximum": 9.99999999999E11,
                             "minimum": 1.0
-                        },
-                        "content": {
-                            "text/plain": {}
                         }
                     },
                     {

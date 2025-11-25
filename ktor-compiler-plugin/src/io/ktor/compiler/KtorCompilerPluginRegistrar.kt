@@ -25,7 +25,8 @@ class KtorCompilerPluginRegistrar : CompilerPluginRegistrar() {
             return
         }
 
-        val logger = Logger.wrap(configuration.get(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE))
+        val messageCollector = configuration.get(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
+        val logger = Logger.wrap(messageCollector, openApiConfig.debug)
         val routes: RouteCallLookup = mutableMapOf()
         // Analysis FIR plugin reads the comments and caches them to the routes graph
         FirExtensionRegistrarAdapter.registerExtension(OpenApiAnalysisExtension(logger, routes))
@@ -39,6 +40,7 @@ class KtorCompilerPluginRegistrar : CompilerPluginRegistrar() {
         with(KtorCommandLineProcessor) {
             OpenApiProcessorConfig(
                 enabled = cc[OPENAPI_ENABLED_KEY]?.toBooleanStrictOrNull() ?: false,
+                debug = cc[OPENAPI_DEBUG_KEY]?.toBooleanStrictOrNull() ?: false,
                 info = SpecInfo(
                     title = cc[OPENAPI_TITLE_KEY] ?: "API Documentation",
                     version = cc[OPENAPI_VERSION_KEY] ?: "1.0.0",

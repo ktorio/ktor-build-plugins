@@ -40,10 +40,10 @@ class KtorOpenApiTestAdditionalSources(testServices: TestServices) : AdditionalS
         val templatedContent = rawBoxTestText.replace(constantPattern) { match ->
             val constantName = match.groupValues[1]
             val value = when(constantName) {
-                "MODULE_REFERENCE" -> "\"$testFunctionFqName\""
+                "MODULE_REFERENCE" -> "$$\"$testFunctionFqName\""
                 "SNAPSHOT_REPLACE" -> replaceSnapshots.toString()
-                "SNAPSHOT_FILE" -> "\"${testServices.openApiExpectedFile}\""
-                "ACTUAL_FILE" -> "\"${testServices.openApiOutputFile}\""
+                "SNAPSHOT_FILE" -> "$$\"${testServices.openApiExpectedFile}\""
+                "ACTUAL_FILE" -> "$$\"${testServices.openApiOutputFile}\""
                 "EXPECTED_JSON" -> expectedContent?.let { $$"$$\"\"\"\n$$it\n\"\"\"" } ?: "\"\""
                 else -> error("Unknown constant: $constantName")
             }
