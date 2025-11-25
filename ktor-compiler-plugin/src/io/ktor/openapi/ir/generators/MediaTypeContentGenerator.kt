@@ -2,7 +2,7 @@ package io.ktor.openapi.ir.generators
 
 import io.ktor.openapi.ir.*
 import io.ktor.openapi.ir.CallAnnotateTransformer.Companion.OPENAPI_PACKAGE
-import io.ktor.openapi.ir.interpreters.*
+import io.ktor.openapi.ir.inference.*
 import io.ktor.openapi.model.SchemaAttribute
 import io.ktor.openapi.model.SchemaAttribute.*
 import io.ktor.openapi.routing.*

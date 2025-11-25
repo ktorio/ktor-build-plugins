@@ -113,9 +113,6 @@
                         "required": true,
                         "schema": {
                             "type": "integer"
-                        },
-                        "content": {
-                            "text/plain": {}
                         }
                     }
                 ],
@@ -482,9 +479,6 @@
                         "required": true,
                         "schema": {
                             "type": "integer"
-                        },
-                        "content": {
-                            "text/plain": {}
                         }
                     }
                 ],

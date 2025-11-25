@@ -4,5 +4,6 @@ import io.ktor.openapi.model.SpecInfo
 
 data class OpenApiProcessorConfig(
     val enabled: Boolean,
+    val debug: Boolean,
     val info: SpecInfo = SpecInfo("Open API Document", "1.0.0"),
 )

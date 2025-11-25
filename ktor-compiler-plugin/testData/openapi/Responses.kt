@@ -250,7 +250,7 @@ fun Application.installResponses() {
 
             /**
              * Map response
-             * @response 200 [Map<String, String>] Map response
+             * @response 200 :[String] Map response
              */
             get("/map") {
                 call.respond(
@@ -265,7 +265,7 @@ fun Application.installResponses() {
 
             /**
              * Array response
-             * @response 200 [Array<String>] Array response
+             * @response 200 [String]+ Array response
              */
             get("/array") {
                 call.respond(listOf("apple", "banana", "cherry"))
@@ -298,7 +298,7 @@ fun Application.installResponses() {
 
             /**
              * Get list of animals
-             * @response 200 [List<Animal>] List of animals (mixed Dogs and Cats)
+             * @response 200 [Animal]+ List of animals (mixed Dogs and Cats)
              */
             get("/animals") {
                 call.respond(

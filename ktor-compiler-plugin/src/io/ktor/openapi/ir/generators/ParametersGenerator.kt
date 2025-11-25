@@ -15,9 +15,8 @@ val ParametersGenerator = IrAnnotateExpressionGenerator<RouteField.Parameter> { 
             try {
                 +callFunctionWithScope(field.functionName, field.name.asExpression()) {
                     assignProperty("description", field.description)
-                    when(field.typeReference) {
-                        null -> contentTextPlain()
-                        else -> assignSchemaProperty(field.typeReference, field.schemaAttributes)
+                    field.typeReference?.let {
+                        assignSchemaProperty(field.typeReference, field.schemaAttributes)
                     }
                     generateExtensionProperties(field)
                 }

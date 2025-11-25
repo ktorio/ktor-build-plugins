@@ -11,7 +11,7 @@ class KtorCommandLineProcessor : CommandLineProcessor {
         const val PLUGIN_ID = "io.ktor.ktor-compiler-plugin"
 
         val OPENAPI_ENABLED_KEY = CompilerConfigurationKey<String>("openapiEnabled")
-        val OPENAPI_OUTPUT_KEY = CompilerConfigurationKey<String>("openapiOutput")
+        val OPENAPI_DEBUG_KEY = CompilerConfigurationKey<String>("openapiDebug")
         val OPENAPI_DESCRIPTION_KEY = CompilerConfigurationKey<String>("openapiDescription")
         val OPENAPI_TITLE_KEY = CompilerConfigurationKey<String>("openapiTitle")
         val OPENAPI_SUMMARY_KEY = CompilerConfigurationKey<String>("openapiSummary")
@@ -27,10 +27,10 @@ class KtorCommandLineProcessor : CommandLineProcessor {
             required = false
         )
 
-        val OPENAPI_OUTPUT_OPTION = CliOption(
-            "openapiOutput",
-            "<path>",
-            "The output path for the generated OpenAPI specification",
+        val OPENAPI_DEBUG_OPTION = CliOption(
+            "openapiDebug",
+            "<boolean>",
+            "Writes exception stack traces to messages",
             required = false
         )
 
@@ -88,7 +88,7 @@ class KtorCommandLineProcessor : CommandLineProcessor {
 
     override val pluginOptions: Collection<AbstractCliOption> get() = listOf(
         OPENAPI_ENABLED_OPTION,
-        OPENAPI_OUTPUT_OPTION,
+        OPENAPI_DEBUG_OPTION,
         OPENAPI_DESCRIPTION_OPTION,
         OPENAPI_TITLE_OPTION,
         OPENAPI_SUMMARY_OPTION,
@@ -101,7 +101,7 @@ class KtorCommandLineProcessor : CommandLineProcessor {
     override fun processOption(option: AbstractCliOption, value: String, configuration: CompilerConfiguration) {
         when (option) {
             OPENAPI_ENABLED_OPTION -> configuration.put(OPENAPI_ENABLED_KEY, value)
-            OPENAPI_OUTPUT_OPTION -> configuration.put(OPENAPI_OUTPUT_KEY, value)
+            OPENAPI_DEBUG_OPTION -> configuration.put(OPENAPI_DEBUG_KEY, value)
             OPENAPI_DESCRIPTION_OPTION -> configuration.put(OPENAPI_DESCRIPTION_KEY, value)
             OPENAPI_TITLE_OPTION -> configuration.put(OPENAPI_TITLE_KEY, value)
             OPENAPI_SUMMARY_OPTION -> configuration.put(OPENAPI_SUMMARY_KEY, value)

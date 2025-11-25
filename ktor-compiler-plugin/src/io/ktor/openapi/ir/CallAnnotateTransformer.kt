@@ -4,7 +4,7 @@ import io.ktor.openapi.Logger
 import io.ktor.openapi.ir.generators.GeneralAnnotateExpressionGenerator
 import io.ktor.openapi.ir.generators.ParametersGenerator
 import io.ktor.openapi.ir.generators.ResponsesGenerator
-import io.ktor.openapi.ir.interpreters.*
+import io.ktor.openapi.ir.inference.*
 import io.ktor.openapi.routing.*
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.IrStatement

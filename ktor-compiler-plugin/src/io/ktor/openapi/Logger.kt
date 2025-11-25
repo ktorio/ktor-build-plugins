@@ -6,10 +6,12 @@ import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 
 fun interface Logger {
     companion object {
-        fun wrap(messageCollector: MessageCollector): Logger = Logger { message, cause, location ->
+        fun wrap(messageCollector: MessageCollector, debug: Boolean): Logger = Logger { message, cause, location ->
             messageCollector.report(
                 severity = CompilerMessageSeverity.LOGGING,
-                message = message,
+                message = if (debug && cause != null) {
+                    "$message\n${cause.stackTraceToString()}"
+                } else message,
                 location = location,
             )
         }
