@@ -14,7 +14,7 @@ To install the plugin, add it to the `plugins` block of your build script:
 
 ```kotlin
 plugins {
-    id("io.ktor.plugin") version "3.3.2"
+    id("io.ktor.plugin") version "3.3.3"
 }
 ```
 
