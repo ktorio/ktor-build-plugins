@@ -43,6 +43,7 @@ private fun findResponseBodyArgument(call: IrCall): IrType? {
     }
 }
 
+context(context: CodeGenContext)
 private fun getStatusArgument(call: IrCall): LocalReference? {
     val statusArgument = call.arguments.firstOrNull {
         it?.type?.classOrNull?.owner?.name?.asString() == HTTP_STATUS_CODE

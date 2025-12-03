@@ -8,7 +8,8 @@ import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 
 class OpenApiCodeGenerationExtension(
     val logger: Logger,
-    val routes: RouteCallLookup
+    val routes: RouteCallLookup,
+    val handlerInferenceEnabled: Boolean
 ) : IrGenerationExtension {
     override fun generate(
         moduleFragment: IrModuleFragment,
@@ -18,7 +19,8 @@ class OpenApiCodeGenerationExtension(
             transformer = CallAnnotateTransformer(
                 logger,
                 pluginContext,
-                routes
+                routes,
+                handlerInferenceEnabled,
             ),
             null
         )

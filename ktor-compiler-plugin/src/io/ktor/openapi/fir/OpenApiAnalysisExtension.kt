@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.text
 class OpenApiAnalysisExtension(
     val logger: Logger,
     val routes: RouteCallLookup,
+    val onlyCommented: Boolean,
 ) : FirExtensionRegistrar() {
     override fun ExtensionRegistrarContext.configurePlugin() {
         +::registerChecker
@@ -34,7 +35,7 @@ class OpenApiAnalysisExtension(
         override val expressionCheckers: ExpressionCheckers
             get() = object : ExpressionCheckers() {
                 override val functionCallCheckers = setOf(
-                    OpenApiRouteCallReader(logger) { route ->
+                    OpenApiRouteCallReader(logger, onlyCommented) { route ->
                         routes[route.coordinates()] = route
                     }
                 )
@@ -45,6 +46,7 @@ class OpenApiAnalysisExtension(
 
 class OpenApiRouteCallReader(
     private val logger: Logger,
+    private val onlyCommented: Boolean,
     private val onRoute: (RouteCall) -> Unit
 ) : FirFunctionCallChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
@@ -60,6 +62,9 @@ class OpenApiRouteCallReader(
                 logger.log("Failure to parse KDoc", t)
                 emptyList()
             }
+            // If onlyCommented is enabled and no preceding comment is found, skip early
+            if (onlyCommented && fields.isEmpty()) return
+
             val isLeaf = expression.hasHandlerLambda()
             val routeCall = RouteCall(
                 fir = expression,

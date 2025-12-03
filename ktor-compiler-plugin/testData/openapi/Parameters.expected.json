@@ -12,7 +12,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "a",
+                        "name": "c",
                         "in": "path",
                         "required": true,
                         "content": {
@@ -28,37 +28,9 @@
                         }
                     },
                     {
-                        "name": "c",
+                        "name": "a",
                         "in": "path",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
-                        }
-                    },
-                    {
-                        "name": "d",
-                        "in": "query",
-                        "content": {
-                            "text/plain": {}
-                        }
-                    },
-                    {
-                        "name": "e",
-                        "in": "query",
-                        "content": {
-                            "text/plain": {}
-                        }
-                    },
-                    {
-                        "name": "f",
-                        "in": "header",
-                        "content": {
-                            "text/plain": {}
-                        }
-                    },
-                    {
-                        "name": "g",
-                        "in": "header",
                         "content": {
                             "text/plain": {}
                         }

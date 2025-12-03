@@ -82,7 +82,7 @@ internal fun buildContentTypeReference(
     parentSymbol: IrSymbol,
     classId: ClassId,
     callableId: CallableId,
-): LocalReference {
+): LocalReference? {
     val property: IrSimpleFunctionSymbol = context.referenceProperties(callableId)
         .first().owner.getter!!.symbol
     val objectClass: IrClassSymbol = context.referenceClass(classId)!!
@@ -92,6 +92,7 @@ internal fun buildContentTypeReference(
     })
 }
 
+context(context: CodeGenContext)
 fun getContentTypeArgument(call: IrCall): LocalReference? {
     for (i in 0 until call.arguments.size) {
         val arg = call.arguments[i] ?: continue

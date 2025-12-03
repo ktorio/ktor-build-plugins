@@ -53,10 +53,22 @@ public abstract class OpenApiExtension(
         .convention(layout.ktorOutputDir.map { it.file("openapi/generated.json") })
 
     /**
-     * Whether to generate an OpenAPI specification or not.
+     * Global flag to enable or disable OpenAPI route annotation code generation.
      * Defaults to `false`.
      */
     public val enabled: Property<Boolean> = objects.property(defaultValue = false)
+
+    /**
+     * Enables code inference that augments routing with inferred metadata.
+     * Defaults to `true`.
+     */
+    public val codeInferenceEnabled: Property<Boolean> = objects.property(defaultValue = true)
+
+    /**
+     * When enabled, only routing calls with a preceding comment (KDoc or line comment) are processed.
+     * Defaults to `false`, meaning all routing calls are processed except those explicitly marked with `@ignore`.
+     */
+    public val onlyCommented: Property<Boolean> = objects.property(defaultValue = false)
 
     /**
      * The title of the API.

@@ -13,9 +13,7 @@ import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.EnvironmentConfigurator
 import org.jetbrains.kotlin.test.services.TestServices
 
-class OpenApiRegistrarConfigurator(
-    testServices: TestServices,
-) : EnvironmentConfigurator(testServices) {
+class OpenApiRegistrarConfigurator(testServices: TestServices) : EnvironmentConfigurator(testServices) {
 
     @OptIn(ExperimentalSerializationApi::class)
     override fun CompilerPluginRegistrar.ExtensionStorage.registerCompilerExtensions(
@@ -35,7 +33,13 @@ class OpenApiRegistrarConfigurator(
                 cause.printStackTrace()
             }
         }
-        FirExtensionRegistrarAdapter.registerExtension(OpenApiAnalysisExtension(logger, routes))
-        IrGenerationExtension.registerExtension(OpenApiCodeGenerationExtension(logger, routes))
+        FirExtensionRegistrarAdapter.registerExtension(OpenApiAnalysisExtension(logger, routes, onlyCommented = false))
+        IrGenerationExtension.registerExtension(
+            OpenApiCodeGenerationExtension(
+                logger,
+                routes,
+                handlerInferenceEnabled = true
+            )
+        )
     }
 }

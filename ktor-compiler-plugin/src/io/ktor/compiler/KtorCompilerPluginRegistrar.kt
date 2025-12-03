@@ -29,9 +29,15 @@ class KtorCompilerPluginRegistrar : CompilerPluginRegistrar() {
         val logger = Logger.wrap(messageCollector, openApiConfig.debug)
         val routes: RouteCallLookup = mutableMapOf()
         // Analysis FIR plugin reads the comments and caches them to the routes graph
-        FirExtensionRegistrarAdapter.registerExtension(OpenApiAnalysisExtension(logger, routes))
+        FirExtensionRegistrarAdapter.registerExtension(
+            OpenApiAnalysisExtension(
+                logger,
+                routes,
+                openApiConfig.onlyCommented,
+            )
+        )
         // Code generation plugin introduces calls to the routing annotation API
-        IrGenerationExtension.registerExtension(OpenApiCodeGenerationExtension(logger, routes))
+        IrGenerationExtension.registerExtension(OpenApiCodeGenerationExtension(logger, routes, openApiConfig.codeInference))
     }
 
     private fun readConfiguration(
@@ -41,6 +47,8 @@ class KtorCompilerPluginRegistrar : CompilerPluginRegistrar() {
             OpenApiProcessorConfig(
                 enabled = cc[OPENAPI_ENABLED_KEY]?.toBooleanStrictOrNull() ?: false,
                 debug = cc[OPENAPI_DEBUG_KEY]?.toBooleanStrictOrNull() ?: false,
+                codeInference = cc[OPENAPI_CODE_INFERENCE_KEY]?.toBooleanStrictOrNull() ?: false,
+                onlyCommented = cc[OPENAPI_ONLY_COMMENTED_KEY]?.toBooleanStrictOrNull() ?: false,
                 info = SpecInfo(
                     title = cc[OPENAPI_TITLE_KEY] ?: "API Documentation",
                     version = cc[OPENAPI_VERSION_KEY] ?: "1.0.0",

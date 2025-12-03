@@ -24,6 +24,8 @@ public class CompilerPlugin @Inject constructor(
         return project.provider {
             buildList {
                 ktorOption("openapiEnabled", extension.enabled.getOrElse(false))
+                ktorOption("openapiCodeInference", extension.codeInferenceEnabled.getOrElse(false))
+                ktorOption("openapiOnlyCommented", extension.onlyCommented.getOrElse(false))
                 ktorOption("openapiDescription", extension.description.orNull)
                 ktorOption("openapiTitle", extension.title.orNull)
                 ktorOption("openapiSummary", extension.summary.orNull)

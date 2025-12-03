@@ -10,10 +10,14 @@ import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
 
 sealed interface LocalReference {
     companion object {
-        fun of(expression: IrExpression): Expression =
-            Expression(expression)
+        context(context: CodeGenContext)
+        fun of(expression: IrExpression): Expression? =
+            context.copyAndResolve(expression)
+                ?.let(::Expression)
+
         fun of(stringValue: String) =
             StringValue(stringValue)
+
         fun of(intValue: Int) =
             IntValue(intValue)
     }

@@ -117,6 +117,7 @@ private fun chainSchemaAttributes(
             format,
             pattern -> value.toConst()
 
+            required,
             nullable,
             deprecated,
             readOnly,
@@ -145,7 +146,6 @@ private fun chainSchemaAttributes(
             enum,
             // TODO support examples and defaults
 
-            required,
             allOf,
             oneOf,
             not,

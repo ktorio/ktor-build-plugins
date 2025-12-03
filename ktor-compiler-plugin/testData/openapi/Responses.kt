@@ -54,7 +54,7 @@ fun Application.installResponses() {
         route("/api") {
             /**
              * Get list of dudes
-             * @response 200 [List<Dude>] List of dudes
+             * @response 200 [Dude]+ List of dudes
              */
             get("/dudes") {
                 call.respond(
@@ -223,7 +223,7 @@ fun Application.installResponses() {
 
             /**
              * Nested complex response
-             * @response 200 [ApiResponse<DudeDetails>] Complex nested response
+             * @response 200 Complex nested response
              */
             get("/nested") {
                 val dudeDetails = DudeDetails(

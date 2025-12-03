@@ -12,6 +12,8 @@ class KtorCommandLineProcessor : CommandLineProcessor {
 
         val OPENAPI_ENABLED_KEY = CompilerConfigurationKey<String>("openapiEnabled")
         val OPENAPI_DEBUG_KEY = CompilerConfigurationKey<String>("openapiDebug")
+        val OPENAPI_CODE_INFERENCE_KEY = CompilerConfigurationKey<String>("openapiCodeInference")
+        val OPENAPI_ONLY_COMMENTED_KEY = CompilerConfigurationKey<String>("openapiOnlyCommented")
         val OPENAPI_DESCRIPTION_KEY = CompilerConfigurationKey<String>("openapiDescription")
         val OPENAPI_TITLE_KEY = CompilerConfigurationKey<String>("openapiTitle")
         val OPENAPI_SUMMARY_KEY = CompilerConfigurationKey<String>("openapiSummary")
@@ -31,6 +33,20 @@ class KtorCommandLineProcessor : CommandLineProcessor {
             "openapiDebug",
             "<boolean>",
             "Writes exception stack traces to messages",
+            required = false
+        )
+
+        val OPENAPI_CODE_INFERENCE_OPTION = CliOption(
+            "openapiCodeInference",
+            "<boolean>",
+            "Enables code inference for OpenAPI (experimental)",
+            required = false
+        )
+
+        val OPENAPI_ONLY_COMMENTED_OPTION = CliOption(
+            "openapiOnlyCommented",
+            "<boolean>",
+            "Only process routing calls that have a preceding comment (KDoc or line comment)",
             required = false
         )
 
@@ -89,6 +105,8 @@ class KtorCommandLineProcessor : CommandLineProcessor {
     override val pluginOptions: Collection<AbstractCliOption> get() = listOf(
         OPENAPI_ENABLED_OPTION,
         OPENAPI_DEBUG_OPTION,
+        OPENAPI_CODE_INFERENCE_OPTION,
+        OPENAPI_ONLY_COMMENTED_OPTION,
         OPENAPI_DESCRIPTION_OPTION,
         OPENAPI_TITLE_OPTION,
         OPENAPI_SUMMARY_OPTION,
@@ -102,6 +120,8 @@ class KtorCommandLineProcessor : CommandLineProcessor {
         when (option) {
             OPENAPI_ENABLED_OPTION -> configuration.put(OPENAPI_ENABLED_KEY, value)
             OPENAPI_DEBUG_OPTION -> configuration.put(OPENAPI_DEBUG_KEY, value)
+            OPENAPI_CODE_INFERENCE_OPTION -> configuration.put(OPENAPI_CODE_INFERENCE_KEY, value)
+            OPENAPI_ONLY_COMMENTED_OPTION -> configuration.put(OPENAPI_ONLY_COMMENTED_KEY, value)
             OPENAPI_DESCRIPTION_OPTION -> configuration.put(OPENAPI_DESCRIPTION_KEY, value)
             OPENAPI_TITLE_OPTION -> configuration.put(OPENAPI_TITLE_KEY, value)
             OPENAPI_SUMMARY_OPTION -> configuration.put(OPENAPI_SUMMARY_KEY, value)

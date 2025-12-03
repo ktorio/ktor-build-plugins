@@ -22,9 +22,9 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
-  @TestMetadata("Functions.kt")
-  public void testFunctions() {
-    runTest("ktor-compiler-plugin/testData/openapi/Functions.kt");
+  @TestMetadata("CallHandlerFunctions.kt")
+  public void testCallHandlerFunctions() {
+    runTest("ktor-compiler-plugin/testData/openapi/CallHandlerFunctions.kt");
   }
 
   @Test
@@ -58,9 +58,9 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
-  @TestMetadata("Templates.kt")
-  public void testTemplates() {
-    runTest("ktor-compiler-plugin/testData/openapi/Templates.kt");
+  @TestMetadata("RouteFunctions.kt")
+  public void testRouteFunctions() {
+    runTest("ktor-compiler-plugin/testData/openapi/RouteFunctions.kt");
   }
 
   @Test

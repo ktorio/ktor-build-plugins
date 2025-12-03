@@ -4,7 +4,13 @@ import io.ktor.openapi.Logger
 import io.ktor.openapi.ir.generators.GeneralAnnotateExpressionGenerator
 import io.ktor.openapi.ir.generators.ParametersGenerator
 import io.ktor.openapi.ir.generators.ResponsesGenerator
-import io.ktor.openapi.ir.inference.*
+import io.ktor.openapi.ir.inference.AppendResponseHeaderInference
+import io.ktor.openapi.ir.inference.CallReceiveInference
+import io.ktor.openapi.ir.inference.CallRespondInference
+import io.ktor.openapi.ir.inference.ParameterInference
+import io.ktor.openapi.ir.inference.RequestHeaderInference
+import io.ktor.openapi.ir.inference.ResourceRouteCallInference
+import io.ktor.openapi.ir.inference.ResponseHeaderExtensionInference
 import io.ktor.openapi.routing.*
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.IrStatement
@@ -18,13 +24,12 @@ import org.jetbrains.kotlin.name.Name
 /**
  * Finds all route selector calls and chains `annotate` calls with relevant details that can be found
  * at compile time.
- *
- * TODO follow functions that pass call/response/request as args
  */
 class CallAnnotateTransformer(
     val logger: Logger,
     val pluginContext: IrPluginContext,
     val routes: RouteCallLookup,
+    val handlerInferenceEnabled: Boolean,
 ) : IrElementTransformerVoid(),
     CodeGenContext,
     Logger by logger,
@@ -46,9 +51,7 @@ class CallAnnotateTransformer(
                 AppendResponseHeaderInference,
                 ResponseHeaderExtensionInference,
                 ResourceRouteCallInference,
-            ),
-            this,
-        )
+            ), this)
 
     private val annotateFunction: IrSimpleFunction by lazy {
         CallableId(
@@ -102,11 +105,17 @@ class CallAnnotateTransformer(
             ?: return super.visitCall(expression)
 
         return if (route.isLeaf) {
-            // scans the lambda body for any useful call references
-            val fieldsFromLambda = callHandlerAnalyzer.analyze(expression)
+            // when handler inference is enabled,
+            // scan the lambda body for route details
+            val routeFields = if (handlerInferenceEnabled) {
+                val fieldsFromLambda = callHandlerAnalyzer.analyze(expression)
+                route.fields.merge(fieldsFromLambda)
+            } else {
+                route.fields
+            }
             expression.chainAnnotationCall(
                 parentDeclaration = currentFunction,
-                routeFields = route.fields.merge(fieldsFromLambda)
+                routeFields = routeFields
             )
         } else if (route.fields.isNotEmpty()) {
             // append the annotate function from route fields and continue analysis

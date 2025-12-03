@@ -12,7 +12,7 @@ import io.ktor.server.routing.*
 import io.ktor.util.*
 import kotlinx.serialization.Serializable
 
-fun Application.installFunctions() {
+fun Application.installRouteFunctions() {
     val userRepository = Repository1<User1>()
     val messageRepository = Repository1<Message1>()
 

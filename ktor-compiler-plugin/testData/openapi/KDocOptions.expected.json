@@ -99,14 +99,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/OpenApiInfo"
-                                }
-                            }
-                        }
+                        "description": ""
                     }
                 }
             }
@@ -200,12 +193,6 @@
                             },
                             "email": {
                                 "type": "string"
-                            },
-                            "extensions": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "type": "object"
-                                }
                             }
                         }
                     },
@@ -224,12 +211,6 @@
                             },
                             "identifier": {
                                 "type": "string"
-                            },
-                            "extensions": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "type": "object"
-                                }
                             }
                         }
                     },

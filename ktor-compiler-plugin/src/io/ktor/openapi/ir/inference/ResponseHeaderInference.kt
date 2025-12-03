@@ -10,16 +10,18 @@ val AppendResponseHeaderInference = IrCallHandlerInference { call: IrCall ->
     if (call.symbol.owner.name.asString() != "append") return@IrCallHandlerInference null
     if (!call.receiverIsType("io.ktor.server.response.ResponseHeaders")) return@IrCallHandlerInference null
     val keyParameter = call.symbol.owner.parameters.firstOrNull { it.kind == IrParameterKind.Regular } ?: return@IrCallHandlerInference null
-    val key = call.arguments[keyParameter.indexInParameters] ?: return@IrCallHandlerInference null
+    val keyExpression = call.arguments[keyParameter.indexInParameters] ?: return@IrCallHandlerInference null
+    val keyReference = LocalReference.of(keyExpression) ?: return@IrCallHandlerInference null
 
-    listOf(RouteField.ResponseHeader(LocalReference.of(key)))
+    listOf(RouteField.ResponseHeader(keyReference))
 }
 
 val ResponseHeaderExtensionInference = IrCallHandlerInference { call: IrCall ->
     if (call.symbol.owner.name.asString() != "header") return@IrCallHandlerInference null
     if (!call.receiverIsType("io.ktor.server.response.ApplicationResponse")) return@IrCallHandlerInference null
     val keyParameter = call.symbol.owner.parameters.firstOrNull { it.kind == IrParameterKind.Regular } ?: return@IrCallHandlerInference null
-    val key = call.arguments[keyParameter.indexInParameters] ?: return@IrCallHandlerInference null
+    val keyExpression = call.arguments[keyParameter.indexInParameters] ?: return@IrCallHandlerInference null
+    val keyReference = LocalReference.of(keyExpression) ?: return@IrCallHandlerInference null
 
-    listOf(RouteField.ResponseHeader(LocalReference.of(key)))
+    listOf(RouteField.ResponseHeader(keyReference))
 }
