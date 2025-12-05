@@ -73,35 +73,42 @@ public abstract class OpenApiExtension(
     /**
      * The title of the API.
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val title: Property<String> = objects.property(defaultValue = null)
 
     /**
      * A short summary of the API.
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val summary: Property<String> = objects.property(defaultValue = null)
 
     /**
      * A description of the API. CommonMark syntax MAY be used for rich text representation.
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val description: Property<String> = objects.property(defaultValue = null)
 
     /**
      * A URI for the Terms of Service for the API. This MUST be in the form of a URI.
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val termsOfService: Property<String> = objects.property(defaultValue = null)
 
     /**
      * The contact information for the exposed API.
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val contact: Property<String> = objects.property(defaultValue = null)
 
     /**
      * The license information for the exposed API.
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val license: Property<String> = objects.property(defaultValue = null)
 
     /**
      * The version of the OpenAPI Document (which is distinct from the OpenAPI Specification version or the version of the API being described or the version of the OpenAPI Description).
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val version: Property<String> = objects.property(defaultValue = null)
 }

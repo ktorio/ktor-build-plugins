@@ -62,11 +62,14 @@ context(context: CodeGenContext)
 private fun getContentTypeFromFunction(call: IrCall): LocalReference? {
     val functionName = call.symbol.owner.name.asString()
     return when (functionName) {
-        "respondText" -> contentTypeText to contentTypePlaintext
-        "respondBytes" -> contentTypeApplication to contentTypeOctetStream
-        "respondHtml" -> contentTypeText to contentTypeHtml
+        "respondText" -> contentTypeReference(call.symbol, contentTypeText, contentTypePlaintext)
+        "respondBytes",
+        "respondBytesWriter",
+        "respondOutputStream",
+        "respondSource" -> contentTypeReference(call.symbol, contentTypeApplication, contentTypeOctetStream)
+        "respondFile",
+        "respondPath" -> contentTypeAny(call.symbol)
+        "respondHtml" -> contentTypeReference(call.symbol, contentTypeText, contentTypeHtml)
         else -> null
-    }?.let { (classId, callableId) ->
-        buildContentTypeReference(call.symbol, classId, callableId)
     }
 }

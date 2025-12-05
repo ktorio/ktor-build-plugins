@@ -107,15 +107,9 @@ class CallAnnotateTransformer(
         return if (route.isLeaf) {
             // when handler inference is enabled,
             // scan the lambda body for route details
-            val routeFields = if (handlerInferenceEnabled) {
-                val fieldsFromLambda = callHandlerAnalyzer.analyze(expression)
-                route.fields.merge(fieldsFromLambda)
-            } else {
-                route.fields
-            }
             expression.chainAnnotationCall(
                 parentDeclaration = currentFunction,
-                routeFields = routeFields
+                routeFields = route.fields.includeLambdaBody(expression)
             )
         } else if (route.fields.isNotEmpty()) {
             // append the annotate function from route fields and continue analysis
@@ -128,6 +122,17 @@ class CallAnnotateTransformer(
             super.visitCall(expression)
         }
     }
+
+    /**
+     * If handler inference is enabled, scan the lambda body for route details.
+     */
+    private fun RouteFieldList.includeLambdaBody(expression: IrCall): RouteFieldList =
+        if (handlerInferenceEnabled) {
+            val fieldsFromLambda = callHandlerAnalyzer.analyze(expression)
+            merge(fieldsFromLambda)
+        } else {
+            this
+        }
 
     private fun IrExpression.coordinates() =
         SourceKey(currentFile?.path, startOffset, endOffset)

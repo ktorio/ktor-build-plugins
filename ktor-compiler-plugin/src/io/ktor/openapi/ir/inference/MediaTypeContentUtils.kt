@@ -13,6 +13,8 @@ import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSymbol
 import org.jetbrains.kotlin.ir.types.classOrNull
+import org.jetbrains.kotlin.ir.util.companionObject
+import org.jetbrains.kotlin.ir.util.properties
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
@@ -47,12 +49,6 @@ internal val contentTypeOctetStream = CallableId(
     className = FqName("ContentType.Application"),
     callableName = Name.identifier("OctetStream")
 )
-internal val contentTypeUnknown = CallableId(
-    packageName = FqName("io.ktor.http"),
-    className = FqName("ContentType.Application"),
-    callableName = Name.identifier("Json")
-)
-
 
 /**
  * When reading content type from KDoc, we need to convert String constants to ContentType.
@@ -77,19 +73,44 @@ internal fun LocalReference.evaluateToContentType(): IrExpression? =
         else -> null
     }
 
+/**
+ * Get a reference to `ContentType` instances like `ContentType.Application.Json`
+ *
+ * This is a call to a property getter on an object.
+ */
 context(context: CodeGenContext)
-internal fun buildContentTypeReference(
+internal fun contentTypeReference(
     parentSymbol: IrSymbol,
     classId: ClassId,
     callableId: CallableId,
 ): LocalReference? {
-    val property: IrSimpleFunctionSymbol = context.referenceProperties(callableId)
-        .first().owner.getter!!.symbol
-    val objectClass: IrClassSymbol = context.referenceClass(classId)!!
+    val propertyGetter: IrSimpleFunctionSymbol = context.referenceProperties(callableId)
+        .firstOrNull()?.owner?.getter?.symbol
+        ?: error("Property $callableId not found")
+    val objectClass: IrClassSymbol = context.referenceClass(classId)
+        ?: error("Class $classId not found")
     val builder = DeclarationIrBuilder(context, parentSymbol)
-    return LocalReference.of(builder.irCall(property).apply {
+    val callToProperty = builder.irCall(propertyGetter).apply {
         dispatchReceiver = builder.irGetObject(objectClass)
-    })
+    }
+
+    return LocalReference.of(callToProperty)
+}
+
+context(context: CodeGenContext)
+internal fun contentTypeAny(parentSymbol: IrSymbol): LocalReference? {
+    val contentTypeClass: IrClassSymbol = context.referenceClass(contentTypeClass)
+        ?: error("ContentType class not found")
+    val companionObj = contentTypeClass.owner.companionObject()
+        ?: error("ContentType companion object not found")
+    val anyPropertyGetter = companionObj.properties.firstOrNull { it.name.asString() == "Any" }?.getter?.symbol
+        ?: error("Property 'Any' not found on ContentType.Companion")
+    val builder = DeclarationIrBuilder(context, parentSymbol)
+    val callToProperty = builder.irCall(anyPropertyGetter).apply {
+        dispatchReceiver = builder.irGetObject(companionObj.symbol)
+    }
+
+    return LocalReference.of(callToProperty)
 }
 
 context(context: CodeGenContext)

@@ -21,7 +21,7 @@ fun main() {
             json(Json {
                 encodeDefaults = false
             })
-        }
+
 
         routing {
             // Main page for marketing

@@ -25,7 +25,17 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": ""
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/User2"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -64,7 +74,14 @@
                         "description": ""
                     },
                     "200": {
-                        "description": ""
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User2"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -89,7 +106,17 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": ""
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Message2"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -128,7 +155,14 @@
                         "description": ""
                     },
                     "200": {
-                        "description": ""
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Message2"
+                                }
+                            }
+                        }
                     }
                 }
             }

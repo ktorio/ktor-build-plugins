@@ -26,13 +26,6 @@ public class CompilerPlugin @Inject constructor(
                 ktorOption("openapiEnabled", extension.enabled.getOrElse(false))
                 ktorOption("openapiCodeInference", extension.codeInferenceEnabled.getOrElse(false))
                 ktorOption("openapiOnlyCommented", extension.onlyCommented.getOrElse(false))
-                ktorOption("openapiDescription", extension.description.orNull)
-                ktorOption("openapiTitle", extension.title.orNull)
-                ktorOption("openapiSummary", extension.summary.orNull)
-                ktorOption("openapiContact", extension.contact.orNull)
-                ktorOption("openapiTermsOfService", extension.termsOfService.orNull)
-                ktorOption("openapiLicense", extension.license.orNull)
-                ktorOption("openapiVersion", extension.version.orNull)
             }
         }
     }

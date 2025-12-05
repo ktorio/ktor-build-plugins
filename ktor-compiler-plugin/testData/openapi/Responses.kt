@@ -10,12 +10,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.receive
-import io.ktor.server.response.header
-import io.ktor.server.response.respond
-import io.ktor.server.response.respondBytesWriter
-import io.ktor.server.response.respondFile
-import io.ktor.server.response.respondSource
-import io.ktor.server.response.respondText
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.writeInt
 import kotlinx.io.files.FileSystem
@@ -88,10 +83,16 @@ fun Application.installResponses() {
              * Create a new dude
              * @body [DudeRequest] Dude creation request
              * @response 201 [Dude] Created dude
-             * @response 400 Invalid request
              */
             post("/dudes") {
-                val dudeRequest = call.receive<DudeRequest>()
+                val dudeRequest = try {
+                    call.receive<DudeRequest>()
+                } catch (e: Exception) {
+                    return@post call.respond(
+                        HttpStatusCode.BadRequest,
+                        ResponseError("Bad Request", e.message ?: "Invalid request body"),
+                    )
+                }
                 val newDude = Dude(3, dudeRequest.name)
                 call.respond(HttpStatusCode.Created, newDude)
             }
@@ -222,10 +223,10 @@ fun Application.installResponses() {
         route("/complex") {
 
             /**
-             * Nested complex response
-             * @response 200 Complex nested response
+             * Parameterized type responses
+             * @response 200 An ApiResponse parameterized with DudeDetails
              */
-            get("/nested") {
+            get("/parameterized") {
                 val dudeDetails = DudeDetails(
                     dude = Dude(1, "John"),
                     stats = Stats(

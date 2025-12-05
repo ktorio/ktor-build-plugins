@@ -6,10 +6,8 @@ plugins {
 
 ktor {
     openApi {
-        title = "OpenAPI example"
-        version = "2.1"
-        summary = "This is a sample API"
         enabled = true
+        onlyCommented = true
     }
 }
 

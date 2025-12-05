@@ -28,7 +28,17 @@
                 "summary": "Get a list of users.",
                 "responses": {
                     "200": {
-                        "description": "A list of users."
+                        "description": "A list of users.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/User1"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -71,7 +81,14 @@
                         "description": "The user was not found"
                     },
                     "200": {
-                        "description": ""
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User1"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -99,7 +116,17 @@
                 "summary": "Get a list of messages.",
                 "responses": {
                     "200": {
-                        "description": "A list of messages."
+                        "description": "A list of messages.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Message1"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -142,7 +169,14 @@
                         "description": "The message was not found"
                     },
                     "200": {
-                        "description": ""
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Message1"
+                                }
+                            }
+                        }
                     }
                 }
             }

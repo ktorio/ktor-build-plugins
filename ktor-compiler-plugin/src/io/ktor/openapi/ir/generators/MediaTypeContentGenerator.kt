@@ -31,28 +31,32 @@ fun generateMediaTypeContent(contentField: RouteField.Content) {
     // when a type reference is present, we can assume there _should_ be a content type
     // otherwise, it could be an empty response (i.e., no content type)
     val contentType = contentField.contentType
-        ?: contentField.typeReference?.let {
-            buildContentTypeReference(
-                context.parentDeclaration.symbol,
-                contentTypeApplication,
-                contentTypeUnknown
-            )
-        }
-    contentType?.evaluateToContentType()?.let { contentType ->
-        +callFunctionWithScope("invoke", contentType) {
-            contentField.typeReference?.let { typeReference ->
-                assignSchemaProperty(
-                    typeReference,
-                    contentField.schemaAttributes
-                )
+    if (contentType != null) {
+        contentType.evaluateToContentType()?.let { contentType ->
+            +callFunctionWithScope("invoke", contentType) {
+                contentField.typeReference?.let { typeReference ->
+                    assignSchemaProperty(
+                        typeReference,
+                        contentField.schemaAttributes
+                    )
+                }
             }
+        }
+    } else {
+        // directly assign the schema property on the response builder,
+        // this will be used for default content types from content negotiation
+        contentField.typeReference?.let { typeReference ->
+            assignSchemaProperty(
+                typeReference,
+                contentField.schemaAttributes
+            )
         }
     }
 }
 
 context(context: LambdaBuilderContext)
 fun contentTextPlain() {
-    buildContentTypeReference(
+    contentTypeReference(
         context.parentDeclaration.symbol,
         contentTypeText,
         contentTypePlaintext

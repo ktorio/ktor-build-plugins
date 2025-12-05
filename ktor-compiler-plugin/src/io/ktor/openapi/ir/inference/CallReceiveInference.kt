@@ -17,7 +17,6 @@ val CallReceiveInference = IrCallHandlerInference { call: IrCall ->
     if (!functionName.startsWith("receive")) return@IrCallHandlerInference null
 
     val requestContentType = getContentTypeArgument(call)
-        ?: buildContentTypeReference(call.symbol, contentTypeApplication, contentTypeUnknown)
     val requestBodyType = call.typeArguments.firstOrNull()?.asReference()
         ?: return@IrCallHandlerInference null
 

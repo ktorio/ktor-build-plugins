@@ -14,13 +14,6 @@ class KtorCommandLineProcessor : CommandLineProcessor {
         val OPENAPI_DEBUG_KEY = CompilerConfigurationKey<String>("openapiDebug")
         val OPENAPI_CODE_INFERENCE_KEY = CompilerConfigurationKey<String>("openapiCodeInference")
         val OPENAPI_ONLY_COMMENTED_KEY = CompilerConfigurationKey<String>("openapiOnlyCommented")
-        val OPENAPI_DESCRIPTION_KEY = CompilerConfigurationKey<String>("openapiDescription")
-        val OPENAPI_TITLE_KEY = CompilerConfigurationKey<String>("openapiTitle")
-        val OPENAPI_SUMMARY_KEY = CompilerConfigurationKey<String>("openapiSummary")
-        val OPENAPI_TERMS_OF_SERVICE_KEY = CompilerConfigurationKey<String>("openapiTermsOfService")
-        val OPENAPI_CONTACT_KEY = CompilerConfigurationKey<String>("openapiContact")
-        val OPENAPI_LICENSE_KEY = CompilerConfigurationKey<String>("openapiLicense")
-        val OPENAPI_VERSION_KEY = CompilerConfigurationKey<String>("openapiVersion")
 
         val OPENAPI_ENABLED_OPTION = CliOption(
             "openapiEnabled",
@@ -49,55 +42,6 @@ class KtorCommandLineProcessor : CommandLineProcessor {
             "Only process routing calls that have a preceding comment (KDoc or line comment)",
             required = false
         )
-
-        val OPENAPI_DESCRIPTION_OPTION = CliOption(
-            "openapiDescription",
-            "<text>",
-            "A description of the API. CommonMark syntax MAY be used for rich text representation",
-            required = false
-        )
-
-        val OPENAPI_TITLE_OPTION = CliOption(
-            "openapiTitle",
-            "<text>",
-            "The title of the API",
-            required = false
-        )
-
-        val OPENAPI_SUMMARY_OPTION = CliOption(
-            "openapiSummary",
-            "<text>",
-            "A short summary of the API",
-            required = false
-        )
-
-        val OPENAPI_TERMS_OF_SERVICE_OPTION = CliOption(
-            "openapiTermsOfService",
-            "<uri>",
-            "A URI for the Terms of Service for the API",
-            required = false
-        )
-
-        val OPENAPI_CONTACT_OPTION = CliOption(
-            "openapiContact",
-            "<info>",
-            "The contact information for the exposed API",
-            required = false
-        )
-
-        val OPENAPI_LICENSE_OPTION = CliOption(
-            "openapiLicense",
-            "<info>",
-            "The license information for the exposed API",
-            required = false
-        )
-
-        val OPENAPI_VERSION_OPTION = CliOption(
-            "openapiVersion",
-            "<version>",
-            "The version of the OpenAPI Document",
-            required = false
-        )
     }
 
     override val pluginId: String get() = PLUGIN_ID
@@ -107,13 +51,6 @@ class KtorCommandLineProcessor : CommandLineProcessor {
         OPENAPI_DEBUG_OPTION,
         OPENAPI_CODE_INFERENCE_OPTION,
         OPENAPI_ONLY_COMMENTED_OPTION,
-        OPENAPI_DESCRIPTION_OPTION,
-        OPENAPI_TITLE_OPTION,
-        OPENAPI_SUMMARY_OPTION,
-        OPENAPI_TERMS_OF_SERVICE_OPTION,
-        OPENAPI_CONTACT_OPTION,
-        OPENAPI_LICENSE_OPTION,
-        OPENAPI_VERSION_OPTION
     )
 
     override fun processOption(option: AbstractCliOption, value: String, configuration: CompilerConfiguration) {
@@ -122,13 +59,6 @@ class KtorCommandLineProcessor : CommandLineProcessor {
             OPENAPI_DEBUG_OPTION -> configuration.put(OPENAPI_DEBUG_KEY, value)
             OPENAPI_CODE_INFERENCE_OPTION -> configuration.put(OPENAPI_CODE_INFERENCE_KEY, value)
             OPENAPI_ONLY_COMMENTED_OPTION -> configuration.put(OPENAPI_ONLY_COMMENTED_KEY, value)
-            OPENAPI_DESCRIPTION_OPTION -> configuration.put(OPENAPI_DESCRIPTION_KEY, value)
-            OPENAPI_TITLE_OPTION -> configuration.put(OPENAPI_TITLE_KEY, value)
-            OPENAPI_SUMMARY_OPTION -> configuration.put(OPENAPI_SUMMARY_KEY, value)
-            OPENAPI_TERMS_OF_SERVICE_OPTION -> configuration.put(OPENAPI_TERMS_OF_SERVICE_KEY, value)
-            OPENAPI_CONTACT_OPTION -> configuration.put(OPENAPI_CONTACT_KEY, value)
-            OPENAPI_LICENSE_OPTION -> configuration.put(OPENAPI_LICENSE_KEY, value)
-            OPENAPI_VERSION_OPTION -> configuration.put(OPENAPI_VERSION_KEY, value)
             else -> error("Unexpected option: ${option.optionName}")
         }
     }
