@@ -1,16 +1,15 @@
 package io.ktor.compiler.runners
 
 import io.ktor.compiler.services.*
-import org.jetbrains.kotlin.test.FirParser
 import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
 import org.jetbrains.kotlin.test.directives.CodegenTestDirectives.IGNORE_DEXING
 import org.jetbrains.kotlin.test.directives.ConfigurationDirectives.WITH_STDLIB
 import org.jetbrains.kotlin.test.directives.JvmEnvironmentConfigurationDirectives.FULL_JDK
-import org.jetbrains.kotlin.test.runners.AbstractFirPhasedDiagnosticTest
+import org.jetbrains.kotlin.test.runners.codegen.AbstractFirLightTreeBlackBoxCodegenTest
 import org.jetbrains.kotlin.test.services.EnvironmentBasedStandardLibrariesPathProvider
 import org.jetbrains.kotlin.test.services.KotlinStandardLibrariesPathProvider
 
-open class AbstractOpenapiTest : AbstractFirPhasedDiagnosticTest(FirParser.LightTree) {
+open class AbstractOpenapiTest : AbstractFirLightTreeBlackBoxCodegenTest() {
     override fun createKotlinStandardLibrariesPathProvider(): KotlinStandardLibrariesPathProvider =
         EnvironmentBasedStandardLibrariesPathProvider
 
@@ -37,13 +36,17 @@ open class AbstractOpenapiTest : AbstractFirPhasedDiagnosticTest(FirParser.Light
 
             useConfigurators(
                 ::KtorClasspathConfigurator,
-                ::OpenApiRegistrarConfigurator
+                ::OpenApiRegistrarConfigurator,
+                ::SerializationPluginConfigurator,
             )
 
-            useAfterAnalysisCheckers(
-                ::OpenApiSnapshotVerificationService
+            useCustomRuntimeClasspathProviders(
+                ::KtorRuntimeClasspathProvider
             )
 
+            useAdditionalSourceProviders(
+                ::KtorOpenApiTestAdditionalSources
+            )
         }
     }
 }
