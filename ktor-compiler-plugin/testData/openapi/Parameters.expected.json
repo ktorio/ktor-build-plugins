@@ -1,27 +1,18 @@
 {
     "openapi": "3.1.1",
     "info": {
-        "title": "Open API Document",
+        "title": "OpenAPI Document",
         "version": "1.0.0"
     },
     "paths": {
         "/parameters/{a}/{b}/{c}": {
             "get": {
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                },
+                "tags": [
+                    "parameters"
+                ],
                 "parameters": [
                     {
-                        "name": "a",
+                        "name": "c",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -37,58 +28,24 @@
                         }
                     },
                     {
-                        "name": "c",
+                        "name": "a",
                         "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "d",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "e",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "f",
-                        "in": "header",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "g",
-                        "in": "header",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "h",
-                        "in": "header",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
                         }
                     }
-                ]
+                }
             }
         }
     },
-    "components": {
-        "schemas": {}
-    }
+    "components": {}
 }

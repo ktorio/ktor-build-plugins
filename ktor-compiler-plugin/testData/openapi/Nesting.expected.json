@@ -1,19 +1,42 @@
 {
     "openapi": "3.1.1",
     "info": {
-        "title": "Open API Document",
+        "title": "OpenAPI Document",
         "version": "1.0.0"
     },
     "paths": {
         "/api/users": {
+            "post": {
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Save a new user.",
+                "requestBody": {
+                    "description": "the user to save.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/User0"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                }
+            },
             "get": {
+                "tags": [
+                    "admin"
+                ],
                 "summary": "Get a list of users.",
                 "parameters": [
                     {
                         "name": "q",
                         "in": "query",
                         "description": "Search query",
-                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -22,11 +45,10 @@
                         "name": "limit",
                         "in": "query",
                         "description": "Max items to return",
-                        "required": false,
                         "schema": {
                             "type": "integer",
-                            "minimum": 1,
-                            "maximum": 100
+                            "maximum": 100.0,
+                            "minimum": 1.0
                         }
                     }
                 ],
@@ -44,35 +66,40 @@
                             }
                         }
                     }
-                },
-                "tags": [
-                    "admin"
-                ]
-            },
-            "post": {
-                "summary": "Save a new user.",
-                "requestBody": {
-                    "description": "the user to save.",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/User0"
-                            }
-                        }
-                    }
-                },
-                "tags": [
-                    "admin"
-                ],
-                "responses": {
-                    "201": {
-                        "description": ""
-                    }
                 }
             }
         },
         "/api/users/{id}": {
+            "delete": {
+                "tags": [
+                    "danger",
+                    "admin"
+                ],
+                "summary": "Delete a user.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad ID argument"
+                    },
+                    "204": {
+                        "description": "The user was deleted"
+                    }
+                }
+            },
             "get": {
+                "tags": [
+                    "admin"
+                ],
                 "summary": "Get a single user",
                 "parameters": [
                     {
@@ -102,35 +129,6 @@
                             }
                         }
                     }
-                },
-                "tags": [
-                    "admin"
-                ]
-            },
-            "delete": {
-                "summary": "Delete a user.",
-                "tags": [
-                    "danger",
-                    "admin"
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The ID of the user",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "400": {
-                        "description": "Bad ID argument"
-                    },
-                    "204": {
-                        "description": "The user was deleted"
-                    }
                 }
             }
         }
@@ -139,6 +137,11 @@
         "schemas": {
             "User0": {
                 "type": "object",
+                "title": "openapi.User0",
+                "required": [
+                    "id",
+                    "name"
+                ],
                 "properties": {
                     "id": {
                         "type": "integer"
