@@ -45,11 +45,9 @@ fun box(): String {
 
         routing {
             get("/openapi.json") {
-                val root = call.application.routingRoot
-                root.findPathItems()
-                val routes = generateOpenApiSpec(
-                    info = OpenApiInfo("OpenAPI Document", version = "1.0.0"),
-                    route = root,
+                val routes = generateOpenApiDoc(
+                    OpenApiDoc(info = OpenApiInfo("OpenAPI Document", version = "1.0.0")),
+                    call.application.routingRoot.descendants(),
                 )
                 call.respondText(json.encodeToString(routes.copy(
                     paths = routes.paths - "/openapi.json"

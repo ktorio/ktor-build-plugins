@@ -6,13 +6,15 @@ import io.ktor.openapi.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
+import io.ktor.server.config.property
 import io.ktor.server.engine.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.openapi.*
+import io.ktor.server.plugins.swagger.swaggerUI
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 fun main() {
@@ -21,7 +23,7 @@ fun main() {
             json(Json {
                 encodeDefaults = false
             })
-
+        }
 
         routing {
             // Main page for marketing
@@ -29,32 +31,40 @@ fun main() {
                 call.respondText("<html><body><h1>Hello, World</h1></body></html>", ContentType.Text.Html)
             }
 
-            get("/spec.json") {
-                val spec = generateOpenApiSpec(
-                    info = OpenApiInfo("My API", version = "1.0.0"),
-                    route = call.application.routingRoot
-                ).let {
-                    it.copy(
-                        paths = it.paths - "/spec.json"
-                    )
-                }
-                call.respond(spec)
+            /**
+             * API endpoints for users.
+             *
+             * These will appear in the resulting OpenAPI document.
+             */
+            val apiRoute = userCrud(ListRepository())
+
+            get("/docs.json") {
+                val docs = generateOpenApiDoc(
+                    OpenApiDoc(info = OpenApiInfo("My API", "1.0")),
+                    apiRoute.descendants()
+                )
+                call.respond(docs)
             }
 
             /**
-             * API endpoints for users.
+             * View the generated UI for the API spec.
              */
-            userCrud(ListRepository())
+            openAPI("/openApi")
 
             /**
-             * Get the OpenAPI specification.
+             * View the Swagger flavor of the UI for the API spec.
              */
-            // openAPI("/docs", swaggerFile = "openapi/generated.json")
+            swaggerUI("/swaggerUI") {
+                info = OpenApiInfo("My API", "1.0")
+                source = OpenApiDocSource.RoutingSource(ContentType.Application.Json) {
+                    apiRoute.descendants()
+                }
+            }
         }
     }.start(wait = true)
 }
 
-fun Routing.userCrud(repository: Repository<User>) {
+fun Routing.userCrud(repository: Repository<User>): Route  =
     route("/api") {
 
         route("/users") {
@@ -104,40 +114,3 @@ fun Routing.userCrud(repository: Repository<User>) {
             }
         }
     }
-}
-
-
-
-interface Repository<E> {
-    fun get(id: String): E?
-    fun save(entity: E)
-    fun delete(id: String)
-    fun list(query: Map<String, List<String>>): List<E>
-}
-
-interface Entity {
-    val id: String
-}
-
-class ListRepository<E: Entity>: Repository<E> {
-    private val list: MutableList<E> = mutableListOf()
-
-    override fun list(query: Map<String, List<String>>): List<E> {
-        return list.toList()
-    }
-
-    override fun get(id: String): E? {
-        return list.find { it.id == id }
-    }
-
-    override fun save(entity: E) {
-        list.add(entity)
-    }
-
-    override fun delete(id: String) {
-        list.removeIf { it.id == id }
-    }
-}
-
-@Serializable
-data class User(override val id: String, val name: String): Entity

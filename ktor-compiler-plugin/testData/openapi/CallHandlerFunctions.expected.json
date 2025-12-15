@@ -24,8 +24,8 @@
                     {
                         "name": "recipient",
                         "in": "query",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -46,8 +46,8 @@
                     {
                         "name": "recipient",
                         "in": "query",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -100,5 +100,6 @@
                 }
             }
         }
-    }
+    },
+    "components": {}
 }

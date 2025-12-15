@@ -15,24 +15,24 @@
                         "name": "c",
                         "in": "path",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
                         "name": "b",
                         "in": "path",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
                         "name": "a",
                         "in": "path",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -46,5 +46,6 @@
                 }
             }
         }
-    }
+    },
+    "components": {}
 }

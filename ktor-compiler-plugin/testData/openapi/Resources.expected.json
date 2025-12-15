@@ -15,8 +15,8 @@
                         "name": "id",
                         "in": "path",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ]
@@ -29,8 +29,8 @@
                         "name": "id",
                         "in": "path",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ]
@@ -45,23 +45,23 @@
                     {
                         "name": "offset",
                         "in": "query",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
                         "name": "limit",
                         "in": "query",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
                         "name": "query",
                         "in": "query",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ]
@@ -77,8 +77,8 @@
                         "name": "id",
                         "in": "path",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ]
@@ -91,12 +91,13 @@
                         "name": "id",
                         "in": "path",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ]
             }
         }
-    }
+    },
+    "components": {}
 }

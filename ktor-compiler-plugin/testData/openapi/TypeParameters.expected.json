@@ -47,8 +47,8 @@
                         "name": "id",
                         "in": "path",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -64,8 +64,8 @@
                         "name": "id",
                         "in": "path",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -128,8 +128,8 @@
                         "name": "id",
                         "in": "path",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -145,8 +145,8 @@
                         "name": "id",
                         "in": "path",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],

@@ -52,8 +52,8 @@
                         "in": "path",
                         "description": "The ID of the user",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -71,8 +71,8 @@
                         "in": "path",
                         "description": "The ID of the user",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -140,8 +140,8 @@
                         "in": "path",
                         "description": "The ID of the message",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -159,8 +159,8 @@
                         "in": "path",
                         "description": "The ID of the message",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],

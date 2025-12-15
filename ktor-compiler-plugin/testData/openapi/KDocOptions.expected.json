@@ -53,9 +53,7 @@
                         "in": "query",
                         "description": "my input",
                         "schema": {
-                            "type": "string",
-                            "nullable": true,
-                            "pattern": "[a-z0-9_&+]+"
+                            "type": "string"
                         }
                     },
                     {
@@ -63,23 +61,21 @@
                         "in": "query",
                         "description": "",
                         "schema": {
-                            "type": "integer",
-                            "maximum": 100.0,
-                            "minimum": 1.0
+                            "type": "string"
                         }
                     },
                     {
                         "name": "query",
                         "in": "query",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
                         "name": "count",
                         "in": "query",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -120,15 +116,15 @@
                         "in": "header",
                         "description": "The number of allowed requests in the current period",
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     },
                     {
                         "name": "token",
                         "in": "cookie",
                         "description": "A token",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         },
                         "x-sensitive": "true"
                     },
@@ -137,24 +133,24 @@
                         "in": "path",
                         "description": "The user ID",
                         "required": true,
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
                         "name": "q",
                         "in": "query",
                         "description": "A search query",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
                         "name": "X-Type",
                         "in": "header",
                         "description": "The type of a thing",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],

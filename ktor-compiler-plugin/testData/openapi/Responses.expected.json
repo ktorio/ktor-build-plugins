@@ -195,8 +195,8 @@
                         "name": "Location",
                         "in": "header",
                         "description": "URI of created resource",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -358,8 +358,8 @@
                         "name": "Content-Type",
                         "in": "header",
                         "description": "text/plain",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -381,8 +381,8 @@
                         "name": "Content-Type",
                         "in": "header",
                         "description": "text/html",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -404,8 +404,8 @@
                         "name": "Content-Type",
                         "in": "header",
                         "description": "application/xml",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -427,8 +427,8 @@
                         "name": "Content-Type",
                         "in": "header",
                         "description": "text/csv",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -592,7 +592,7 @@
                         "in": "query",
                         "description": "Should the operation succeed",
                         "schema": {
-                            "type": "boolean"
+                            "type": "string"
                         }
                     },
                     {
@@ -600,21 +600,21 @@
                         "in": "query",
                         "description": "Include warning in response",
                         "schema": {
-                            "type": "boolean"
+                            "type": "string"
                         }
                     },
                     {
                         "name": "success",
                         "in": "query",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
                         "name": "includeWarning",
                         "in": "query",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -670,24 +670,24 @@
                         "name": "X-Rate-Limit-Limit",
                         "in": "header",
                         "description": "Maximum number of requests",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
                         "name": "X-Rate-Limit-Remaining",
                         "in": "header",
                         "description": "Remaining requests in the current period",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
                         "name": "X-Rate-Limit-Reset",
                         "in": "header",
                         "description": "Time when the rate limit resets",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -726,24 +726,24 @@
                         "name": "Cache-Control",
                         "in": "header",
                         "description": "Caching directives",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
                         "name": "ETag",
                         "in": "header",
                         "description": "Entity tag for cache validation",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
                         "name": "Last-Modified",
                         "in": "header",
                         "description": "Last modification date",
-                        "content": {
-                            "text/plain": {}
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],

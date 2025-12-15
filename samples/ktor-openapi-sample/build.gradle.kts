@@ -7,7 +7,8 @@ plugins {
 ktor {
     openApi {
         enabled = true
-        onlyCommented = true
+        codeInferenceEnabled = true
+        onlyCommented = false
     }
 }
 
@@ -17,6 +18,7 @@ dependencies {
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cio)
     implementation(libs.ktor.server.openApi)
+    implementation(libs.ktor.server.swagger)
     implementation(libs.ktor.server.contentNegotiation)
     implementation(libs.ktor.server.routing.annotate)
     implementation(libs.ktor.json)

@@ -12,6 +12,11 @@ class GeneralAnnotateExpressionGenerator(
         for (field in fields) {
             try {
                 when (field) {
+                    // operationId = "..."
+                    is RouteField.OperationId -> {
+                        assignProperty("operationId", field.value)
+                    }
+
                     // deprecated = true
                     is RouteField.Deprecated -> {
                         assignProperty("deprecated", field.reason.isNotEmpty())
