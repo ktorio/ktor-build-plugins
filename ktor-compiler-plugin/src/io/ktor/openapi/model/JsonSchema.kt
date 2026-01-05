@@ -8,9 +8,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import org.jetbrains.kotlin.fir.declarations.getAnnotationByClassId
-import org.jetbrains.kotlin.fir.types.ConeClassLikeType
-import org.jetbrains.kotlin.fir.types.ConeKotlinType
-import org.jetbrains.kotlin.fir.types.type
+import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
@@ -47,35 +45,55 @@ data class JsonSchema(
                     typeArguments.asSequence().flatMap { typeProjection ->
                         typeProjection.resolveType()?.findSchemaDefinitions() ?: emptySequence()
                     }
-                null -> sequenceOf(classId.shortClassName.asString() to schemaDefinitionForType(this))
+                null -> sequenceOf(classId.shortClassName.asString() to schemaDefinitionForType(this, setOf(classId)))
                 else -> emptySequence()
             }
         }
 
         context(context: RouteStack)
-        fun ConeKotlinType.asJsonSchema(fullSchema: Boolean = true): JsonSchema {
-            if (this !is ConeClassLikeType) {
-                return resolveType()?.asJsonSchema(fullSchema) ?: JsonSchema()
+        private fun ConeKotlinType.resolveToClassLike(visited: Set<String> = emptySet()): ConeClassLikeType? {
+            if (this is ConeClassLikeType) return this
+
+            val key = toString()
+            if (key in visited) return null
+
+            val next = when (this) {
+                is ConeFlexibleType -> lowerBound
+                is ConeDefinitelyNotNullType -> original
+                is ConeIntersectionType -> intersectedTypes.firstOrNull()
+                else -> resolveType()
             }
 
-            return when(val jsonType = lookupTag.classId.toJsonType()) {
+            return next?.resolveToClassLike(visited + key)
+        }
+
+        context(context: RouteStack)
+        fun ConeKotlinType.asJsonSchema(fullSchema: Boolean = true, visited: Set<ClassId> = emptySet()): JsonSchema {
+            val unwrapped = resolveToClassLike() ?: return JsonSchema()
+
+            val classId = unwrapped.lookupTag.classId
+            if (classId in visited) {
+                return JsonSchema(ref = "#/components/schemas/${classId.shortClassName.asString()}")
+            }
+
+            return when(val jsonType = classId.toJsonType()) {
                 JsonType.array -> JsonSchema(
                     type = JsonType.array,
-                    items = typeArguments.first().type?.asJsonSchema(fullSchema)
+                    items = unwrapped.typeArguments.first().type?.asJsonSchema(fullSchema, visited)
                 )
                 JsonType.`object` -> {
-                    when(lookupTag.classId) {
+                    when(classId) {
                         StandardClassIds.Map, StandardClassIds.MutableMap ->
                             JsonSchema(
                                 type = JsonType.`object`,
-                                additionalProperties = typeArguments.last().type?.asJsonSchema(fullSchema)
+                                additionalProperties = unwrapped.typeArguments.last().type?.asJsonSchema(fullSchema, visited)
                             )
-                        else -> schemaDefinitionForType(this)
+                        else -> schemaDefinitionForType(unwrapped, visited + classId)
                     }
                 }
                 null -> {
-                    if (fullSchema) schemaDefinitionForType(this)
-                    else JsonSchema(ref = "#/components/schemas/${this.lookupTag.classId.shortClassName.asString()}")
+                    if (fullSchema) schemaDefinitionForType(unwrapped, visited + classId)
+                    else JsonSchema(ref = "#/components/schemas/${classId.shortClassName.asString()}")
                 }
                 JsonType.any -> JsonSchema()
                 else -> JsonSchema(jsonType)
@@ -90,7 +108,7 @@ data class JsonSchema(
             }
 
         context(context: RouteStack)
-        private fun schemaDefinitionForType(coneType: ConeClassLikeType): JsonSchema {
+        private fun schemaDefinitionForType(coneType: ConeClassLikeType, visited: Set<ClassId>): JsonSchema {
             return JsonSchema(
                 type = JsonType.`object`,
                 properties = getAllPropertiesFromType(coneType)
@@ -101,7 +119,7 @@ data class JsonSchema(
                             // but don't recursively process it to avoid infinite recursion
                             it.resolvedReturnType.asContextualJsonSchema()
                         } else {
-                            it.resolvedReturnType.asJsonSchema()
+                            it.resolvedReturnType.asJsonSchema(visited = visited)
                         }
                         propertyName to propertySchema
                     }
@@ -110,12 +128,8 @@ data class JsonSchema(
 
         context(context: RouteStack)
         private fun ConeKotlinType.asContextualJsonSchema(): JsonSchema {
-            if (this !is ConeClassLikeType) {
-
-                return resolveType()?.asContextualJsonSchema() ?: JsonSchema() // unknown "any"
-            }
-
-            val classId = lookupTag.classId
+            val unwrapped = resolveToClassLike() ?: return JsonSchema()
+            val classId = unwrapped.lookupTag.classId
 
             // Known primitive-like types
             val jsonType = classId.toJsonType()
