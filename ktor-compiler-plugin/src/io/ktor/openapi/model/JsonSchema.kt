@@ -79,14 +79,14 @@ data class JsonSchema(
             return when(val jsonType = classId.toJsonType()) {
                 JsonType.array -> JsonSchema(
                     type = JsonType.array,
-                    items = unwrapped.typeArguments.first().type?.asJsonSchema(fullSchema, visited)
+                    items = unwrapped.typeArguments.firstOrNull()?.type?.asJsonSchema(fullSchema, visited)
                 )
                 JsonType.`object` -> {
                     when(classId) {
                         StandardClassIds.Map, StandardClassIds.MutableMap ->
                             JsonSchema(
                                 type = JsonType.`object`,
-                                additionalProperties = unwrapped.typeArguments.last().type?.asJsonSchema(fullSchema, visited)
+                                additionalProperties = unwrapped.typeArguments.lastOrNull()?.type?.asJsonSchema(fullSchema, visited)
                             )
                         else -> schemaDefinitionForType(unwrapped, visited + classId)
                     }
