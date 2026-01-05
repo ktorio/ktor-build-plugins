@@ -54,13 +54,18 @@ data class JsonSchema(
         private fun ConeKotlinType.resolveToClassLike(visited: Set<String> = emptySet()): ConeClassLikeType? {
             if (this is ConeClassLikeType) return this
 
-            val key = toString()
+            val key = renderReadableWithFqNames()
             if (key in visited) return null
 
             val next = when (this) {
                 is ConeFlexibleType -> lowerBound
                 is ConeDefinitelyNotNullType -> original
-                is ConeIntersectionType -> intersectedTypes.firstOrNull()
+                is ConeIntersectionType -> {
+                    // We can only return a single ClassLikeType.
+                    // Usually the first type in an intersection is the most specific class (e.g. String vs Serializable).
+                    // Constraints from other types in the intersection might be lost in the schema.
+                    intersectedTypes.firstOrNull()
+                }
                 else -> resolveType()
             }
 
