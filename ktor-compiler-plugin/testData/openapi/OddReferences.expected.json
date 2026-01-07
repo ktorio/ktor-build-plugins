@@ -1,0 +1,68 @@
+{
+    "openapi": "3.1.1",
+    "info": {
+        "title": "OpenAPI Document",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/higher-scope": {
+            "get": {
+                "summary": "Referencing from a higher scope",
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/csv": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/external-return": {
+            "get": {
+                "summary": "Local declarations; external function return",
+                "responses": {
+                    "202": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/reassignment": {
+            "get": {
+                "summary": "Reassignment; branches",
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/message+json": {}
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CustomResponse": {
+                "type": "object",
+                "title": "openapi.CustomResponse",
+                "required": [
+                    "message"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -22,27 +22,27 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
-  @TestMetadata("Authentication.kt")
-  public void testAuthentication() {
-    runTest("ktor-compiler-plugin/testData/openapi/Authentication.kt");
+  @TestMetadata("CallHandlerFunctions.kt")
+  public void testCallHandlerFunctions() {
+    runTest("ktor-compiler-plugin/testData/openapi/CallHandlerFunctions.kt");
   }
 
   @Test
-  @TestMetadata("Contextual.kt")
-  public void testContextual() {
-    runTest("ktor-compiler-plugin/testData/openapi/Contextual.kt");
-  }
-
-  @Test
-  @TestMetadata("Functions.kt")
-  public void testFunctions() {
-    runTest("ktor-compiler-plugin/testData/openapi/Functions.kt");
+  @TestMetadata("KDocOptions.kt")
+  public void testKDocOptions() {
+    runTest("ktor-compiler-plugin/testData/openapi/KDocOptions.kt");
   }
 
   @Test
   @TestMetadata("Nesting.kt")
   public void testNesting() {
     runTest("ktor-compiler-plugin/testData/openapi/Nesting.kt");
+  }
+
+  @Test
+  @TestMetadata("OddReferences.kt")
+  public void testOddReferences() {
+    runTest("ktor-compiler-plugin/testData/openapi/OddReferences.kt");
   }
 
   @Test
@@ -64,9 +64,9 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
-  @TestMetadata("Templates.kt")
-  public void testTemplates() {
-    runTest("ktor-compiler-plugin/testData/openapi/Templates.kt");
+  @TestMetadata("RouteFunctions.kt")
+  public void testRouteFunctions() {
+    runTest("ktor-compiler-plugin/testData/openapi/RouteFunctions.kt");
   }
 
   @Test
