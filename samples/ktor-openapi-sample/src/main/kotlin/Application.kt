@@ -6,7 +6,6 @@ import io.ktor.openapi.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
-import io.ktor.server.config.property
 import io.ktor.server.engine.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.openapi.*
@@ -83,9 +82,9 @@ fun Routing.userCrud(repository: Repository<User>): Route  =
             /**
              * Get a single user
              *
-             * @path id The ID of the user
-             * @response 404 The user was not found
-             * @response 200 [User] The user.
+             * - Path: id The ID of the user
+             * - Response: 404 The user was not found
+             * - Response: 200 [User] The user.
              */
             get("{id}") {
                 val user = repository.get(call.parameters["id"]!!)

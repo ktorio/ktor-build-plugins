@@ -14,8 +14,9 @@ internal fun Project.configureOpenApi() {
             val enabled = ext.enabled.get()
             if (enabled) {
                 if (!hasRoutingAnnotateDependency()) {
-                    logger.warn("OpenAPI inference needs ktor-server-routing-annotate dependency")
-                    return@afterEvaluate
+                    // Automatically add the missing dependency to the implementation configuration
+                    dependencies.add("implementation", "io.ktor:ktor-server-routing-annotate:${KtorGradlePlugin.KTOR_VERSION}")
+                    logger.info("Ktor annotations dependency automatically included")
                 }
                 // Apply compiler plugin
                 pluginManager.apply(CompilerPlugin::class.java)

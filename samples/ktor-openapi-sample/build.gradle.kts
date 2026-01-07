@@ -20,7 +20,6 @@ dependencies {
     implementation(libs.ktor.server.openApi)
     implementation(libs.ktor.server.swagger)
     implementation(libs.ktor.server.contentNegotiation)
-    implementation(libs.ktor.server.routing.annotate)
     implementation(libs.ktor.json)
     implementation(libs.logback)
 }

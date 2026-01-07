@@ -27,7 +27,7 @@ sourceSets {
         java.setSrcDirs(listOf("test-fixtures"))
     }
     test {
-        java.setSrcDirs(listOf("test-gen"))
+        java.setSrcDirs(listOf("test", "test-gen"))
     }
 }
 
