@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.utils.addToStdlib.indexOfOrNull
 internal val statusRegex = Regex("^\\d+$")
 internal val contentTypeRegex = Regex("^(\\w+/\\S+)$")
 internal val propertyLineRegex = Regex("^([\\w -_]+):\\s*(.*)$")
+internal val propertySansColonRegex = Regex("^([\\w -_]+?)(\\W*)$")
 internal val schemaArgRegex = Regex("^(:?)\\[(.*)]([?+]?)$")
 
 /**
@@ -112,6 +113,24 @@ fun parsePrecedingComment(
 data class CommentLine(
     private val rawText: String,
 ) {
+    companion object {
+        internal val propertyKeywords = setOf(
+            "body",
+            "cookie",
+            "deprecated",
+            "description",
+            "externalDoc",
+            "header",
+            "ignore",
+            "path",
+            "path parameter",
+            "query",
+            "query parameter",
+            "response",
+            "security",
+            "tag",
+        )
+    }
     private val startIndex: Int = (rawText.indexOfOrNull('*') ?: -1) + 1
     private val contentAfterStar: CharSequence get() = rawText.subSequence(startIndex, rawText.length)
     private val dashIndex: Int get() = contentAfterStar.indexOf('*')
@@ -124,8 +143,13 @@ data class CommentLine(
     fun isNotEmpty(): Boolean = content.isNotBlank()
     fun isKDocAttribute(): Boolean = content.startsWith('@')
 
-    fun isProperty(): Boolean = propertyLineRegex.matches(trimmedContent)
-    fun asPropertyMatch(): MatchResult? = propertyLineRegex.matchEntire(trimmedContent)
+    fun isProperty(): Boolean =
+        propertyLineRegex.matches(trimmedContent) ||
+            propertySansColonRegex.matchEntire(trimmedContent)?.groupValues[1]?.lowercase() in propertyKeywords
+
+    fun asPropertyMatch(): MatchResult? =
+        propertyLineRegex.matchEntire(trimmedContent) ?:
+            propertySansColonRegex.find(trimmedContent)
 
     fun appendTo(appendable: Appendable): Appendable = appendable.append(content).appendLine()
 }

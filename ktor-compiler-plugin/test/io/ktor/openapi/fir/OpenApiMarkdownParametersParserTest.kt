@@ -107,6 +107,18 @@ class OpenApiMarkdownParametersParserTest {
         )
     }
 
+    @Test
+    fun `ignored endpoint`() {
+        assertParsed(
+            """
+                Get a list of books
+                Ignore!
+            """.trimIndent(),
+            RouteField.Summary("Get a list of books"),
+            RouteField.Ignore,
+        )
+    }
+
     private fun assertParsed(input: String, vararg expected: RouteField) {
         val commentLines = input.lines().map(::CommentLine)
         val actual = parseMarkdownParameters(commentLines, logger, packageName)
