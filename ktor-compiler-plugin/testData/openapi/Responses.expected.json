@@ -592,7 +592,7 @@
                         "in": "query",
                         "description": "Should the operation succeed",
                         "schema": {
-                            "type": "string"
+                            "type": "boolean"
                         }
                     },
                     {
@@ -600,7 +600,7 @@
                         "in": "query",
                         "description": "Include warning in response",
                         "schema": {
-                            "type": "string"
+                            "type": "boolean"
                         }
                     },
                     {

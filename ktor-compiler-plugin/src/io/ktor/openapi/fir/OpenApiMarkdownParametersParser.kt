@@ -33,12 +33,13 @@ internal fun parseMarkdownParameters(
 
     return buildList {
         // Add Summary from preamble
-        buildString {
+        val summary = buildString {
             while (i < lines.size && !lines[i].isProperty()) {
                 appendLine(lines[i++].content)
             }
-        }.takeIf(String::isNotBlank)?.let {
-            add(Summary(it.trim()))
+        }
+        if (summary.isNotBlank()) {
+            add(Summary(summary.trim()))
         }
 
         // Add remaining from properties

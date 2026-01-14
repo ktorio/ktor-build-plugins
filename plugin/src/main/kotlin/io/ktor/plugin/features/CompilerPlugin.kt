@@ -12,6 +12,11 @@ import javax.inject.Inject
 public class CompilerPlugin @Inject constructor(
     private val objects: ObjectFactory
 ) : KotlinCompilerPluginSupportPlugin {
+    private companion object {
+        const val ENABLED = "openApiEnabled"
+        const val CODE_INFERENCE = "openApiCodeInference"
+        const val ONLY_COMMENTED = "openApiOnlyCommented"
+    }
 
     override fun getCompilerPluginId(): String =
         "io.ktor.ktor-compiler-plugin"
@@ -23,9 +28,9 @@ public class CompilerPlugin @Inject constructor(
 
         return project.provider {
             buildList {
-                ktorOption("openapiEnabled", extension.enabled.getOrElse(false))
-                ktorOption("openapiCodeInference", extension.codeInferenceEnabled.getOrElse(false))
-                ktorOption("openapiOnlyCommented", extension.onlyCommented.getOrElse(false))
+                ktorOption(ENABLED, extension.enabled.getOrElse(false))
+                ktorOption(CODE_INFERENCE, extension.codeInferenceEnabled.getOrElse(false))
+                ktorOption(ONLY_COMMENTED, extension.onlyCommented.getOrElse(false))
             }
         }
     }

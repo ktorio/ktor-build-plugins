@@ -34,6 +34,12 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
+  @TestMetadata("MarkdownOptions.kt")
+  public void testMarkdownOptions() {
+    runTest("ktor-compiler-plugin/testData/openapi/MarkdownOptions.kt");
+  }
+
+  @Test
   @TestMetadata("Nesting.kt")
   public void testNesting() {
     runTest("ktor-compiler-plugin/testData/openapi/Nesting.kt");

@@ -101,7 +101,7 @@ fun parsePrecedingComment(
                 logger.log("KDoc annotation support is deprecated")
                 lines.parseKDocParameters(logger, packageName)
             } else {
-                parseMarkdownParameters(singleLineComments, logger, packageName)
+                parseMarkdownParameters(lines, logger, packageName)
             }
         }
     }
@@ -137,7 +137,7 @@ data class CommentLine(
         .takeIf { it > 0 && contentAfterStar.subSequence(0, it).isBlank() } ?: 0
 
     val content: CharSequence get() = contentAfterStar.trimStart()
-    val trimmedContent: CharSequence get() = contentAfterStar.subSequence(dashIndex, rawText.length).trimStart('-', ' ')
+    val trimmedContent: CharSequence get() = contentAfterStar.subSequence(dashIndex, contentAfterStar.length).trimStart('-', ' ')
     val indent: Int get() = contentAfterStar.indexOfFirst { !it.isWhitespace() }
 
     fun isNotEmpty(): Boolean = content.isNotBlank()

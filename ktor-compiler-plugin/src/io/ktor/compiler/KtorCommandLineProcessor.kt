@@ -8,36 +8,41 @@ import org.jetbrains.kotlin.config.CompilerConfigurationKey
 
 class KtorCommandLineProcessor : CommandLineProcessor {
     companion object {
+        private const val ENABLED = "openApiEnabled"
+        private const val CODE_INFERENCE = "openApiCodeInference"
+        private const val ONLY_COMMENTED = "openApiOnlyCommented"
+        private const val DEBUG = "openApiDebug"
+
         const val PLUGIN_ID = "io.ktor.ktor-compiler-plugin"
 
-        val OPENAPI_ENABLED_KEY = CompilerConfigurationKey<String>("openapiEnabled")
-        val OPENAPI_DEBUG_KEY = CompilerConfigurationKey<String>("openapiDebug")
-        val OPENAPI_CODE_INFERENCE_KEY = CompilerConfigurationKey<String>("openapiCodeInference")
-        val OPENAPI_ONLY_COMMENTED_KEY = CompilerConfigurationKey<String>("openapiOnlyCommented")
+        val OPENAPI_ENABLED_KEY = CompilerConfigurationKey<String>(ENABLED)
+        val OPENAPI_DEBUG_KEY = CompilerConfigurationKey<String>(DEBUG)
+        val OPENAPI_CODE_INFERENCE_KEY = CompilerConfigurationKey<String>(CODE_INFERENCE)
+        val OPENAPI_ONLY_COMMENTED_KEY = CompilerConfigurationKey<String>(ONLY_COMMENTED)
 
         val OPENAPI_ENABLED_OPTION = CliOption(
-            "openapiEnabled",
+            ENABLED,
             "<boolean>",
             "Enables the OpenAPI generation",
             required = false
         )
 
         val OPENAPI_DEBUG_OPTION = CliOption(
-            "openapiDebug",
+            DEBUG,
             "<boolean>",
             "Writes exception stack traces to messages",
             required = false
         )
 
         val OPENAPI_CODE_INFERENCE_OPTION = CliOption(
-            "openapiCodeInference",
+            CODE_INFERENCE,
             "<boolean>",
             "Enables code inference for OpenAPI (experimental)",
             required = false
         )
 
         val OPENAPI_ONLY_COMMENTED_OPTION = CliOption(
-            "openapiOnlyCommented",
+            ONLY_COMMENTED,
             "<boolean>",
             "Only process routing calls that have a preceding comment (KDoc or line comment)",
             required = false
