@@ -1,7 +1,7 @@
 package io.ktor.openapi.ir
 
 import io.ktor.openapi.Logger
-import io.ktor.openapi.ir.generators.GeneralAnnotateExpressionGenerator
+import io.ktor.openapi.ir.generators.GeneralDescribeExpressionGenerator
 import io.ktor.openapi.ir.generators.ParametersGenerator
 import io.ktor.openapi.ir.generators.ResponsesGenerator
 import io.ktor.openapi.ir.inference.AppendResponseHeaderInference
@@ -22,10 +22,10 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
 /**
- * Finds all route selector calls and chains `annotate` calls with relevant details that can be found
+ * Finds all route selector calls and chains `describe` calls with relevant details that can be found
  * at compile time.
  */
-class CallAnnotateTransformer(
+class CallDescribeTransformer(
     val logger: Logger,
     val pluginContext: IrPluginContext,
     val routes: RouteCallLookup,
@@ -36,9 +36,9 @@ class CallAnnotateTransformer(
     IrPluginContext by pluginContext {
 
     companion object {
-        const val ANNOTATE_PACKAGE = "io.ktor.annotate"
+        const val DESCRIBE_FUNCTION_NAME = "describe"
+        const val DESCRIBE_PACKAGE = "io.ktor.server.routing.openapi"
         const val OPENAPI_PACKAGE = "io.ktor.openapi"
-        const val ANNOTATE_FUNCTION_NAME = "annotate"
     }
 
     private val callHandlerAnalyzer: CallHandlerAnalyzer =
@@ -53,10 +53,10 @@ class CallAnnotateTransformer(
                 ResourceRouteCallInference,
             ), this)
 
-    private val annotateFunction: IrSimpleFunction by lazy {
+    private val describeFunction: IrSimpleFunction by lazy {
         CallableId(
-            packageName = FqName(ANNOTATE_PACKAGE),
-            callableName = Name.identifier(ANNOTATE_FUNCTION_NAME)
+            packageName = FqName(DESCRIBE_PACKAGE),
+            callableName = Name.identifier(DESCRIBE_FUNCTION_NAME)
         ).let { callableId ->
             pluginContext.referenceFunctions(callableId)
                 .single() // or use .first() / .firstOrNull() with additional filtering
@@ -107,13 +107,13 @@ class CallAnnotateTransformer(
         return if (route.isLeaf) {
             // when handler inference is enabled,
             // scan the lambda body for route details
-            expression.chainAnnotationCall(
+            expression.chainDescribeCall(
                 parentDeclaration = currentFunction,
                 routeFields = route.fields.includeLambdaBody(expression)
             )
         } else if (route.fields.isNotEmpty()) {
-            // append the annotate function from route fields and continue analysis
-            super.visitCall(expression).chainAnnotationCall(
+            // append the describe function from route fields and continue analysis
+            super.visitCall(expression).chainDescribeCall(
                 parentDeclaration = currentFunction,
                 routeFields = route.fields
             )
@@ -138,7 +138,7 @@ class CallAnnotateTransformer(
         SourceKey(currentFile?.path, startOffset, endOffset)
 
     context(context: CodeGenContext)
-    private fun IrExpression.chainAnnotationCall(
+    private fun IrExpression.chainDescribeCall(
         parentDeclaration: IrFunction,
         routeFields: RouteFieldList,
     ): IrExpression {
@@ -146,16 +146,16 @@ class CallAnnotateTransformer(
             return this
         val parameterFields = mutableListOf<RouteField.Parameter>()
         val responseFields = mutableListOf<RouteField>()
-        val annotateExpressionBuilder = GeneralAnnotateExpressionGenerator(
+        val describeExpressionBuilder = GeneralDescribeExpressionGenerator(
             delegateParameterField = parameterFields::add,
             delegateResponseField = responseFields::add,
         )
 
         return chainBuilder(
             parentDeclaration = parentDeclaration,
-            functionToCall = annotateFunction,
+            functionToCall = describeFunction,
         ) {
-            annotateExpressionBuilder.generate(routeFields)
+            describeExpressionBuilder.generate(routeFields)
             ParametersGenerator.generate(parameterFields)
             ResponsesGenerator.generate(responseFields)
         }

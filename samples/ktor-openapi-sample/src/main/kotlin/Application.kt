@@ -1,6 +1,5 @@
 package io.ktor.samples.openapi
 
-import io.ktor.annotate.*
 import io.ktor.http.*
 import io.ktor.openapi.*
 import io.ktor.serialization.kotlinx.json.*
@@ -13,6 +12,7 @@ import io.ktor.server.plugins.swagger.swaggerUI
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.*
 import io.ktor.util.*
 import kotlinx.serialization.json.Json
 

@@ -5,7 +5,7 @@ import io.ktor.openapi.ir.*
 import io.ktor.openapi.routing.*
 import org.jetbrains.kotlin.ir.types.classOrNull
 
-val ResponsesGenerator = IrAnnotateExpressionGenerator<RouteField> { fields ->
+val ResponsesGenerator = IrDescribeExpressionGenerator<RouteField> { fields ->
     try {
         val responseHeaders = fields.filterIsInstance<RouteField.ResponseHeader>()
         val defaultCode = LocalReference.of(200)

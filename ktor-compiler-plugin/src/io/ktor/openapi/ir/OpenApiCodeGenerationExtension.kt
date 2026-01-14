@@ -16,7 +16,7 @@ class OpenApiCodeGenerationExtension(
         pluginContext: IrPluginContext
     ) {
         moduleFragment.transform(
-            transformer = CallAnnotateTransformer(
+            transformer = CallDescribeTransformer(
                 logger,
                 pluginContext,
                 routes,

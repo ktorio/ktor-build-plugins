@@ -49,7 +49,7 @@ dependencies {
     testSamples(libs.ktor.server.auth)
     testSamples(libs.ktor.server.authJwt)
     testSamples(libs.ktor.server.resources)
-    testSamples(libs.ktor.server.routing.annotate)
+    testSamples(libs.ktor.server.routing.openapi)
     testSamples(libs.ktor.server.test.host)
     testSamples(libs.ktor.client.core)
     testSamples(libs.ktor.client.apache)

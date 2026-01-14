@@ -3,10 +3,10 @@ package io.ktor.openapi.ir.generators
 import io.ktor.openapi.ir.*
 import io.ktor.openapi.routing.*
 
-class GeneralAnnotateExpressionGenerator(
+class GeneralDescribeExpressionGenerator(
     val delegateParameterField: (RouteField.Parameter) -> Unit = {},
     val delegateResponseField: (RouteField) -> Unit = {},
-) : IrAnnotateExpressionGenerator<RouteField> {
+) : IrDescribeExpressionGenerator<RouteField> {
     context(context: LambdaBuilderContext)
     override fun generate(fields: List<RouteField>) {
         for (field in fields) {

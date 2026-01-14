@@ -535,7 +535,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/Animal"
                                 }
                             }
                         }
@@ -574,7 +574,7 @@
                                 "schema": {
                                     "type": "array",
                                     "items": {
-                                        "type": "object"
+                                        "$ref": "#/components/schemas/Animal"
                                     }
                                 }
                             }
@@ -821,6 +821,7 @@
                     },
                     "details": {
                         "type": "object",
+                        "nullable": true,
                         "additionalProperties": {
                             "type": "string"
                         }
@@ -877,6 +878,17 @@
                         "additionalProperties": {
                             "type": "string"
                         }
+                    }
+                }
+            },
+            "Animal": {
+                "type": "object",
+                "title": "openapi.Animal",
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "openapi.Cat": "#/components/schemas/Cat",
+                        "openapi.Dog": "#/components/schemas/Dog"
                     }
                 }
             },

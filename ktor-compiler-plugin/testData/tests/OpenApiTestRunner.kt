@@ -1,7 +1,7 @@
 package tests
 
 import com.typesafe.config.ConfigFactory
-import io.ktor.annotate.*
+import io.ktor.server.routing.openapi.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.openapi.*

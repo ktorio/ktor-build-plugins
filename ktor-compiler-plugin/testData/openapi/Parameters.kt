@@ -2,7 +2,6 @@
 
 package openapi
 
-import io.ktor.annotate.annotate
 import io.ktor.server.application.Application
 import io.ktor.server.request.header
 import io.ktor.server.response.*
@@ -24,10 +23,6 @@ fun Application.installParameters() {
                 call.request.headers.getAll("g"),
                 call.request.header("h")
             ).joinToString())
-        }.annotate {
-            parameters {
-
-            }
         }
     }
 }

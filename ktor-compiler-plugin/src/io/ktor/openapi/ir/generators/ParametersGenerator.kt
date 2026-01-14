@@ -1,14 +1,14 @@
 package io.ktor.openapi.ir.generators
 
 import io.ktor.openapi.Logger
-import io.ktor.openapi.ir.IrAnnotateExpressionGenerator
+import io.ktor.openapi.ir.IrDescribeExpressionGenerator
 import io.ktor.openapi.ir.assignProperty
 import io.ktor.openapi.ir.callFunctionWithScope
 import io.ktor.openapi.ir.unaryPlus
 import io.ktor.openapi.routing.RouteField
 
-val ParametersGenerator = IrAnnotateExpressionGenerator<RouteField.Parameter> { fields ->
-    if (fields.isEmpty()) return@IrAnnotateExpressionGenerator
+val ParametersGenerator = IrDescribeExpressionGenerator<RouteField.Parameter> { fields ->
+    if (fields.isEmpty()) return@IrDescribeExpressionGenerator
 
     +callFunctionWithScope("parameters") {
         for (field in fields) {

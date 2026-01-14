@@ -17,7 +17,8 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "nullable": true
                                 }
                             }
                         }
@@ -183,23 +184,29 @@
                         "type": "string"
                     },
                     "description": {
-                        "type": "string"
+                        "type": "string",
+                        "nullable": true
                     },
                     "termsOfService": {
-                        "type": "string"
+                        "type": "string",
+                        "nullable": true
                     },
                     "contact": {
                         "type": "object",
                         "title": "io.ktor.openapi.OpenApiInfo.Contact?",
+                        "nullable": true,
                         "properties": {
                             "name": {
-                                "type": "string"
+                                "type": "string",
+                                "nullable": true
                             },
                             "url": {
-                                "type": "string"
+                                "type": "string",
+                                "nullable": true
                             },
                             "email": {
-                                "type": "string"
+                                "type": "string",
+                                "nullable": true
                             }
                         }
                     },
@@ -209,20 +216,24 @@
                         "required": [
                             "name"
                         ],
+                        "nullable": true,
                         "properties": {
                             "name": {
                                 "type": "string"
                             },
                             "url": {
-                                "type": "string"
+                                "type": "string",
+                                "nullable": true
                             },
                             "identifier": {
-                                "type": "string"
+                                "type": "string",
+                                "nullable": true
                             }
                         }
                     },
                     "extensions": {
                         "type": "object",
+                        "nullable": true,
                         "additionalProperties": {
                             "type": "object"
                         }

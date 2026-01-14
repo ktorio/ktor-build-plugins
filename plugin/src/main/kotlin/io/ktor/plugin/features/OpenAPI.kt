@@ -15,7 +15,7 @@ internal fun Project.configureOpenApi() {
             if (enabled) {
                 if (!hasRoutingAnnotateDependency()) {
                     // Automatically add the missing dependency to the implementation configuration
-                    dependencies.add("implementation", "io.ktor:ktor-server-routing-annotate:${KtorGradlePlugin.KTOR_VERSION}")
+                    dependencies.add("implementation", "io.ktor:ktor-server-routing-openapi:${KtorGradlePlugin.KTOR_VERSION}")
                     logger.info("Ktor annotations dependency automatically included")
                 }
                 // Apply compiler plugin
@@ -32,7 +32,7 @@ internal fun Project.configureOpenApi() {
 private fun Project.hasRoutingAnnotateDependency(): Boolean {
     return configurations.any { configuration ->
         configuration.allDependencies.any {
-            it.name == "ktor-server-routing-annotate"
+            it.name == "ktor-server-routing-openapi"
         }
     }
 }

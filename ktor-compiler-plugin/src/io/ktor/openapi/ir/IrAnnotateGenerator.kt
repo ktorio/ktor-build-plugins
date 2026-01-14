@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.ir.types.IrType
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS, AnnotationTarget.TYPE, AnnotationTarget.FUNCTION)
 annotation class GenerateDsl
 
-fun interface IrAnnotateExpressionGenerator<T: RouteField> {
+fun interface IrDescribeExpressionGenerator<T: RouteField> {
     context(context: LambdaBuilderContext)
     fun generate(fields: List<T>)
 }
