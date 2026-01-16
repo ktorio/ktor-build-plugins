@@ -12,6 +12,7 @@ class KtorCommandLineProcessor : CommandLineProcessor {
         private const val CODE_INFERENCE = "openApiCodeInference"
         private const val ONLY_COMMENTED = "openApiOnlyCommented"
         private const val DEBUG = "openApiDebug"
+        private const val LOG_DIR = "openApiLogDir"
 
         const val PLUGIN_ID = "io.ktor.ktor-compiler-plugin"
 
@@ -19,6 +20,7 @@ class KtorCommandLineProcessor : CommandLineProcessor {
         val OPENAPI_DEBUG_KEY = CompilerConfigurationKey<String>(DEBUG)
         val OPENAPI_CODE_INFERENCE_KEY = CompilerConfigurationKey<String>(CODE_INFERENCE)
         val OPENAPI_ONLY_COMMENTED_KEY = CompilerConfigurationKey<String>(ONLY_COMMENTED)
+        val OPENAPI_LOG_DIR = CompilerConfigurationKey<String>(LOG_DIR)
 
         val OPENAPI_ENABLED_OPTION = CliOption(
             ENABLED,
@@ -30,7 +32,7 @@ class KtorCommandLineProcessor : CommandLineProcessor {
         val OPENAPI_DEBUG_OPTION = CliOption(
             DEBUG,
             "<boolean>",
-            "Writes exception stack traces to messages",
+            "Enables logging",
             required = false
         )
 
@@ -47,6 +49,13 @@ class KtorCommandLineProcessor : CommandLineProcessor {
             "Only process routing calls that have a preceding comment (KDoc or line comment)",
             required = false
         )
+
+        val OPENAPI_LOG_DIR_OPTION = CliOption(
+            LOG_DIR,
+            "<string>",
+            "Where the debug log file will appear; required for logging",
+            required = false
+        )
     }
 
     override val pluginId: String get() = PLUGIN_ID
@@ -56,6 +65,7 @@ class KtorCommandLineProcessor : CommandLineProcessor {
         OPENAPI_DEBUG_OPTION,
         OPENAPI_CODE_INFERENCE_OPTION,
         OPENAPI_ONLY_COMMENTED_OPTION,
+        OPENAPI_LOG_DIR_OPTION,
     )
 
     override fun processOption(option: AbstractCliOption, value: String, configuration: CompilerConfiguration) {
@@ -64,6 +74,7 @@ class KtorCommandLineProcessor : CommandLineProcessor {
             OPENAPI_DEBUG_OPTION -> configuration.put(OPENAPI_DEBUG_KEY, value)
             OPENAPI_CODE_INFERENCE_OPTION -> configuration.put(OPENAPI_CODE_INFERENCE_KEY, value)
             OPENAPI_ONLY_COMMENTED_OPTION -> configuration.put(OPENAPI_ONLY_COMMENTED_KEY, value)
+            OPENAPI_LOG_DIR_OPTION -> configuration.put(OPENAPI_LOG_DIR, value)
             else -> error("Unexpected option: ${option.optionName}")
         }
     }

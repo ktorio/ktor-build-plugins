@@ -1,5 +1,6 @@
 package io.ktor.openapi.ir
 
+import com.sun.tools.javac.code.TypeAnnotationPosition.field
 import io.ktor.openapi.Logger
 import io.ktor.openapi.ir.generators.GeneralDescribeExpressionGenerator
 import io.ktor.openapi.ir.generators.ParametersGenerator
@@ -97,7 +98,7 @@ class CallDescribeTransformer(
      */
     override fun visitCall(expression: IrCall): IrExpression {
         // check for route info from the FIR analysis step
-        val route = routes[expression.coordinates()]
+        val route: RouteCall = routes[expression.coordinates()]
             ?: return super.visitCall(expression)
 
         // get the nearest declaration up the stack
@@ -107,9 +108,14 @@ class CallDescribeTransformer(
         return if (route.isLeaf) {
             // when handler inference is enabled,
             // scan the lambda body for route details
+            val fields = route.fields.includeLambdaBody(expression)
+            logger.log(buildString {
+                append("ROUTE ${route.locationString()}; fields:")
+                append(fields.joinToString("\n  - ", prefix = "\n  - "))
+            })
             expression.chainDescribeCall(
                 parentDeclaration = currentFunction,
-                routeFields = route.fields.includeLambdaBody(expression)
+                routeFields = fields
             )
         } else if (route.fields.isNotEmpty()) {
             // append the describe function from route fields and continue analysis

@@ -33,7 +33,13 @@ class OpenApiRegistrarConfigurator(testServices: TestServices) : EnvironmentConf
                 cause.printStackTrace()
             }
         }
-        FirExtensionRegistrarAdapter.registerExtension(OpenApiAnalysisExtension(logger, routes, onlyCommented = false))
+        FirExtensionRegistrarAdapter.registerExtension(
+            OpenApiAnalysisExtension(
+                logger,
+                routes,
+                onlyCommented = false
+            )
+        )
         IrGenerationExtension.registerExtension(
             OpenApiCodeGenerationExtension(
                 logger,

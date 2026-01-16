@@ -9,17 +9,18 @@ import org.gradle.api.provider.Property
 
 internal fun Project.configureOpenApi() {
     val ext = createKtorExtension<OpenApiExtension>("openApi")
+
+    // Apply compiler plugin
+    pluginManager.apply(CompilerPlugin::class.java)
+
     afterEvaluate {
         try {
-            val enabled = ext.enabled.get()
-            if (enabled) {
+            if (ext.enabled.get()) {
                 if (!hasRoutingAnnotateDependency()) {
                     // Automatically add the missing dependency to the implementation configuration
                     dependencies.add("implementation", "io.ktor:ktor-server-routing-openapi:${KtorGradlePlugin.KTOR_VERSION}")
                     logger.info("Ktor annotations dependency automatically included")
                 }
-                // Apply compiler plugin
-                pluginManager.apply(CompilerPlugin::class.java)
             } else {
                 logger.debug("OpenAPI inference is disabled")
             }
@@ -70,6 +71,12 @@ public abstract class OpenApiExtension(
      * Defaults to `false`, meaning all routing calls are processed except those explicitly marked with `@ignore`.
      */
     public val onlyCommented: Property<Boolean> = objects.property(defaultValue = false)
+
+    /**
+     * Enables debug logging for OpenAPI feature.
+     * Defaults to `false`.
+     */
+    public val debug: Property<Boolean> = objects.property(defaultValue = false)
 
     /**
      * The title of the API.

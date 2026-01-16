@@ -36,9 +36,10 @@ class RouteCall(
 ): SourceCoordinates {
     val id: String get() = filePath + startOffset.toString()
 
-    override fun toString(): String = sourceText?.toString() ?: buildString {
-        append("$filePath($startOffset..$endOffset)")
-    }
+    override fun toString(): String = sourceText?.toString() ?: locationString()
+
+    fun locationString(): String =
+        "${filePath.substringAfterLast('/')}($startOffset..$endOffset)"
 
     override fun equals(other: Any?): Boolean =
         other is RouteCall && id == other.id

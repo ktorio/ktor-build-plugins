@@ -41,8 +41,8 @@ kotlin {
 
     compilerOptions {
         // See https://docs.gradle.org/current/userguide/compatibility.html#kotlin
-        languageVersion = KotlinVersion.KOTLIN_1_8
-        apiVersion = KotlinVersion.KOTLIN_1_8
+        languageVersion = KotlinVersion.KOTLIN_2_2
+        apiVersion = KotlinVersion.KOTLIN_2_2
     }
 }
 

@@ -14,8 +14,10 @@ public class CompilerPlugin @Inject constructor(
 ) : KotlinCompilerPluginSupportPlugin {
     private companion object {
         const val ENABLED = "openApiEnabled"
+        const val DEBUG = "openApiDebug"
         const val CODE_INFERENCE = "openApiCodeInference"
         const val ONLY_COMMENTED = "openApiOnlyCommented"
+        const val LOG_DIR = "openApiLogDir"
     }
 
     override fun getCompilerPluginId(): String =
@@ -31,6 +33,8 @@ public class CompilerPlugin @Inject constructor(
                 ktorOption(ENABLED, extension.enabled.getOrElse(false))
                 ktorOption(CODE_INFERENCE, extension.codeInferenceEnabled.getOrElse(false))
                 ktorOption(ONLY_COMMENTED, extension.onlyCommented.getOrElse(false))
+                ktorOption(DEBUG, extension.debug.getOrElse(false))
+                ktorOption(LOG_DIR, project.layout.buildDirectory.get().asFile.absolutePath)
             }
         }
     }
@@ -43,13 +47,14 @@ public class CompilerPlugin @Inject constructor(
         )
 
     override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean {
+        val project = kotlinCompilation.target.project
         try {
             val ktorExtension = kotlinCompilation.target.project.extensions.findByType(KtorExtension::class.java)
                 ?: return false
             val openApiExtension = ktorExtension.getExtension<OpenApiExtension>()
             return openApiExtension.enabled.getOrElse(false)
         } catch (e: Exception) {
-            kotlinCompilation.target.project.logger.warn("Failed to check if OpenAPI is enabled: ${e.message}")
+            project.logger.warn("Failed to check if OpenAPI is enabled: ${e.message}")
             return false
         }
     }

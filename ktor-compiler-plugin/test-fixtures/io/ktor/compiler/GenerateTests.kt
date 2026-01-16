@@ -1,7 +1,7 @@
 package io.ktor.compiler
 
 import io.ktor.compiler.runners.AbstractOpenapiTest
-import org.jetbrains.kotlin.generators.generateTestGroupSuiteWithJUnit5
+import org.jetbrains.kotlin.generators.dsl.junit5.generateTestGroupSuiteWithJUnit5
 
 fun main() {
     generateTestGroupSuiteWithJUnit5 {

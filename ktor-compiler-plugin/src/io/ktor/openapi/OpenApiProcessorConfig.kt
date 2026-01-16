@@ -4,5 +4,6 @@ data class OpenApiProcessorConfig(
     val enabled: Boolean,
     val codeInference: Boolean,
     val debug: Boolean,
-    val onlyCommented: Boolean = false,
+    val onlyCommented: Boolean,
+    val logDir: String?,
 )
