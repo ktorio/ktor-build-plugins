@@ -21,6 +21,17 @@ public final class io/ktor/plugin/KtorGradlePluginKt {
 public abstract interface annotation class io/ktor/plugin/OpenApiPreview : java/lang/annotation/Annotation {
 }
 
+public final class io/ktor/plugin/features/CompilerPlugin : org/jetbrains/kotlin/gradle/plugin/KotlinCompilerPluginSupportPlugin {
+	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/Project;)V
+	public fun applyToCompilation (Lorg/jetbrains/kotlin/gradle/plugin/KotlinCompilation;)Lorg/gradle/api/provider/Provider;
+	public fun getCompilerPluginId ()Ljava/lang/String;
+	public fun getPluginArtifact ()Lorg/jetbrains/kotlin/gradle/plugin/SubpluginArtifact;
+	public fun getPluginArtifactForNative ()Lorg/jetbrains/kotlin/gradle/plugin/SubpluginArtifact;
+	public fun isApplicable (Lorg/jetbrains/kotlin/gradle/plugin/KotlinCompilation;)Z
+}
+
 public final class io/ktor/plugin/features/DockerEnvironmentVariable {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -149,9 +160,12 @@ public final class io/ktor/plugin/features/NativeImageKt {
 
 public abstract class io/ktor/plugin/features/OpenApiExtension {
 	public fun <init> (Lorg/gradle/api/model/ObjectFactory;Lorg/gradle/api/file/ProjectLayout;)V
+	public final fun getCodeInferenceEnabled ()Lorg/gradle/api/provider/Property;
 	public final fun getContact ()Lorg/gradle/api/provider/Property;
 	public final fun getDescription ()Lorg/gradle/api/provider/Property;
+	public final fun getEnabled ()Lorg/gradle/api/provider/Property;
 	public final fun getLicense ()Lorg/gradle/api/provider/Property;
+	public final fun getOnlyCommented ()Lorg/gradle/api/provider/Property;
 	public final fun getSummary ()Lorg/gradle/api/provider/Property;
 	public final fun getTarget ()Lorg/gradle/api/provider/Property;
 	public final fun getTermsOfService ()Lorg/gradle/api/provider/Property;

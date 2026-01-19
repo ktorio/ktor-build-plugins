@@ -1,23 +1,28 @@
 package io.ktor.samples.openapi
 
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.install
-import io.ktor.server.cio.CIO
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.plugins.openapi.openAPI
-import io.ktor.server.request.receive
+import io.ktor.http.*
+import io.ktor.openapi.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
+import io.ktor.server.cio.*
+import io.ktor.server.engine.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.openapi.*
+import io.ktor.server.plugins.swagger.swaggerUI
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.util.toMap
-import kotlinx.serialization.Serializable
+import io.ktor.server.routing.openapi.*
+import io.ktor.util.*
+import io.ktor.utils.io.ExperimentalKtorApi
+import kotlinx.serialization.json.Json
 
 fun main() {
     embeddedServer(CIO, port = 8080) {
         install(ContentNegotiation) {
-            json()
+            json(Json {
+                encodeDefaults = false
+            })
         }
 
         routing {
@@ -28,18 +33,35 @@ fun main() {
 
             /**
              * API endpoints for users.
+             *
+             * These will appear in the resulting OpenAPI document.
              */
             userCrud(ListRepository())
 
+            @OptIn(ExperimentalKtorApi::class)
+            get("/docs.json") {
+                call.respond(
+                    OpenApiDoc(info = OpenApiInfo("My API", "1.0"))
+                )
+            }.hide()
+
             /**
-             * Get the OpenAPI specification.
+             * View the generated UI for the API spec.
              */
-            openAPI("/docs", swaggerFile = "openapi/generated.json")
+            openAPI("/openApi")
+
+            /**
+             * View the Swagger flavor of the UI for the API spec.
+             */
+            swaggerUI("/swaggerUI") {
+                info = OpenApiInfo("My API", "1.0")
+                source = OpenApiDocSource.Routing()
+            }
         }
     }.start(wait = true)
 }
 
-fun Routing.userCrud(repository: Repository<User>) {
+fun Routing.userCrud(repository: Repository<User>): Route  =
     route("/api") {
 
         route("/users") {
@@ -58,9 +80,9 @@ fun Routing.userCrud(repository: Repository<User>) {
             /**
              * Get a single user
              *
-             * @path id The ID of the user
-             * @response 404 The user was not found
-             * @response 200 [User] The user.
+             * - Path: id The ID of the user
+             * - Response: 404 The user was not found
+             * - Response: 200 [User] The user.
              */
             get("{id}") {
                 val user = repository.get(call.parameters["id"]!!)
@@ -89,40 +111,3 @@ fun Routing.userCrud(repository: Repository<User>) {
             }
         }
     }
-}
-
-
-
-interface Repository<E> {
-    fun get(id: String): E?
-    fun save(entity: E)
-    fun delete(id: String)
-    fun list(query: Map<String, List<String>>): List<E>
-}
-
-interface Entity {
-    val id: String
-}
-
-class ListRepository<E: Entity>: Repository<E> {
-    private val list: MutableList<E> = mutableListOf()
-
-    override fun list(query: Map<String, List<String>>): List<E> {
-        return list.toList()
-    }
-
-    override fun get(id: String): E? {
-        return list.find { it.id == id }
-    }
-
-    override fun save(entity: E) {
-        list.add(entity)
-    }
-
-    override fun delete(id: String) {
-        list.removeIf { it.id == id }
-    }
-}
-
-@Serializable
-data class User(override val id: String, val name: String): Entity

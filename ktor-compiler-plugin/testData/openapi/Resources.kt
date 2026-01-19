@@ -15,21 +15,26 @@ import kotlinx.serialization.Serializable
 
 // Simple resources for articles
 @Resource("/articles")
+@Serializable
 class Articles {
     @Resource("/{id}")
+    @Serializable
     class Id(val parent: Articles, val id: Int) {
         @Resource("/comments")
         class Comments(val parent: Id)
     }
 
     @Resource("/featured")
+    @Serializable
     class Featured(val parent: Articles)
 }
 
 // Resources with query parameters
 @Resource("/users")
+@Serializable
 class Users {
     @Resource("/search")
+    @Serializable
     class Search(
         val parent: Users,
         val query: String,
@@ -40,8 +45,10 @@ class Users {
 
 // Resources with body content
 @Resource("/posts")
+@Serializable
 class Posts {
     @Resource("/{id}")
+    @Serializable
     class Id(val parent: Posts, val id: Int) {
         @Resource("/comments")
         class Comments(val parent: Id)
@@ -70,7 +77,7 @@ private val comments = mutableListOf(
  * This example demonstrates how type-safe routing with @Resource annotations
  * can be used in Ktor applications and processed by the OpenAPI generator.
  */
-fun Application.resources() {
+fun Application.installResources() {
     install(ContentNegotiation) {
         json()
     }

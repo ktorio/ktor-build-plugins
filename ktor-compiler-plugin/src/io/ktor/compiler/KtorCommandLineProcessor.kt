@@ -8,78 +8,52 @@ import org.jetbrains.kotlin.config.CompilerConfigurationKey
 
 class KtorCommandLineProcessor : CommandLineProcessor {
     companion object {
+        private const val ENABLED = "openApiEnabled"
+        private const val CODE_INFERENCE = "openApiCodeInference"
+        private const val ONLY_COMMENTED = "openApiOnlyCommented"
+        private const val DEBUG = "openApiDebug"
+        private const val LOG_DIR = "openApiLogDir"
+
         const val PLUGIN_ID = "io.ktor.ktor-compiler-plugin"
 
-        val OPENAPI_ENABLED_KEY = CompilerConfigurationKey<String>("openapi.enabled")
-        val OPENAPI_OUTPUT_KEY = CompilerConfigurationKey<String>("openapi.output")
-        val OPENAPI_DESCRIPTION_KEY = CompilerConfigurationKey<String>("openapi.description")
-        val OPENAPI_TITLE_KEY = CompilerConfigurationKey<String>("openapi.title")
-        val OPENAPI_SUMMARY_KEY = CompilerConfigurationKey<String>("openapi.summary")
-        val OPENAPI_TERMS_OF_SERVICE_KEY = CompilerConfigurationKey<String>("openapi.termsOfService")
-        val OPENAPI_CONTACT_KEY = CompilerConfigurationKey<String>("openapi.contact")
-        val OPENAPI_LICENSE_KEY = CompilerConfigurationKey<String>("openapi.license")
-        val OPENAPI_VERSION_KEY = CompilerConfigurationKey<String>("openapi.version")
+        val OPENAPI_ENABLED_KEY = CompilerConfigurationKey<String>(ENABLED)
+        val OPENAPI_DEBUG_KEY = CompilerConfigurationKey<String>(DEBUG)
+        val OPENAPI_CODE_INFERENCE_KEY = CompilerConfigurationKey<String>(CODE_INFERENCE)
+        val OPENAPI_ONLY_COMMENTED_KEY = CompilerConfigurationKey<String>(ONLY_COMMENTED)
+        val OPENAPI_LOG_DIR = CompilerConfigurationKey<String>(LOG_DIR)
 
         val OPENAPI_ENABLED_OPTION = CliOption(
-            "openapi.enabled",
+            ENABLED,
             "<boolean>",
             "Enables the OpenAPI generation",
             required = false
         )
 
-        val OPENAPI_OUTPUT_OPTION = CliOption(
-            "openapi.output",
-            "<path>",
-            "The output path for the generated OpenAPI specification",
+        val OPENAPI_DEBUG_OPTION = CliOption(
+            DEBUG,
+            "<boolean>",
+            "Enables logging",
             required = false
         )
 
-        val OPENAPI_DESCRIPTION_OPTION = CliOption(
-            "openapi.description",
-            "<text>",
-            "A description of the API. CommonMark syntax MAY be used for rich text representation",
+        val OPENAPI_CODE_INFERENCE_OPTION = CliOption(
+            CODE_INFERENCE,
+            "<boolean>",
+            "Enables code inference for OpenAPI (experimental)",
             required = false
         )
 
-        val OPENAPI_TITLE_OPTION = CliOption(
-            "openapi.title",
-            "<text>",
-            "The title of the API",
+        val OPENAPI_ONLY_COMMENTED_OPTION = CliOption(
+            ONLY_COMMENTED,
+            "<boolean>",
+            "Only process routing calls that have a preceding comment (KDoc or line comment)",
             required = false
         )
 
-        val OPENAPI_SUMMARY_OPTION = CliOption(
-            "openapi.summary",
-            "<text>",
-            "A short summary of the API",
-            required = false
-        )
-
-        val OPENAPI_TERMS_OF_SERVICE_OPTION = CliOption(
-            "openapi.termsOfService",
-            "<uri>",
-            "A URI for the Terms of Service for the API",
-            required = false
-        )
-
-        val OPENAPI_CONTACT_OPTION = CliOption(
-            "openapi.contact",
-            "<info>",
-            "The contact information for the exposed API",
-            required = false
-        )
-
-        val OPENAPI_LICENSE_OPTION = CliOption(
-            "openapi.license",
-            "<info>",
-            "The license information for the exposed API",
-            required = false
-        )
-
-        val OPENAPI_VERSION_OPTION = CliOption(
-            "openapi.version",
-            "<version>",
-            "The version of the OpenAPI Document",
+        val OPENAPI_LOG_DIR_OPTION = CliOption(
+            LOG_DIR,
+            "<string>",
+            "Where the debug log file will appear; required for logging",
             required = false
         )
     }
@@ -88,27 +62,19 @@ class KtorCommandLineProcessor : CommandLineProcessor {
 
     override val pluginOptions: Collection<AbstractCliOption> get() = listOf(
         OPENAPI_ENABLED_OPTION,
-        OPENAPI_OUTPUT_OPTION,
-        OPENAPI_DESCRIPTION_OPTION,
-        OPENAPI_TITLE_OPTION,
-        OPENAPI_SUMMARY_OPTION,
-        OPENAPI_TERMS_OF_SERVICE_OPTION,
-        OPENAPI_CONTACT_OPTION,
-        OPENAPI_LICENSE_OPTION,
-        OPENAPI_VERSION_OPTION
+        OPENAPI_DEBUG_OPTION,
+        OPENAPI_CODE_INFERENCE_OPTION,
+        OPENAPI_ONLY_COMMENTED_OPTION,
+        OPENAPI_LOG_DIR_OPTION,
     )
 
     override fun processOption(option: AbstractCliOption, value: String, configuration: CompilerConfiguration) {
         when (option) {
             OPENAPI_ENABLED_OPTION -> configuration.put(OPENAPI_ENABLED_KEY, value)
-            OPENAPI_OUTPUT_OPTION -> configuration.put(OPENAPI_OUTPUT_KEY, value)
-            OPENAPI_DESCRIPTION_OPTION -> configuration.put(OPENAPI_DESCRIPTION_KEY, value)
-            OPENAPI_TITLE_OPTION -> configuration.put(OPENAPI_TITLE_KEY, value)
-            OPENAPI_SUMMARY_OPTION -> configuration.put(OPENAPI_SUMMARY_KEY, value)
-            OPENAPI_TERMS_OF_SERVICE_OPTION -> configuration.put(OPENAPI_TERMS_OF_SERVICE_KEY, value)
-            OPENAPI_CONTACT_OPTION -> configuration.put(OPENAPI_CONTACT_KEY, value)
-            OPENAPI_LICENSE_OPTION -> configuration.put(OPENAPI_LICENSE_KEY, value)
-            OPENAPI_VERSION_OPTION -> configuration.put(OPENAPI_VERSION_KEY, value)
+            OPENAPI_DEBUG_OPTION -> configuration.put(OPENAPI_DEBUG_KEY, value)
+            OPENAPI_CODE_INFERENCE_OPTION -> configuration.put(OPENAPI_CODE_INFERENCE_KEY, value)
+            OPENAPI_ONLY_COMMENTED_OPTION -> configuration.put(OPENAPI_ONLY_COMMENTED_KEY, value)
+            OPENAPI_LOG_DIR_OPTION -> configuration.put(OPENAPI_LOG_DIR, value)
             else -> error("Unexpected option: ${option.optionName}")
         }
     }

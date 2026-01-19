@@ -1,9 +1,9 @@
 package io.ktor.openapi
 
-import io.ktor.openapi.model.SpecInfo
-
 data class OpenApiProcessorConfig(
     val enabled: Boolean,
-    val outputFile: String,
-    val info: SpecInfo = SpecInfo("Open API Document", "1.0.0"),
+    val codeInference: Boolean,
+    val debug: Boolean,
+    val onlyCommented: Boolean,
+    val logDir: String?,
 )

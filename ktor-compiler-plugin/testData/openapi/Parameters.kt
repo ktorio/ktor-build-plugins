@@ -7,8 +7,11 @@ import io.ktor.server.request.header
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Application.parameters() {
+fun Application.installParameters() {
     routing {
+        /**
+         * @tag parameters
+         */
         get("/parameters/{a}/{b}/{c}") {
             call.respondText(listOf(
                 call.parameters["a"],
