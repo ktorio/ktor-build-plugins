@@ -4,6 +4,14 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.text
 
+/**
+ * Returns an instance of [RouteCall], unless the [fir] expression has no source location information.
+ *
+ * @param fir the FIR expression to create a route call from
+ * @param fields the route fields to include in the route call
+ * @param isLeaf whether the route call represents a leaf node in the routing tree
+ * @return a [RouteCall] instance or null if the FIR expression has no source location information
+ */
 context(context: CheckerContext)
 fun RouteCall(
     fir: FirExpression,

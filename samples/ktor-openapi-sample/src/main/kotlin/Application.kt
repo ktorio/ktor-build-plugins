@@ -14,6 +14,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
 import io.ktor.util.*
+import io.ktor.utils.io.ExperimentalKtorApi
 import kotlinx.serialization.json.Json
 
 fun main() {
@@ -35,15 +36,14 @@ fun main() {
              *
              * These will appear in the resulting OpenAPI document.
              */
-            val apiRoute = userCrud(ListRepository())
+            userCrud(ListRepository())
 
+            @OptIn(ExperimentalKtorApi::class)
             get("/docs.json") {
-                val docs = generateOpenApiDoc(
-                    OpenApiDoc(info = OpenApiInfo("My API", "1.0")),
-                    apiRoute.descendants()
+                call.respond(
+                    OpenApiDoc(info = OpenApiInfo("My API", "1.0"))
                 )
-                call.respond(docs)
-            }
+            }.hide()
 
             /**
              * View the generated UI for the API spec.
@@ -55,9 +55,7 @@ fun main() {
              */
             swaggerUI("/swaggerUI") {
                 info = OpenApiInfo("My API", "1.0")
-                source = OpenApiDocSource.RoutingSource(ContentType.Application.Json) {
-                    apiRoute.descendants()
-                }
+                source = OpenApiDocSource.Routing()
             }
         }
     }.start(wait = true)

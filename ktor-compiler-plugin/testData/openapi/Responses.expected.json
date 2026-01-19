@@ -820,8 +820,10 @@
                         "type": "string"
                     },
                     "details": {
-                        "type": "object",
-                        "nullable": true,
+                        "type": [
+                            "object",
+                            "null"
+                        ],
                         "additionalProperties": {
                             "type": "string"
                         }

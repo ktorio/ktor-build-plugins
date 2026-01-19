@@ -59,9 +59,7 @@ class CallDescribeTransformer(
             packageName = FqName(DESCRIBE_PACKAGE),
             callableName = Name.identifier(DESCRIBE_FUNCTION_NAME)
         ).let { callableId ->
-            pluginContext.referenceFunctions(callableId)
-                .single() // or use .first() / .firstOrNull() with additional filtering
-                .owner
+            pluginContext.referenceFunctions(callableId).single().owner
         }
     }
 

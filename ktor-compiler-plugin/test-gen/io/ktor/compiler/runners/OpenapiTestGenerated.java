@@ -57,6 +57,12 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
+  @TestMetadata("Recursion.kt")
+  public void testRecursion() {
+    runTest("ktor-compiler-plugin/testData/openapi/Recursion.kt");
+  }
+
+  @Test
   @TestMetadata("Resources.kt")
   public void testResources() {
     runTest("ktor-compiler-plugin/testData/openapi/Resources.kt");
