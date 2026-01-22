@@ -38,7 +38,7 @@ internal inline fun TaskContainer.registerKtorTask(
 internal inline fun <reified T : Task> TaskContainer.registerKtorTask(
     name: String,
     description: String,
-    vararg constructorArgs: Any?,
+    vararg constructorArgs: Any,
     crossinline configure: T.() -> Unit = {}
 ): TaskProvider<T> = register(name, T::class.java, *constructorArgs).also { taskProvider ->
     taskProvider.configure { task ->
@@ -76,16 +76,16 @@ public abstract class KtorExtension @Inject internal constructor(
 private val Project.ktorExtension: KtorExtension
     get() = extensions.getByType(KtorExtension::class.java)
 
-internal inline fun <reified T> Any.getExtension(): T =
+internal inline fun <reified T: Any> Any.getExtension(): T =
     (this as ExtensionAware).extensions.getByType(T::class.java)
 
 internal val Project.ktorExtensions: ExtensionContainer
     get() = (ktorExtension as ExtensionAware).extensions
 
-internal inline fun <reified T> Project.createKtorExtension(name: String): T =
+internal inline fun <reified T: Any> Project.createKtorExtension(name: String): T =
     ktorExtensions.create(name, T::class.java, project)
 
-internal inline fun <reified T> Project.getKtorExtension(): T =
+internal inline fun <reified T: Any> Project.getKtorExtension(): T =
     ktorExtensions.getByType(T::class.java)
 
 internal inline fun <reified T : Any> Project.property(defaultValue: T?): Property<T> = objects.property<T>(defaultValue)

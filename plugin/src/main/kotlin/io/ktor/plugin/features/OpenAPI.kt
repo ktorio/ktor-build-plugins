@@ -1,23 +1,43 @@
 package io.ktor.plugin.features
 
 import io.ktor.plugin.*
-import io.ktor.plugin.KtorGradlePlugin.Companion.COMPILER_PLUGIN_ID
-import io.ktor.plugin.KtorGradlePlugin.Companion.VERSION
-import io.ktor.plugin.internal.*
 import org.gradle.api.Project
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.TaskProvider
-import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
-import org.jetbrains.kotlin.gradle.plugin.CompilerPluginConfig
-import org.jetbrains.kotlin.gradle.plugin.KotlinApiPlugin
-import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
-@OpenApiPreview
+internal fun Project.configureOpenApi() {
+    val ext = createKtorExtension<OpenApiExtension>("openApi")
+
+    // Apply compiler plugin
+    pluginManager.apply(CompilerPlugin::class.java)
+
+    afterEvaluate {
+        try {
+            if (ext.enabled.get()) {
+                if (!hasRoutingAnnotateDependency()) {
+                    // Automatically add the missing dependency to the implementation configuration
+                    dependencies.add("implementation", "io.ktor:ktor-server-routing-openapi:${KtorGradlePlugin.KTOR_VERSION}")
+                    logger.info("Ktor annotations dependency automatically included")
+                }
+            } else {
+                logger.debug("OpenAPI inference is disabled")
+            }
+        } catch (_: Throwable) {
+            logger.warn("Could not apply compiler plugin. OpenAPI inference will not be available.")
+        }
+    }
+}
+
+private fun Project.hasRoutingAnnotateDependency(): Boolean {
+    return configurations.any { configuration ->
+        configuration.allDependencies.any {
+            it.name == "ktor-server-routing-openapi"
+        }
+    }
+}
+
 public abstract class OpenApiExtension(
     objects: ObjectFactory,
     layout: ProjectLayout,
@@ -30,148 +50,73 @@ public abstract class OpenApiExtension(
      * The output path for the generated OpenAPI specification.
      * Defaults to "build/resources/main/openapi/generated.json"
      */
+    @Deprecated("The specification is now generated at runtime.  You may remove this property")
     public val target: Property<RegularFile> = objects.fileProperty()
         .convention(layout.ktorOutputDir.map { it.file("openapi/generated.json") })
 
     /**
+     * Global flag to enable or disable OpenAPI route annotation code generation.
+     * Defaults to `false`.
+     */
+    public val enabled: Property<Boolean> = objects.property(defaultValue = false)
+
+    /**
+     * Enables code inference that augments routing with inferred metadata.
+     * Defaults to `true`.
+     */
+    public val codeInferenceEnabled: Property<Boolean> = objects.property(defaultValue = true)
+
+    /**
+     * When enabled, only routing calls with a preceding comment (KDoc or line comment) are processed.
+     * Defaults to `false`, meaning all routing calls are processed except those explicitly marked with `@ignore`.
+     */
+    public val onlyCommented: Property<Boolean> = objects.property(defaultValue = false)
+
+    /**
+     * Enables debug logging for OpenAPI feature.
+     * Defaults to `false`.
+     */
+    public val debug: Property<Boolean> = objects.property(defaultValue = false)
+
+    /**
      * The title of the API.
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val title: Property<String> = objects.property(defaultValue = null)
 
     /**
      * A short summary of the API.
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val summary: Property<String> = objects.property(defaultValue = null)
 
     /**
      * A description of the API. CommonMark syntax MAY be used for rich text representation.
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val description: Property<String> = objects.property(defaultValue = null)
 
     /**
      * A URI for the Terms of Service for the API. This MUST be in the form of a URI.
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val termsOfService: Property<String> = objects.property(defaultValue = null)
 
     /**
      * The contact information for the exposed API.
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val contact: Property<String> = objects.property(defaultValue = null)
 
     /**
      * The license information for the exposed API.
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val license: Property<String> = objects.property(defaultValue = null)
 
     /**
      * The version of the OpenAPI Document (which is distinct from the OpenAPI Specification version or the version of the API being described or the version of the OpenAPI Description).
      */
+    @Deprecated("This information is now configured in the application at runtime.  You may remove this property")
     public val version: Property<String> = objects.property(defaultValue = null)
-}
-
-internal const val OPENAPI_TASK_NAME = "buildOpenApi"
-internal const val OPENAPI_TASK_DESCRIPTION = "Generates OpenAPI specification based on Ktor routing definitions."
-
-@OptIn(OpenApiPreview::class)
-internal fun Project.configureOpenApi() {
-    val extension = createKtorExtension<OpenApiExtension>("openApi")
-    try {
-        val kotlinApiPlugin = plugins.apply(KotlinApiPlugin::class.java)
-
-        // Configure the custom OpenAPI generation task when Kotlin JVM plugin is applied
-        whenKotlinJvmApplied {
-            configureOpenApiGenerationTask(extension, kotlinApiPlugin)
-        }
-    } catch (_: Throwable) {
-        logger.warn("Could not apply compiler plugin. OpenAPI generation might not work.")
-    }
-}
-
-@OptIn(OpenApiPreview::class)
-private fun Project.configureOpenApiGenerationTask(
-    extension: OpenApiExtension,
-    kotlinApiPlugin: KotlinApiPlugin
-): TaskProvider<out KotlinJvmCompile>? {
-    // Get the main compile task as a reference
-    val mainCompileTask = tasks.withType<KotlinCompile>()
-        .firstOrNull { "test" !in it.name.lowercase() }
-        ?: return null
-
-    dependencies.add(
-        configurations.ktorCompilerPlugins.name,
-        "$COMPILER_PLUGIN_ID:$VERSION"
-    )
-
-    return kotlinApiPlugin.registerKotlinJvmCompileTask(
-        taskName = OPENAPI_TASK_NAME,
-        compilerOptions = kotlinApiPlugin.createCompilerJvmOptions(),
-        explicitApiMode = provider { ExplicitApiMode.Disabled }
-    ).also { provider ->
-        provider.configure { task ->
-            task.doFirst {
-                task.logger.warn("Ktor's OpenAPI generation is ** experimental **")
-                task.logger.lifecycle("""
-                    - It may be incompatible with Kotlin versions outside 2.2.20
-                    - Behavior will likely change in future releases
-                    - Please report any issues at https://youtrack.jetbrains.com/newIssue?project=KTOR
-                """.trimIndent())
-            }
-            // Drop the class files after each run
-            task.doLast {
-                val directory = task.destinationDirectory.get().asFile
-                if (directory.exists()) {
-                    directory.deleteRecursively()
-                    directory.mkdirs()
-                }
-            }
-
-            task.group = KtorGradlePlugin.TASK_GROUP
-            task.description = OPENAPI_TASK_DESCRIPTION
-            // Copy the main compile task configuration
-            task.source(mainCompileTask.sources)
-            task.dependsOn(mainCompileTask.dependsOn)
-            // Multiplatform is unimportant
-            task.multiPlatformEnabled.set(false)
-            // Update to use classpath configuration from the main task
-            task.friendPaths.setFrom(mainCompileTask.friendPaths)
-            task.libraries.setFrom(mainCompileTask.libraries)
-            task.destinationDirectory.set(task.project.layout.buildDirectory.dir("ktor-compile/openapi"))
-            // Configure the compiler to only run the frontend (skip code generation)
-            task.compilerOptions {
-                // Copy relevant options from main compile task
-                jvmTarget.set(mainCompileTask.compilerOptions.jvmTarget)
-                apiVersion.set(mainCompileTask.compilerOptions.apiVersion)
-                languageVersion.set(mainCompileTask.compilerOptions.languageVersion)
-                javaParameters.set(mainCompileTask.compilerOptions.javaParameters)
-                moduleName.set(mainCompileTask.compilerOptions.moduleName)
-
-                // Free compiler args to disable incremental compilation
-                freeCompilerArgs.addAll(mainCompileTask.compilerOptions.freeCompilerArgs.get())
-                freeCompilerArgs.add("-Xenable-incremental-compilation=false")
-            }
-
-            task.pluginClasspath.from(configurations.ktorCompilerPlugins)
-
-            task.pluginOptions.add(CompilerPluginConfig().apply {
-                val outputPath = extension.target.get().asFile.absolutePath
-                ktorOption("openapi.enabled", true)
-                ktorOption("openapi.output", outputPath)
-                ktorOption("openapi.description", extension.description)
-                ktorOption("openapi.title", extension.title)
-                ktorOption("openapi.summary", extension.summary)
-                ktorOption("openapi.contact", extension.contact)
-                ktorOption("openapi.termsOfService", extension.termsOfService)
-                ktorOption("openapi.license", extension.license)
-                ktorOption("openapi.version", extension.version)
-            })
-        }
-    }
-}
-
-private fun <T : Any> CompilerPluginConfig.ktorOption(key: String, value: Property<T>) {
-    value.orNull?.let { ktorOption(key, it) }
-}
-
-private fun <T : Any> CompilerPluginConfig.ktorOption(key: String, value: T) {
-    addPluginArgument(COMPILER_PLUGIN_ID.replace(':', '.'), SubpluginOption(key, value.toString()))
 }

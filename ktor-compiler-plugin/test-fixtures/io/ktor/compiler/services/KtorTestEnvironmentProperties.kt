@@ -1,8 +1,6 @@
 package io.ktor.compiler.services
 
-import io.ktor.openapi.OpenApiExtension
 import org.jetbrains.kotlin.test.services.TestServices
-import org.jetbrains.kotlin.test.services.compilerConfigurationProvider
 import org.jetbrains.kotlin.test.services.testInfo
 import java.io.File
 
@@ -27,8 +25,4 @@ object KtorTestEnvironmentProperties {
         val testCase = testInfo.methodName.removePrefix("test")
         return "$samplesLocation/openapi/$testCase.expected.json"
     }
-    val TestServices.openApiExtension: OpenApiExtension get() =
-        compilerConfigurationProvider.configurators
-            .filterIsInstance<OpenApiRegistrarConfigurator>()
-            .single().extension
 }

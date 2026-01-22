@@ -10,8 +10,11 @@ import io.ktor.server.request.receive
 import io.ktor.server.routing.*
 import io.ktor.server.response.*
 import io.ktor.util.toMap
+import kotlinx.serialization.Serializable
 
-fun Application.simpleNested(repository: Repository0<User0>) {
+fun Application.installNesting() {
+    val repository = Repository0<User0>()
+
     install(ContentNegotiation) {
         json()
     }
@@ -82,13 +85,14 @@ fun Application.simpleNested(repository: Repository0<User0>) {
     }
 }
 
-interface Repository0<E> {
-    fun get(id: Int): E?
-    fun save(entity: E)
-    fun delete(id: Int)
-    fun list(query: Map<String, List<String>>): List<E>
+class Repository0<E> {
+    fun get(id: Int): E? = null
+    fun save(entity: E) {}
+    fun delete(id: Int) {}
+    fun list(query: Map<String, List<String>>): List<E> = emptyList()
 }
 
+@Serializable
 data class User0(val id: Int, val name: String)
 
 /* GENERATED_FIR_TAGS: classDeclaration, data, funWithExtensionReceiver, functionDeclaration, interfaceDeclaration,

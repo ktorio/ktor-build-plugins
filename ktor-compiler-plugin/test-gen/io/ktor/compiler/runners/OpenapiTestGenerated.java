@@ -4,7 +4,6 @@ package io.ktor.compiler.runners;
 
 import com.intellij.testFramework.TestDataPath;
 import org.jetbrains.kotlin.test.util.KtTestUtil;
-import org.jetbrains.kotlin.test.TargetBackend;
 import org.jetbrains.kotlin.test.TestMetadata;
 import org.junit.jupiter.api.Test;
 
@@ -18,25 +17,25 @@ import java.util.regex.Pattern;
 public class OpenapiTestGenerated extends AbstractOpenapiTest {
   @Test
   public void testAllFilesPresentInOpenapi() {
-    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("ktor-compiler-plugin/testData/openapi"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JVM_IR, true);
+    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("ktor-compiler-plugin/testData/openapi"), Pattern.compile("^(.+)\\.kt$"), null, true);
   }
 
   @Test
-  @TestMetadata("Authentication.kt")
-  public void testAuthentication() {
-    runTest("ktor-compiler-plugin/testData/openapi/Authentication.kt");
+  @TestMetadata("CallHandlerFunctions.kt")
+  public void testCallHandlerFunctions() {
+    runTest("ktor-compiler-plugin/testData/openapi/CallHandlerFunctions.kt");
   }
 
   @Test
-  @TestMetadata("Contextual.kt")
-  public void testContextual() {
-    runTest("ktor-compiler-plugin/testData/openapi/Contextual.kt");
+  @TestMetadata("KDocOptions.kt")
+  public void testKDocOptions() {
+    runTest("ktor-compiler-plugin/testData/openapi/KDocOptions.kt");
   }
 
   @Test
-  @TestMetadata("Functions.kt")
-  public void testFunctions() {
-    runTest("ktor-compiler-plugin/testData/openapi/Functions.kt");
+  @TestMetadata("MarkdownOptions.kt")
+  public void testMarkdownOptions() {
+    runTest("ktor-compiler-plugin/testData/openapi/MarkdownOptions.kt");
   }
 
   @Test
@@ -46,9 +45,21 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
+  @TestMetadata("OddReferences.kt")
+  public void testOddReferences() {
+    runTest("ktor-compiler-plugin/testData/openapi/OddReferences.kt");
+  }
+
+  @Test
   @TestMetadata("Parameters.kt")
   public void testParameters() {
     runTest("ktor-compiler-plugin/testData/openapi/Parameters.kt");
+  }
+
+  @Test
+  @TestMetadata("Recursion.kt")
+  public void testRecursion() {
+    runTest("ktor-compiler-plugin/testData/openapi/Recursion.kt");
   }
 
   @Test
@@ -64,9 +75,9 @@ public class OpenapiTestGenerated extends AbstractOpenapiTest {
   }
 
   @Test
-  @TestMetadata("Templates.kt")
-  public void testTemplates() {
-    runTest("ktor-compiler-plugin/testData/openapi/Templates.kt");
+  @TestMetadata("RouteFunctions.kt")
+  public void testRouteFunctions() {
+    runTest("ktor-compiler-plugin/testData/openapi/RouteFunctions.kt");
   }
 
   @Test
