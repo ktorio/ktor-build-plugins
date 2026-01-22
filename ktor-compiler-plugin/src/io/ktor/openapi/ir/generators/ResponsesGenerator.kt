@@ -26,9 +26,7 @@ val ResponsesGenerator = IrDescribeExpressionGenerator<RouteField> { fields ->
                             generateResponsesForStatusCode(responses, responseHeaders)
                         }
 
-                        else -> error {
-                            "Expected Int or HttpStatusCode for status code, but got ${statusCode.type}"
-                        }
+                        else -> error("Expected Int or HttpStatusCode for status code, but got ${statusCode.type}")
                     }
                 } catch (e: Throwable) {
                     contextOf<Logger>().log("Failed to generate response for $code", e)

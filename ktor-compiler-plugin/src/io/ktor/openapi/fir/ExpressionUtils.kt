@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.fir.packageFqName
 import org.jetbrains.kotlin.fir.references.symbol
 
 val KtSourceElement.range: IntRange get() =
-    startOffset..endOffset
+    startOffset until endOffset
 
 fun FirFunctionCall.getFunctionName(): String =
     calleeReference.name.asString()

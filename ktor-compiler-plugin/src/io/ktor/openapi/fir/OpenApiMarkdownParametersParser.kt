@@ -85,7 +85,7 @@ private fun parseParameter(
 ): RouteField? {
     var wordIndex = 0
     val words = content.split(Regex("\\s+"))
-    val next = { words[wordIndex++] }
+    val next = { words.getOrNull(wordIndex++) ?: "null" }
     val nextReference = { LocalReference.StringValue(next()) }
     val tryMatchNext: Regex.() -> MatchResult? = {
         words.getOrNull(wordIndex)?.let { word ->
@@ -113,6 +113,7 @@ private fun parseParameter(
         "cookie" -> Parameter(ParamIn.COOKIE, nextReference(), nextSchemaArg(), remaining(), attributes)
         "deprecated" -> RouteField.Deprecated(remaining())
         "description" -> Description(remaining())
+        "externaldoc",
         "externalDoc" -> ExternalDocs(next(), remaining())
         "header" -> Parameter(ParamIn.HEADER, nextReference(), nextSchemaArg(), remaining(), attributes)
         "ignore" -> Ignore
@@ -127,8 +128,7 @@ private fun parseParameter(
             remaining(),
             attributes,
         )
-
-        "security" -> Security(next(), remaining().trim().split(Regex("\\s*,\\s*")).ifEmpty { null })
+        "security" -> Security(next(), remaining().trim().takeIf { it.isNotEmpty() }?.split(Regex("\\s*,\\s*")))
         "tag" -> Tag(next())
         else -> {
             logger.log("Unknown KDoc item: @$key")

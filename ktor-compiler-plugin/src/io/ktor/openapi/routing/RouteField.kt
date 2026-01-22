@@ -63,11 +63,6 @@ sealed interface RouteField {
             if (other is OperationId && value == other.value) this else null
     }
 
-    data class OperationId(val value: String) : RouteField {
-        override fun merge(other: RouteField): RouteField? =
-            if (other is OperationId && value == other.value) this else null
-    }
-
     /**
      * Associates the endpoint with a tag for grouping.
      *
