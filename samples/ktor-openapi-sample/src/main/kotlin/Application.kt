@@ -41,7 +41,8 @@ fun main() {
             @OptIn(ExperimentalKtorApi::class)
             get("/docs.json") {
                 call.respond(
-                    OpenApiDoc(info = OpenApiInfo("My API", "1.0"))
+                    OpenApiDoc(info = OpenApiInfo("My API", "1.0")) +
+                        routingRoot.descendants()
                 )
             }.hide()
 

@@ -1,6 +1,7 @@
 package io.ktor.plugin.features
 
 import io.ktor.plugin.*
+import io.ktor.plugin.internal.whenKotlinPluginApplied
 import org.gradle.api.Project
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
@@ -10,8 +11,9 @@ import org.gradle.api.provider.Property
 internal fun Project.configureOpenApi() {
     val ext = createKtorExtension<OpenApiExtension>("openApi")
 
-    // Apply compiler plugin
-    pluginManager.apply(CompilerPlugin::class.java)
+    whenKotlinPluginApplied {
+        pluginManager.apply(CompilerPlugin::class.java)
+    }
 
     afterEvaluate {
         try {
