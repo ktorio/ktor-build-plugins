@@ -48,6 +48,7 @@ fun Application.installMarkdownOptions() {
         /**
          * Let's try some parameters.
          *
+         * - OperationId: getSomeParameters
          * - Header: X-Rate-Limit-Limit [Int] The number of allowed requests in the current period
          * - Cookie: token A token
          *   x-sensitive: true
