@@ -109,12 +109,10 @@ private fun parseParameter(
             remaining(),
             attributes,
         )
-
         "cookie" -> Parameter(ParamIn.COOKIE, nextReference(), nextSchemaArg(), remaining(), attributes)
         "deprecated" -> RouteField.Deprecated(remaining())
         "description" -> Description(remaining())
-        "externaldoc",
-        "externalDoc" -> ExternalDocs(next(), remaining())
+        "externaldoc" -> ExternalDocs(next(), remaining())
         "header" -> Parameter(ParamIn.HEADER, nextReference(), nextSchemaArg(), remaining(), attributes)
         "ignore" -> Ignore
         "path",
@@ -130,8 +128,9 @@ private fun parseParameter(
         )
         "security" -> Security(next(), remaining().trim().takeIf { it.isNotEmpty() }?.split(Regex("\\s*,\\s*")))
         "tag" -> Tag(next())
+        "operationid" -> OperationId(next())
         else -> {
-            logger.log("Unknown KDoc item: @$key")
+            logger.log("Unknown KDoc item: $key")
             null
         }
     }

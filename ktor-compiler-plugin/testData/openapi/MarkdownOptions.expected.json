@@ -115,6 +115,7 @@
         },
         "/parameters/{id}": {
             "get": {
+                "operationId": "getSomeParameters",
                 "summary": "Let's try some parameters.",
                 "parameters": [
                     {
