@@ -12,7 +12,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "c",
+                        "name": "a",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -28,9 +28,37 @@
                         }
                     },
                     {
-                        "name": "a",
+                        "name": "c",
                         "in": "path",
                         "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "d",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "e",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "f",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "g",
+                        "in": "header",
                         "schema": {
                             "type": "string"
                         }
