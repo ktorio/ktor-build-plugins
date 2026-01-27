@@ -10,6 +10,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
+import io.ktor.util.reflect.TypeInfo
 import kotlinx.serialization.Serializable
 
 fun Application.installRouteFunctions() {
@@ -24,6 +25,11 @@ fun Application.installRouteFunctions() {
         route("/api") {
             userEndpoints(userRepository)
             messageEndpoints(messageRepository)
+            get("/summary") {
+                withLogging("INFO-summary") { call ->
+                    call.respondText("OK", ContentType.Text.Plain)
+                }
+            }
         }
     }
 }
@@ -133,6 +139,19 @@ private fun Route.messageReadEndpoints(repository: Repository1<Message1>) {
             ?: return@get call.respond(HttpStatusCode.NotFound)
         call.respond(message)
     }
+}
+
+suspend fun RoutingContext.withLogging(
+    logPrefix: String,
+    block: suspend (ApplicationCall) -> Unit
+) {
+    val loggingCall = object : ApplicationCall by call {
+        override suspend fun respond(message: Any?, typeInfo: TypeInfo?) {
+            println("${System.currentTimeMillis()} $logPrefix respond $message")
+            call.respond(message, typeInfo)
+        }
+    }
+    block(loggingCall)
 }
 
 class Repository1<E> {

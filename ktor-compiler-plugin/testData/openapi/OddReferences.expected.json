@@ -38,6 +38,15 @@
         "/reassignment": {
             "get": {
                 "summary": "Reassignment; branches",
+                "parameters": [
+                    {
+                        "name": "plain",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "",

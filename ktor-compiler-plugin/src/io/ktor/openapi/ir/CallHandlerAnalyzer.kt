@@ -6,9 +6,13 @@ import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrVariable
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.expressions.IrFunctionExpression
 import org.jetbrains.kotlin.ir.expressions.IrGetValue
 import org.jetbrains.kotlin.ir.symbols.IrValueSymbol
+import org.jetbrains.kotlin.ir.types.IrSimpleType
+import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classFqName
+import org.jetbrains.kotlin.ir.types.typeOrNull
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
 import org.jetbrains.kotlin.ir.util.kotlinFqName
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
@@ -17,8 +21,6 @@ import org.jetbrains.kotlin.ir.visitors.IrVisitor
 /**
  * Searches through route lambda bodies for common Ktor call references, so that we may infer some annotations
  * from the code.
- *
- * TODO supply variables from routing lambda tree
  */
 class CallHandlerAnalyzer(
     val callInference: IrCallHandlerInference,
@@ -49,20 +51,15 @@ class CallHandlerAnalyzer(
     override fun visitCall(expression: IrCall, data: MutableList<RouteField>) {
         try {
             val function = expression.symbol.owner
-            val isKtorFunction = function.kotlinFqName.asString().startsWith(KTOR_PACKAGE)
-            if (isKtorFunction) {
+            if (function.kotlinFqName.asString().startsWith(KTOR_PACKAGE)) {
                 val routeDetails = callInference.findRouteDetails(expression)
-                    ?: return super.visitCall(expression, data)
-                data += routeDetails
-            }
-            // when calling custom functions with Ktor types in their signature,
-            // we inspect the body of these for route details
-            else if (function !in visited && function.body != null) {
-                val functionBody = function.body!!
-                val hasKtorArgument = function.parameters.any {
-                    it.type.classFqName?.asString()?.startsWith(KTOR_PACKAGE) == true
+                if (routeDetails != null) {
+                    data += routeDetails
                 }
-                if (hasKtorArgument) {
+            } else if (function !in visited && function.body != null) {
+                // when calling custom functions with Ktor types in their signature,
+                // we inspect the body of these for route details
+                if (function.parameters.any { it.type.containsKtorTypeReference() }) {
                     val arguments = createVariableScope(function, expression)
                     val functionAnalyzer = CallHandlerAnalyzer(
                         callInference,
@@ -70,13 +67,44 @@ class CallHandlerAnalyzer(
                         visited + function,
                         arguments
                     )
-                    functionBody.accept(functionAnalyzer, data)
+                    function.body!!.accept(functionAnalyzer, data)
                 } else {
-                    super.visitCall(expression, data)
+                    for (arg in expression.arguments) {
+                        if (arg == null) continue
+
+                        val resolvedArg = copyAndResolve(arg) ?: arg
+
+                        val fnExpr = resolvedArg as? IrFunctionExpression ?: continue
+                        val lambdaFn = fnExpr.function
+                        val lambdaBody = lambdaFn.body ?: continue
+                        if (lambdaFn in visited) continue
+
+                        val lambdaAnalyzer = CallHandlerAnalyzer(
+                            callInference = callInference,
+                            context = context,
+                            visited = visited + lambdaFn,
+                            variables = variables
+                        )
+                        lambdaBody.accept(lambdaAnalyzer, data)
+                    }
                 }
             }
+
+            // Continue normal traversal
+            super.visitCall(expression, data)
         } catch (e: Throwable) {
             context.log("Failed to analyze $expression", e)
+        }
+    }
+
+    private fun IrType.containsKtorTypeReference(): Boolean {
+        val fqName = classFqName?.asString()
+        if (fqName != null && fqName.startsWith(KTOR_PACKAGE)) return true
+
+        val simple = this as? IrSimpleType ?: return false
+        return simple.arguments.any { proj ->
+            val argType = proj.typeOrNull
+            argType != null && argType.containsKtorTypeReference()
         }
     }
 
