@@ -8,6 +8,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 
+private val myFileScopedParameter = "fileScoped"
+public const val myPublicConstant = "publicConstant"
+
 fun Application.installOddReferences() {
     val body = "My response"
     val accepted = HttpStatusCode.Accepted
@@ -18,7 +21,7 @@ fun Application.installOddReferences() {
          */
         get("/higher-scope") {
             call.respondText(
-                body,
+                "$body ${call.parameters[myFileScopedParameter]} ${call.parameters[myPublicConstant]}",
                 contentType = ContentType.Text.CSV,
                 status = accepted
             )
@@ -48,11 +51,27 @@ fun Application.installOddReferences() {
 
             call.respondText(body, contentType = contentType)
         }
+
+        /**
+         * Calls with lambda argument
+         */
+        get("/function-lambda") {
+            callLambdaArg {
+                call.respondText(
+                    body,
+                    contentType = ContentType.Text.CSV,
+                    status = accepted
+                )
+            }
+        }
     }
 }
 
 fun acceptedStatus() =
     HttpStatusCode.Accepted
+
+fun callLambdaArg(action: suspend RoutingContext.() -> Unit) {}
+
 
 @Serializable
 data class CustomResponse(val message: String)

@@ -51,14 +51,16 @@ class CallHandlerAnalyzer(
     override fun visitCall(expression: IrCall, data: MutableList<RouteField>) {
         try {
             val function = expression.symbol.owner
+            // Calls to Ktor API; perform our inference
             if (function.kotlinFqName.asString().startsWith(KTOR_PACKAGE)) {
                 val routeDetails = callInference.findRouteDetails(expression)
                 if (routeDetails != null) {
                     data += routeDetails
                 }
-            } else if (function !in visited && function.body != null) {
-                // when calling custom functions with Ktor types in their signature,
-                // we inspect the body of these for route details
+            }
+            // Calls a custom function; search for Ktor references
+            else if (function !in visited && function.body != null) {
+                // Check parameters for Ktor types
                 if (function.parameters.any { it.type.containsKtorTypeReference() }) {
                     val arguments = createVariableScope(function, expression)
                     val functionAnalyzer = CallHandlerAnalyzer(
@@ -68,25 +70,25 @@ class CallHandlerAnalyzer(
                         arguments
                     )
                     function.body!!.accept(functionAnalyzer, data)
-                } else {
-                    for (arg in expression.arguments) {
-                        if (arg == null) continue
+                }
+                // Check lambda argument bodies
+                for (arg in expression.arguments) {
+                    if (arg == null) continue
 
-                        val resolvedArg = copyAndResolve(arg) ?: arg
+                    val resolvedArg = copyAndResolve(arg) ?: arg
 
-                        val fnExpr = resolvedArg as? IrFunctionExpression ?: continue
-                        val lambdaFn = fnExpr.function
-                        val lambdaBody = lambdaFn.body ?: continue
-                        if (lambdaFn in visited) continue
+                    val fnExpr = resolvedArg as? IrFunctionExpression ?: continue
+                    val lambdaFn = fnExpr.function
+                    val lambdaBody = lambdaFn.body ?: continue
+                    if (lambdaFn in visited) continue
 
-                        val lambdaAnalyzer = CallHandlerAnalyzer(
-                            callInference = callInference,
-                            context = context,
-                            visited = visited + lambdaFn,
-                            variables = variables
-                        )
-                        lambdaBody.accept(lambdaAnalyzer, data)
-                    }
+                    val lambdaAnalyzer = CallHandlerAnalyzer(
+                        callInference = callInference,
+                        context = context,
+                        visited = visited + lambdaFn,
+                        variables = variables
+                    )
+                    lambdaBody.accept(lambdaAnalyzer, data)
                 }
             }
 
@@ -113,25 +115,7 @@ class CallHandlerAnalyzer(
      */
     override fun copyAndResolve(expression: IrExpression): IrExpression? {
         val copied = expression.deepCopyWithSymbols()
-        var hasUnresolvedVariables = false
-
-        // Substitute variable references with their values from the scope
-        val expanded = copied.transform(object : IrElementTransformerVoid() {
-            override fun visitGetValue(expression: IrGetValue): IrExpression {
-                return when(val argumentValue = variables[expression.symbol]?.deepCopyWithSymbols()) {
-                    null -> {
-                        hasUnresolvedVariables = true
-                        super.visitGetValue(expression)
-                    }
-                    else -> {
-                        argumentValue
-                    }
-                }
-            }
-        }, null)
-
-        // return the substituted expression only if there were no unresolved variables
-        return expanded.takeIf { !hasUnresolvedVariables }
+        return copied.inlineVariables { variables[it] }
     }
 
 }

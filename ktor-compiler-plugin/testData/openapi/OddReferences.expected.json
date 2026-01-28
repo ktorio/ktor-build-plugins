@@ -8,8 +8,24 @@
         "/higher-scope": {
             "get": {
                 "summary": "Referencing from a higher scope",
+                "parameters": [
+                    {
+                        "name": "fileScoped",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "publicConstant",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
-                    "200": {
+                    "202": {
                         "description": "",
                         "content": {
                             "text/csv": {}
@@ -52,6 +68,19 @@
                         "description": "",
                         "content": {
                             "application/message+json": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/function-lambda": {
+            "get": {
+                "summary": "Calls with lambda argument",
+                "responses": {
+                    "202": {
+                        "description": "",
+                        "content": {
+                            "text/csv": {}
                         }
                     }
                 }

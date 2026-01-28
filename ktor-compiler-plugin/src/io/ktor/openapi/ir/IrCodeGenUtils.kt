@@ -15,11 +15,14 @@ import org.jetbrains.kotlin.ir.interpreter.IrInterpreter
 import org.jetbrains.kotlin.ir.interpreter.IrInterpreterEnvironment
 import org.jetbrains.kotlin.ir.interpreter.checker.EvaluationMode
 import org.jetbrains.kotlin.ir.interpreter.transformer.transformConst
+import org.jetbrains.kotlin.ir.symbols.IrValueSymbol
 import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.typeOrNull
+import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
 import org.jetbrains.kotlin.ir.util.toIrConst
+import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.name.SpecialNames
 
 context(context: CodeGenContext)
@@ -224,3 +227,19 @@ fun Boolean.toConst(): IrConst =
 context(context: CodeGenContext)
 fun Double.toConst(): IrConst =
     this.toIrConst(context.irBuiltIns.doubleType)
+
+fun IrExpression.inlineVariables(lookup: (IrValueSymbol) -> IrExpression?): IrExpression? =
+    try {
+        transform(object : IrElementTransformerVoid() {
+            override fun visitGetValue(expression: IrGetValue): IrExpression {
+                return when (val argumentValue = lookup(expression.symbol)?.deepCopyWithSymbols()) {
+                    null -> throw MissingVariableException(expression.symbol)
+                    else -> argumentValue
+                }
+            }
+        }, null)
+    } catch (e: MissingVariableException) {
+        null
+    }
+
+class MissingVariableException(val symbol: IrValueSymbol) : Exception("Missing variable: $symbol")

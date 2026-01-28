@@ -9,6 +9,5 @@ import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
 interface CodeGenContext: Logger, IrPluginContext {
     val irFile: IrFile?
 
-    fun copyAndResolve(expression: IrExpression): IrExpression? =
-        expression.deepCopyWithSymbols()
+    fun copyAndResolve(expression: IrExpression): IrExpression?
 }

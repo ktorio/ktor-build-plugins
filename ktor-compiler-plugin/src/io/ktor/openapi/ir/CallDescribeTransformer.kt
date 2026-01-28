@@ -6,12 +6,10 @@ import io.ktor.openapi.ir.inference.*
 import io.ktor.openapi.routing.*
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.IrStatement
-import org.jetbrains.kotlin.ir.declarations.IrFile
-import org.jetbrains.kotlin.ir.declarations.IrFunction
-import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
-import org.jetbrains.kotlin.ir.declarations.path
-import org.jetbrains.kotlin.ir.expressions.IrCall
-import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.declarations.*
+import org.jetbrains.kotlin.ir.expressions.*
+import org.jetbrains.kotlin.ir.symbols.IrValueSymbol
+import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
@@ -37,17 +35,15 @@ class CallDescribeTransformer(
         const val OPENAPI_PACKAGE = "io.ktor.openapi"
     }
 
-    private val callHandlerAnalyzer: CallHandlerAnalyzer =
-        CallHandlerAnalyzer(
-            IrCallHandlerInference.of(
-                CallRespondInference,
-                CallReceiveInference,
-                ParameterInference,
-                RequestHeaderInference,
-                AppendResponseHeaderInference,
-                ResponseHeaderExtensionInference,
-                ResourceRouteCallInference,
-            ), this)
+    private val callHandlerInference = IrCallHandlerInference.of(
+        CallRespondInference,
+        CallReceiveInference,
+        ParameterInference,
+        RequestHeaderInference,
+        AppendResponseHeaderInference,
+        ResponseHeaderExtensionInference,
+        ResourceRouteCallInference,
+    )
 
     private val describeFunction: IrSimpleFunction by lazy {
         CallableId(
@@ -62,8 +58,16 @@ class CallDescribeTransformer(
     private var currentFile: IrFile? = null
     // required for building new declarations from function scopes
     private var functionStack = mutableListOf<IrFunction>()
+    private val variableScopeStack = mutableListOf<MutableMap<IrValueSymbol, IrExpression>>()
 
     override val irFile: IrFile? get() = currentFile
+
+    override fun copyAndResolve(expression: IrExpression): IrExpression? {
+        val copied = expression.deepCopyWithSymbols()
+        return copied.inlineVariables { symbol ->
+            variableScopeStack.firstNotNullOfOrNull { it[symbol] }
+        }
+    }
 
     override fun visitFile(declaration: IrFile): IrFile {
         try {
@@ -71,16 +75,30 @@ class CallDescribeTransformer(
             return super.visitFile(declaration)
         } finally {
             currentFile = null
+            functionStack.clear()
+            variableScopeStack.clear()
         }
     }
 
     override fun visitFunction(declaration: IrFunction): IrStatement {
         try {
             functionStack.add(declaration)
+            variableScopeStack.add(mutableMapOf())
             return super.visitFunction(declaration)
         } finally {
+            variableScopeStack.removeLast()
             functionStack.removeLast()
         }
+    }
+
+    override fun visitVariable(declaration: IrVariable): IrStatement {
+        // Record variable initializers as we encounter them (order-correct, scope-correct).
+        declaration.initializer?.let { initializer ->
+            val resolved = copyAndResolve(initializer) ?: return@let
+            val scope = variableScopeStack.lastOrNull() ?: return@let
+            scope[declaration.symbol] = resolved
+        }
+        return super.visitVariable(declaration)
     }
 
     /**
@@ -127,11 +145,28 @@ class CallDescribeTransformer(
      */
     private fun RouteFieldList.includeLambdaBody(expression: IrCall): RouteFieldList =
         if (handlerInferenceEnabled) {
-            val fieldsFromLambda = callHandlerAnalyzer.analyze(expression)
-            merge(fieldsFromLambda)
+            val seededVariables = snapshotCapturedVariables()
+            val analyzer = CallHandlerAnalyzer(
+                callInference = callHandlerInference,
+                context = this@CallDescribeTransformer,
+                visited = emptySet(),
+                variables = seededVariables
+            )
+            merge(analyzer.analyze(expression))
         } else {
             this
         }
+
+    private fun snapshotCapturedVariables(): MutableMap<IrValueSymbol, IrExpression> {
+        val snapshot = mutableMapOf<IrValueSymbol, IrExpression>()
+
+        // Outer -> inner, so inner scopes override outer scopes if needed.
+        for (scope in variableScopeStack) {
+            snapshot.putAll(scope)
+        }
+
+        return snapshot
+    }
 
     private fun IrExpression.coordinates() =
         SourceKey(currentFile?.path, startOffset, endOffset)
