@@ -2,6 +2,9 @@ package io.ktor.openapi.fir
 
 import io.ktor.openapi.Logger
 import io.ktor.openapi.routing.*
+import io.ktor.openapi.routing.RoutingFunctionConstants
+import io.ktor.openapi.routing.RoutingFunctionConstants.ROUTE_INTERFACE
+import io.ktor.openapi.routing.RoutingFunctionConstants.ROUTING_CONTEXT
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
@@ -13,8 +16,10 @@ import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
 import org.jetbrains.kotlin.fir.expressions.arguments
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.packageFqName
+import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.isExtensionFunctionType
 import org.jetbrains.kotlin.fir.types.isSuspendOrKSuspendFunctionType
+import org.jetbrains.kotlin.fir.types.receiverType
 import org.jetbrains.kotlin.fir.types.resolvedType
 import org.jetbrains.kotlin.text
 
@@ -80,13 +85,14 @@ class OpenApiRouteCallReader(
 
     private fun isRouteFunction(call: FirFunctionCall): Boolean =
         call.isInPackage(RoutingFunctionConstants.ROUTING_PACKAGE) &&
-                call.getFunctionName() in RoutingFunctionConstants.ROUTING_FUNCTION_NAMES
+                call.resolvedType.classId?.asFqNameString() == ROUTE_INTERFACE
 
     context(context: CheckerContext)
     private fun FirFunctionCall.hasHandlerLambda(): Boolean {
         return arguments.any { arg ->
             arg.resolvedType.isSuspendOrKSuspendFunctionType(context.session) &&
-            arg.resolvedType.isExtensionFunctionType
+                arg.resolvedType.isExtensionFunctionType &&
+                arg.resolvedType.receiverType(context.session)?.classId?.asSingleFqName()?.asString() == ROUTING_CONTEXT
         }
     }
 }
