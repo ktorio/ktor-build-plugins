@@ -34,18 +34,3 @@ val IrCall.functionReceiver get() =
         it.kind == IrParameterKind.DispatchReceiver ||
             it.kind == IrParameterKind.ExtensionReceiver
     }
-
-private fun IrFunction.collectLocalDeclarations(): Set<IrValueDeclaration> {
-    return buildSet {
-        // Add all function parameters
-        addAll(parameters)
-
-        // Add all local variables declared in the function body
-        body?.acceptVoid(object : IrVisitorVoid() {
-            override fun visitVariable(declaration: IrVariable) {
-                add(declaration)
-                super.visitVariable(declaration)
-            }
-        })
-    }
-}
