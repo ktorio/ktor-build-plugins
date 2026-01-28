@@ -10,7 +10,9 @@ import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.symbols.IrValueSymbol
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
+import org.jetbrains.kotlin.ir.util.kotlinFqName
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
+import org.jetbrains.kotlin.ir.visitors.IrVisitor
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
@@ -116,46 +118,117 @@ class CallDescribeTransformer(
         val currentFunction = functionStack.lastOrNull()
             ?: return super.visitCall(expression)
 
-        return if (route.isLeaf) {
-            // when handler inference is enabled,
-            // scan the lambda body for route details
-            val fields = route.fields.includeLambdaBody(expression)
-            logger.log(buildString {
-                append("ROUTE ${route.locationString()}; fields:")
-                append(fields.joinToString("\n  - ", prefix = "\n  - "))
-            })
-            expression.chainDescribeCall(
-                parentDeclaration = currentFunction,
-                routeFields = fields
-            )
-        } else if (route.fields.isNotEmpty()) {
-            // append the describe function from route fields and continue analysis
-            super.visitCall(expression).chainDescribeCall(
-                parentDeclaration = currentFunction,
-                routeFields = route.fields
-            )
-        } else {
-            // when there's nothing to add, just continue analysis
-            super.visitCall(expression)
+        // if leaf, check lambda body, and stop
+        // else, check handle {} calls, and continue
+        val (call, routeFields) = route.fields.let { fields ->
+            if (route.isLeaf) {
+                expression to fields.includeLambdaBody(expression)
+            } else {
+                super.visitCall(expression) to fields.includeHandleBodies(expression)
+            }
         }
+
+        if (routeFields.isEmpty())
+            return call
+
+        logger.log(buildString {
+            append("ROUTE ${route.locationString()}; fields:")
+            append(routeFields.joinToString("\n  - ", prefix = "\n  - "))
+        })
+        return call.chainDescribeCall(
+            parentDeclaration = currentFunction,
+            routeFields = routeFields
+        )
     }
 
     /**
      * If handler inference is enabled, scan the lambda body for route details.
      */
-    private fun RouteFieldList.includeLambdaBody(expression: IrCall): RouteFieldList =
-        if (handlerInferenceEnabled) {
-            val seededVariables = snapshotCapturedVariables()
-            val analyzer = CallHandlerAnalyzer(
-                callInference = callHandlerInference,
-                context = this@CallDescribeTransformer,
-                visited = emptySet(),
-                variables = seededVariables
-            )
-            merge(analyzer.analyze(expression))
-        } else {
-            this
+    private fun RouteFieldList.includeLambdaBody(expression: IrCall): RouteFieldList {
+        if (!handlerInferenceEnabled) return this
+        val seededVariables = snapshotCapturedVariables()
+        val analyzer = CallHandlerAnalyzer(
+            callInference = callHandlerInference,
+            context = this@CallDescribeTransformer,
+            visited = emptySet(),
+            variables = seededVariables
+        )
+        return merge(analyzer.analyze(expression))
+    }
+
+    /**
+     * For NON-leaf route nodes, we only want to analyze `Route.handle { ... }` bodies contained inside
+     * the lambda of this call (e.g., `method(HttpMethod.Get) { handle { ... } }`).
+     */
+    private fun RouteFieldList.includeHandleBodies(expression: IrCall): RouteFieldList {
+        if (!handlerInferenceEnabled) return this
+
+        val seededVariables = snapshotCapturedVariables()
+        val fields = mutableListOf<RouteField>()
+
+        val finder = HandleCallFinder(
+            callInference = callHandlerInference,
+            context = this@CallDescribeTransformer,
+            variables = seededVariables,
+            out = fields
+        )
+
+        // Only traverse the immediate lambda bodies of this non-leaf route call.
+        for (arg in expression.arguments) {
+            val fnExpr = (arg as? IrFunctionExpression) ?: continue
+            val body = fnExpr.function.body ?: continue
+            body.accept(finder, Unit)
         }
+
+        return merge(fields)
+    }
+
+    private class HandleCallFinder(
+        private val callInference: IrCallHandlerInference,
+        private val context: CodeGenContext,
+        private val variables: MutableMap<IrValueSymbol, IrExpression>,
+        private val out: MutableList<RouteField>,
+    ) : IrVisitor<Unit, Unit>(), CodeGenContext by context {
+
+        private fun IrCall.isHandleCall(): Boolean {
+            val fn = symbol.owner
+            val fqName = fn.kotlinFqName.asString()
+            return fqName == "io.ktor.server.routing.Route.handle" ||
+                fqName == "io.ktor.server.routing.handle"
+        }
+
+        override fun visitElement(element: org.jetbrains.kotlin.ir.IrElement, data: Unit) {
+            element.acceptChildren(this, data)
+        }
+
+        // Don’t descend into arbitrary lambdas (e.g., nested `get {}`), that’s where bleeding happens.
+        override fun visitFunctionExpression(expression: IrFunctionExpression, data: Unit) {
+            // Intentionally no-op
+        }
+
+        override fun visitCall(expression: IrCall, data: Unit) {
+            if (expression.isHandleCall()) {
+                // Analyze ONLY the handle handler bodies using the normal analyzer.
+                for (arg in expression.arguments) {
+                    val fnExpr = (arg as? IrFunctionExpression) ?: continue
+                    val lambdaBody = fnExpr.function.body ?: continue
+
+                    val analyzer = CallHandlerAnalyzer(
+                        callInference = callInference,
+                        context = context,
+                        visited = emptySet(),
+                        variables = variables.toMutableMap()
+                    )
+                    out += analyzer.analyze(lambdaBody)
+                }
+                return
+            }
+
+            // Keep walking statements/expressions so we can *find* handle calls,
+            // but avoid descending into other lambdas (handled above).
+            expression.acceptChildren(this, data)
+        }
+    }
 
     private fun snapshotCapturedVariables(): MutableMap<IrValueSymbol, IrExpression> {
         val snapshot = mutableMapOf<IrValueSymbol, IrExpression>()
