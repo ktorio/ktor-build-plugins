@@ -26,15 +26,15 @@ Requirements:
 ### EAP builds
 
 You can also use EAP versions of the plugin
-published on [Space Packages](https://maven.pkg.jetbrains.space/public/p/ktor/eap/io/ktor/plugin/plugin/).
-To do this, consider adding <https://maven.pkg.jetbrains.space/public/p/ktor/eap> to the list of plugin repositories
+published on [Space Packages](https://redirector.kotlinlang.org/maven/ktor-eap/io/ktor/plugin/plugin/).
+To do this, consider adding <https://redirector.kotlinlang.org/maven/ktor-eap> to the list of plugin repositories
 in the `settings.gradle` file, which may look like this:
 
 ```kotlin
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+        maven("https://redirector.kotlinlang.org/maven/ktor-eap")
     }
 }
 ```
