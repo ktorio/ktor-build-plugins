@@ -10,7 +10,7 @@ dependencyResolutionManagement {
     repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
     repositories {
         mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+        maven("https://redirector.kotlinlang.org/maven/ktor-eap")
     }
 }
 
