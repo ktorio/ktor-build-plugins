@@ -170,6 +170,26 @@
         },
         "/unprocessed": {
             "get": {}
+        },
+        "/server": {
+            "get": {
+                "summary": "External type reference.",
+                "responses": {
+                    "200": {
+                        "description": "A server",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Server"
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": ""
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -260,6 +280,33 @@
                             {
                                 "type": "null"
                             }
+                        ]
+                    },
+                    "extensions": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "additionalProperties": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "Server": {
+                "type": "object",
+                "title": "io.ktor.openapi.Server",
+                "required": [
+                    "url"
+                ],
+                "properties": {
+                    "url": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
                         ]
                     },
                     "extensions": {

@@ -69,5 +69,14 @@ fun Application.installMarkdownOptions() {
         get("/unprocessed") {
             call.respondText("Hello, world!")
         }
+
+        /**
+         * External type reference.
+         *
+         * Response: 200 [io.ktor.openapi.Server] A server
+         */
+        get("/server") {
+            call.respond(HttpStatusCode.BadGateway)
+        }
     }
 }

@@ -36,7 +36,7 @@ sealed interface TypeReference {
             context(context: IrPluginContext)
             override fun asIrType(): IrType? =
                 context.referenceClass(
-                    ClassId.Companion.topLevel(FqName(name))
+                    ClassId.topLevel(FqName(name))
                 )?.defaultType
         }
         data class Primitive(override val name: String, val jsonPrimitive: JsonPrimitive) : Link {
