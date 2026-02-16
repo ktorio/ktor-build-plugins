@@ -64,6 +64,19 @@ fun Application.installOddReferences() {
                 )
             }
         }
+
+        /**
+         * Local variables that can't be extracted
+         */
+        get("/set-cookies") {
+            for (n in call.queryParameters.names()) {
+                call.response.cookies.append(
+                    name = n,
+                    value = call.queryParameters[n] ?: "",
+                    path = "/",
+                )
+            }
+        }
     }
 }
 
