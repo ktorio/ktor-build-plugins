@@ -206,7 +206,6 @@ fun callFunctionWithScope(
 context(context: CodeGenContext)
 fun IrExpression.evaluateToConst(): IrConst? {
     val interpreter = IrInterpreter(IrInterpreterEnvironment(context.irBuiltIns))
-    val mode = EvaluationMode.Full
     val result = interpreter.interpret(this, context.irFile)
 
     return result as? IrConst

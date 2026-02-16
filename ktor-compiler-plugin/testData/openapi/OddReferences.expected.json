@@ -85,6 +85,12 @@
                     }
                 }
             }
+        },
+        "/set-cookies": {
+            "get": {
+                "summary": "Local variables that can't be extracted",
+                "responses": {}
+            }
         }
     },
     "components": {

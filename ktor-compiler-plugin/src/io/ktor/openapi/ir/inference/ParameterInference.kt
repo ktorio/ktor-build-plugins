@@ -16,6 +16,7 @@ val ParameterInference = IrCallHandlerInference { call: IrCall ->
     } ?: return@IrCallHandlerInference null
 
     val key = call.arguments[getParameter.indexInParameters]
+        ?.let { LocalReference.of(it) }
         ?: return@IrCallHandlerInference null
 
     val receiverArgCall = call.arguments[receiver.indexInParameters] as? IrCall
@@ -24,13 +25,13 @@ val ParameterInference = IrCallHandlerInference { call: IrCall ->
     // this is not the case for the usual `call.parameters` reference,
     // or when we're not using a property getter
     when(receiverArgCall?.symbol?.owner?.name?.asString()) {
-        "<get-headers>" -> listOf(RouteField.Parameter(ParamIn.HEADER, LocalReference.Expression(key)))
+        "<get-headers>" -> listOf(RouteField.Parameter(ParamIn.HEADER, key))
         "<get-pathVariables>",
-        "<get-pathParameters>" -> listOf(RouteField.Parameter(ParamIn.PATH, LocalReference.Expression(key)))
-        "<get-queryParameters>" -> listOf(RouteField.Parameter(ParamIn.QUERY, LocalReference.Expression(key)))
+        "<get-pathParameters>" -> listOf(RouteField.Parameter(ParamIn.PATH, key))
+        "<get-queryParameters>" -> listOf(RouteField.Parameter(ParamIn.QUERY, key))
 
         // ambiguous scenario, we avoid defining `in` for now
         // this can usually be inferred later at runtime
-        else -> listOf(RouteField.Parameter(name = LocalReference.Expression(key)))
+        else -> listOf(RouteField.Parameter(name = key))
     }
 }
