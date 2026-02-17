@@ -6,45 +6,113 @@
     },
     "paths": {
         "/articles": {
-            "get": {}
+            "get": {
+                "summary": "Get a list of articles.",
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Post"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
         "/articles/{id}": {
             "get": {
+                "summary": "Get a single article by ID.",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
-                ]
+                ],
+                "responses": {
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Post"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/articles/{id}/comments": {
             "get": {
+                "summary": "Get a list of comments for a specific article.",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
-                ]
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Comments"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/articles/featured": {
-            "get": {}
+            "get": {
+                "summary": "Get a list of featured articles.",
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Post"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
         "/users/search": {
             "get": {
+                "summary": "Search for users.",
                 "parameters": [
                     {
-                        "name": "offset",
+                        "name": "query",
                         "in": "query",
+                        "required": true,
                         "schema": {
                             "type": "string"
                         }
@@ -53,51 +121,158 @@
                         "name": "limit",
                         "in": "query",
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     },
                     {
-                        "name": "query",
+                        "name": "offset",
                         "in": "query",
-                        "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
-                ]
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    }
+                }
             }
         },
         "/posts": {
-            "post": {}
+            "post": {
+                "summary": "Create or update a post.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Post"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    }
+                }
+            }
         },
         "/posts/{id}": {
             "put": {
+                "summary": "Update a post.",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
-                ]
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Post"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    }
+                }
             }
         },
         "/posts/{id}/comments": {
             "post": {
+                "summary": "Add a comment to a post.",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
-                ]
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "text/plain": {}
+                        }
+                    }
+                }
             }
         }
     },
-    "components": {}
+    "components": {
+        "schemas": {
+            "Post": {
+                "type": "object",
+                "title": "openapi.Post",
+                "required": [
+                    "id",
+                    "title",
+                    "content",
+                    "authorId"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "authorId": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "Comments": {
+                "type": "object",
+                "title": "openapi.Articles.Id.Comments",
+                "required": [
+                    "parent"
+                ],
+                "properties": {
+                    "parent": {
+                        "type": "object",
+                        "title": "openapi.Articles.Id",
+                        "required": [
+                            "parent",
+                            "id"
+                        ],
+                        "properties": {
+                            "parent": {
+                                "type": "object",
+                                "title": "openapi.Articles",
+                                "properties": {}
+                            },
+                            "id": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
