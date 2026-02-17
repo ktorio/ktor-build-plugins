@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
 import org.jetbrains.kotlin.fir.expressions.arguments
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.packageFqName
+import org.jetbrains.kotlin.fir.references.symbol
 import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.isExtensionFunctionType
 import org.jetbrains.kotlin.fir.types.isSuspendOrKSuspendFunctionType
@@ -84,8 +85,8 @@ class OpenApiRouteCallReader(
     }
 
     private fun isRouteFunction(call: FirFunctionCall): Boolean =
-        call.isInPackage(RoutingFunctionConstants.ROUTING_PACKAGE) &&
-                call.resolvedType.classId?.asFqNameString() == ROUTE_INTERFACE
+        call.calleeReference.symbol?.packageFqName()?.toString().orEmpty().startsWith("io.ktor")
+                && call.resolvedType.classId?.asFqNameString() == ROUTE_INTERFACE
 
     context(context: CheckerContext)
     private fun FirFunctionCall.hasHandlerLambda(): Boolean {

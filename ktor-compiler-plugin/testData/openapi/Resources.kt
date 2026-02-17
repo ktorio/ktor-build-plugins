@@ -85,41 +85,62 @@ fun Application.installResources() {
     install(Resources)
 
     routing {
-        // Basic resource routes
+        /**
+         * Get a list of articles.
+         */
         get<Articles> { articles ->
             call.respond(posts)
         }
 
+        /**
+         * Get a single article by ID.
+         */
         get<Articles.Id> { article ->
             val post = posts.find { it.id == article.id }
                 ?: return@get call.respondText("Article #${article.id} not found", status = HttpStatusCode.NotFound)
             call.respond(post)
         }
 
+        /**
+         * Get a list of comments for a specific article.
+         */
         get<Articles.Id.Comments> { comments ->
             call.respond(comments)
         }
 
+        /**
+         * Get a list of featured articles.
+         */
         get<Articles.Featured> { featured ->
             call.respond(posts)
         }
 
-        // Resources with query parameters
+        /**
+         * Search for users.
+         */
         get<Users.Search> { search ->
             call.respondText("Searching for users matching '${search.query}', limit: ${search.limit}, offset: ${search.offset}")
         }
 
-        // Resources with request body
+        /**
+         * Create or update a post.
+         */
         post<Posts> {
             val post = call.receive<Post>()
             call.respondText("Created post: ${post.title}")
         }
 
+        /**
+         * Update a post.
+         */
         put<Posts.Id> { postId ->
             val updatedPost = call.receive<Post>()
             call.respondText("Updated post ${postId.id}: ${updatedPost.title}")
         }
 
+        /**
+         * Add a comment to a post.
+         */
         post<Posts.Id.Comments> { comments ->
             call.respondText("Added comment to post ${comments.parent.id}")
         }
