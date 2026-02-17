@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.ir.declarations.IrVariable
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.IrFunctionExpression
+import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.IrValueSymbol
 import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.IrType
@@ -25,6 +26,7 @@ class CallHandlerAnalyzer(
     val context: CodeGenContext,
     val visited: Set<IrFunction> = emptySet(),
     val variables: MutableMap<IrValueSymbol, IrExpression> = mutableMapOf(),
+    val typeParameters: Map<IrTypeParameterSymbol, IrType> = mutableMapOf(),
 ): IrVisitor<Unit, MutableList<RouteField>>(), CodeGenContext by context {
     companion object {
         const val KTOR_PACKAGE = "io.ktor"
@@ -62,10 +64,11 @@ class CallHandlerAnalyzer(
                 if (function.parameters.any { it.type.containsKtorTypeReference() }) {
                     val arguments = createVariableScope(function, expression)
                     val functionAnalyzer = CallHandlerAnalyzer(
-                        callInference,
-                        context,
-                        visited + function,
-                        arguments
+                        callInference = callInference,
+                        context = context,
+                        visited = visited + function,
+                        variables = arguments,
+                        typeParameters = expression.typeArgsAsMap()
                     )
                     function.body!!.accept(functionAnalyzer, data)
                 }
@@ -84,7 +87,8 @@ class CallHandlerAnalyzer(
                         callInference = callInference,
                         context = context,
                         visited = visited + lambdaFn,
-                        variables = variables
+                        variables = variables,
+                        typeParameters = typeParameters + expression.typeArgsAsMap()
                     )
                     lambdaBody.accept(lambdaAnalyzer, data)
                 }
@@ -116,6 +120,9 @@ class CallHandlerAnalyzer(
         return copied.inlineVariables { variables[it] }
     }
 
+    override fun inferConcreteType(type: IrType): IrType {
+        return type.substituteTypeParameters(typeParameters)
+    }
 }
 
 /**
