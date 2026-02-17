@@ -1,6 +1,7 @@
 package io.ktor.openapi.routing
 
 import io.ktor.openapi.JsonPrimitive
+import io.ktor.openapi.ir.CodeGenContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.defaultType
@@ -11,8 +12,9 @@ import org.jetbrains.kotlin.name.FqName
 
 sealed interface TypeReference {
     companion object {
+        context(context: CodeGenContext)
         fun IrType.asReference() =
-            Resolved(this)
+            Resolved(context.inferConcreteType(this))
     }
 
     context(context: IrPluginContext)

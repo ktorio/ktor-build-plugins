@@ -8,7 +8,9 @@ import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.*
+import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.IrValueSymbol
+import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
 import org.jetbrains.kotlin.ir.util.kotlinFqName
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
@@ -61,6 +63,7 @@ class CallDescribeTransformer(
     // required for building new declarations from function scopes
     private var functionStack = mutableListOf<IrFunction>()
     private val variableScopeStack = mutableListOf<MutableMap<IrValueSymbol, IrExpression>>()
+    private val typeParametersScopeStack = mutableListOf<Map<IrTypeParameterSymbol, IrType>>()
 
     override val irFile: IrFile? get() = currentFile
 
@@ -71,6 +74,11 @@ class CallDescribeTransformer(
         }
     }
 
+    override fun inferConcreteType(type: IrType): IrType {
+        val scope = typeParametersScopeStack.lastOrNull() ?: return type
+        return type.substituteTypeParameters(scope)
+    }
+
     override fun visitFile(declaration: IrFile): IrFile {
         try {
             currentFile = declaration
@@ -79,6 +87,7 @@ class CallDescribeTransformer(
             currentFile = null
             functionStack.clear()
             variableScopeStack.clear()
+            typeParametersScopeStack.clear()
         }
     }
 
@@ -86,8 +95,10 @@ class CallDescribeTransformer(
         try {
             functionStack.add(declaration)
             variableScopeStack.add(mutableMapOf())
+            typeParametersScopeStack.add(mutableMapOf())
             return super.visitFunction(declaration)
         } finally {
+            typeParametersScopeStack.removeLast()
             variableScopeStack.removeLast()
             functionStack.removeLast()
         }
@@ -110,35 +121,55 @@ class CallDescribeTransformer(
      * references, like `call.respond(...)`, for example.
      */
     override fun visitCall(expression: IrCall): IrExpression {
-        // check for route info from the FIR analysis step
-        val route: RouteCall = routes[expression.coordinates()]
-            ?: return super.visitCall(expression)
+        // Maintain a type-parameter substitution scope for the subtree under this call.
+        val pushed = buildTypeParameterScopeForCall(expression)
+        try {
+            // check for route info from the FIR analysis step
+            val route: RouteCall = routes[expression.coordinates()]
+                ?: return super.visitCall(expression)
 
-        // get the nearest declaration up the stack
-        val currentFunction = functionStack.lastOrNull()
-            ?: return super.visitCall(expression)
+            // get the nearest declaration up the stack
+            val currentFunction = functionStack.lastOrNull()
+                ?: return super.visitCall(expression)
 
-        // if leaf, check lambda body, and stop
-        // else, check handle {} calls, and continue
-        val (call, routeFields) = route.fields.let { fields ->
-            if (route.isLeaf) {
-                expression to fields.includeLambdaBody(expression)
-            } else {
-                super.visitCall(expression) to fields.includeHandleBodies(expression)
+            // if leaf, check lambda body, and stop
+            // else, check handle {} calls, and continue
+            val (call, routeFields) = route.fields.let { fields ->
+                if (route.isLeaf) {
+                    expression to fields.includeLambdaBody(expression)
+                } else {
+                    super.visitCall(expression) to fields.includeHandleBodies(expression)
+                }
             }
+
+            if (routeFields.isEmpty())
+                return call
+
+            logger.log(buildString {
+                append("ROUTE ${route.locationString()}; fields:")
+                append(routeFields.joinToString("\n  - ", prefix = "\n  - "))
+            })
+            return call.chainDescribeCall(
+                parentDeclaration = currentFunction,
+                routeFields = routeFields
+            )
+        } finally {
+            if (pushed) typeParametersScopeStack.removeLast()
         }
+    }
 
-        if (routeFields.isEmpty())
-            return call
+    private fun buildTypeParameterScopeForCall(call: IrCall): Boolean {
+        val substitutions = call.typeArgsAsMap()
 
-        logger.log(buildString {
-            append("ROUTE ${route.locationString()}; fields:")
-            append(routeFields.joinToString("\n  - ", prefix = "\n  - "))
-        })
-        return call.chainDescribeCall(
-            parentDeclaration = currentFunction,
-            routeFields = routeFields
-        )
+        if (substitutions.isEmpty()) return false
+
+        // Merge with the existing "current" scope so inner bindings win.
+        val merged = mutableMapOf<IrTypeParameterSymbol, IrType>()
+        typeParametersScopeStack.lastOrNull()?.let(merged::putAll)
+        merged.putAll(substitutions)
+
+        typeParametersScopeStack.add(merged)
+        return true
     }
 
     /**
@@ -146,12 +177,12 @@ class CallDescribeTransformer(
      */
     private fun RouteFieldList.includeLambdaBody(expression: IrCall): RouteFieldList {
         if (!handlerInferenceEnabled) return this
-        val seededVariables = snapshotCapturedVariables()
         val analyzer = CallHandlerAnalyzer(
             callInference = callHandlerInference,
             context = this@CallDescribeTransformer,
             visited = emptySet(),
-            variables = seededVariables
+            variables = variableScopeStack.snapshotScope(),
+            typeParameters = typeParametersScopeStack.snapshotScope(),
         )
         return merge(analyzer.analyze(expression))
     }
@@ -163,13 +194,13 @@ class CallDescribeTransformer(
     private fun RouteFieldList.includeHandleBodies(expression: IrCall): RouteFieldList {
         if (!handlerInferenceEnabled) return this
 
-        val seededVariables = snapshotCapturedVariables()
         val fields = mutableListOf<RouteField>()
 
         val finder = HandleCallFinder(
             callInference = callHandlerInference,
             context = this@CallDescribeTransformer,
-            variables = seededVariables,
+            variables = variableScopeStack.snapshotScope(),
+            typeParameters = typeParametersScopeStack.snapshotScope(),
             out = fields
         )
 
@@ -187,6 +218,7 @@ class CallDescribeTransformer(
         private val callInference: IrCallHandlerInference,
         private val context: CodeGenContext,
         private val variables: MutableMap<IrValueSymbol, IrExpression>,
+        private val typeParameters: MutableMap<IrTypeParameterSymbol, IrType> = mutableMapOf(),
         private val out: MutableList<RouteField>,
     ) : IrVisitor<Unit, Unit>(), CodeGenContext by context {
 
@@ -217,7 +249,8 @@ class CallDescribeTransformer(
                         callInference = callInference,
                         context = context,
                         visited = emptySet(),
-                        variables = variables.toMutableMap()
+                        variables = variables.toMutableMap(),
+                        typeParameters = typeParameters,
                     )
                     out += analyzer.analyze(lambdaBody)
                 }
@@ -230,14 +263,11 @@ class CallDescribeTransformer(
         }
     }
 
-    private fun snapshotCapturedVariables(): MutableMap<IrValueSymbol, IrExpression> {
-        val snapshot = mutableMapOf<IrValueSymbol, IrExpression>()
-
-        // Outer -> inner, so inner scopes override outer scopes if needed.
-        for (scope in variableScopeStack) {
+    private fun <K, V> List<Map<K, V>>.snapshotScope(): MutableMap<K, V> {
+        val snapshot = mutableMapOf<K, V>()
+        for (scope in this) {
             snapshot.putAll(scope)
         }
-
         return snapshot
     }
 
