@@ -1,3 +1,6 @@
 package io.ktor.plugin
 
-internal const val KOTLIN_VERSION = "2.1.20"
+import io.ktor.plugin.generated.BuildConfig
+
+internal const val KTOR_VERSION = BuildConfig.KOTLIN_VERSION
+internal const val KOTLIN_VERSION = BuildConfig.KOTLIN_VERSION

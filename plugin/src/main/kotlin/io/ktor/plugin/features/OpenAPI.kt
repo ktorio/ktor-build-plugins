@@ -23,8 +23,9 @@ internal fun Project.configureOpenApi() {
                     dependencies.add("implementation", "io.ktor:ktor-server-routing-openapi:${KtorGradlePlugin.KTOR_VERSION}")
                     logger.info("Ktor annotations dependency automatically included")
                 }
+                logger.info("Ktor compiler plugin is enabled")
             } else {
-                logger.debug("OpenAPI inference is disabled")
+                logger.debug("Ktor compiler plugin is disabled")
             }
         } catch (_: Throwable) {
             logger.warn("Could not apply compiler plugin. OpenAPI inference will not be available.")
