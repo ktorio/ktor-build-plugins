@@ -51,6 +51,7 @@ buildConfig {
     packageName("io.ktor.plugin.generated")
     buildConfigField("String", "VERSION", "\"${project.version}\"")
     buildConfigField("String", "KTOR_VERSION", "\"${libs.ktor.server.core.get().version}\"")
+    buildConfigField("String", "KOTLIN_VERSION", "\"${libs.versions.kotlin.get()}\"")
 }
 
 gradlePlugin {

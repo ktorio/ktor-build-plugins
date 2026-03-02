@@ -5,7 +5,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.BeforeTest
-import io.ktor.plugin.KtorGradlePlugin.Companion.VERSION as KTOR_VERSION
+import io.ktor.plugin.KtorGradlePlugin.Companion.KTOR_VERSION
 
 abstract class IntegrationTest {
 
