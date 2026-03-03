@@ -7,6 +7,7 @@
     "paths": {
         "/node": {
             "post": {
+                "summary": "",
                 "requestBody": {
                     "content": {
                         "application/json": {
