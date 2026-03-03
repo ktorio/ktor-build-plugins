@@ -7,6 +7,7 @@
     "paths": {
         "/json": {
             "get": {
+                "summary": "",
                 "responses": {
                     "200": {
                         "description": "",
@@ -19,6 +20,7 @@
         },
         "/binary": {
             "get": {
+                "summary": "",
                 "responses": {
                     "200": {
                         "description": "",
@@ -38,6 +40,7 @@
         },
         "/file": {
             "get": {
+                "summary": "",
                 "responses": {
                     "200": {
                         "description": "",
@@ -57,6 +60,7 @@
         },
         "/audio": {
             "get": {
+                "summary": "",
                 "responses": {
                     "200": {
                         "description": "",
@@ -830,6 +834,26 @@
                     }
                 }
             },
+            "Stats": {
+                "type": "object",
+                "title": "openapi.Stats",
+                "required": [
+                    "posts",
+                    "followers",
+                    "following"
+                ],
+                "properties": {
+                    "posts": {
+                        "type": "integer"
+                    },
+                    "followers": {
+                        "type": "integer"
+                    },
+                    "following": {
+                        "type": "integer"
+                    }
+                }
+            },
             "DudeDetails": {
                 "type": "object",
                 "title": "openapi.DudeDetails",
@@ -840,40 +864,10 @@
                 ],
                 "properties": {
                     "dude": {
-                        "type": "object",
-                        "title": "openapi.Dude",
-                        "required": [
-                            "id",
-                            "name"
-                        ],
-                        "properties": {
-                            "id": {
-                                "type": "integer"
-                            },
-                            "name": {
-                                "type": "string"
-                            }
-                        }
+                        "$ref": "#/components/schemas/Dude"
                     },
                     "stats": {
-                        "type": "object",
-                        "title": "openapi.Stats",
-                        "required": [
-                            "posts",
-                            "followers",
-                            "following"
-                        ],
-                        "properties": {
-                            "posts": {
-                                "type": "integer"
-                            },
-                            "followers": {
-                                "type": "integer"
-                            },
-                            "following": {
-                                "type": "integer"
-                            }
-                        }
+                        "$ref": "#/components/schemas/Stats"
                     },
                     "metadata": {
                         "type": "object",
@@ -883,9 +877,57 @@
                     }
                 }
             },
+            "Cat": {
+                "type": "object",
+                "title": "openapi.Cat",
+                "required": [
+                    "id",
+                    "name",
+                    "lives"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "lives": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "Dog": {
+                "type": "object",
+                "title": "openapi.Dog",
+                "required": [
+                    "id",
+                    "name",
+                    "breed"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "breed": {
+                        "type": "string"
+                    }
+                }
+            },
             "Animal": {
                 "type": "object",
                 "title": "openapi.Animal",
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/Cat"
+                    },
+                    {
+                        "$ref": "#/components/schemas/Dog"
+                    }
+                ],
                 "discriminator": {
                     "propertyName": "type",
                     "mapping": {

@@ -7,6 +7,7 @@
     "paths": {
         "/call-receiver-extension": {
             "get": {
+                "summary": "",
                 "responses": {
                     "200": {
                         "description": "",
@@ -20,6 +21,7 @@
         },
         "/request-parameters": {
             "get": {
+                "summary": "",
                 "parameters": [
                     {
                         "name": "recipient",
@@ -42,6 +44,7 @@
         },
         "/response-header": {
             "get": {
+                "summary": "",
                 "parameters": [
                     {
                         "name": "recipient",
@@ -71,6 +74,7 @@
         },
         "/recursive-function": {
             "get": {
+                "summary": "",
                 "responses": {
                     "200": {
                         "description": "",
@@ -83,6 +87,7 @@
         },
         "/passing-arguments": {
             "get": {
+                "summary": "",
                 "responses": {
                     "200": {
                         "description": "",
@@ -102,6 +107,7 @@
         },
         "/reified-type-parameter": {
             "get": {
+                "summary": "",
                 "responses": {
                     "200": {
                         "description": "",

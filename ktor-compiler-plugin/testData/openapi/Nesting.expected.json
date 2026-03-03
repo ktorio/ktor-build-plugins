@@ -72,8 +72,8 @@
         "/api/users/{id}": {
             "delete": {
                 "tags": [
-                    "danger",
-                    "admin"
+                    "admin",
+                    "danger"
                 ],
                 "summary": "Delete a user.",
                 "parameters": [

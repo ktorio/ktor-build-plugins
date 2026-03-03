@@ -87,6 +87,7 @@ tasks {
         dependsOn(testSamples)
         useJUnitPlatform()
         workingDir = rootDir
+        maxHeapSize = "1g"
 
         systemProperty("testSamples.classpath", testSamples.asPath)
         systemProperty("testSamples.location", layout.projectDirectory.dir("testData").asFile.absolutePath)
@@ -108,6 +109,7 @@ tasks {
         dependsOn(testSamples)
         useJUnitPlatform()
         workingDir = rootDir
+        maxHeapSize = "1g"
 
         // Copy all configurations / properties from the test task
         val testTask = project.tasks.test.get()

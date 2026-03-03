@@ -183,6 +183,7 @@
         },
         "/api/summary": {
             "get": {
+                "summary": "",
                 "responses": {
                     "200": {
                         "description": "",

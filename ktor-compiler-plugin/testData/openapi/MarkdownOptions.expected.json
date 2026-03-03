@@ -20,7 +20,8 @@
                                     "type": [
                                         "string",
                                         "null"
-                                    ]
+                                    ],
+                                    "format": "date-time"
                                 }
                             }
                         }
@@ -119,6 +120,15 @@
                 "summary": "Let's try some parameters.",
                 "parameters": [
                     {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The user ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "X-Rate-Limit-Limit",
                         "in": "header",
                         "description": "The number of allowed requests in the current period",
@@ -134,15 +144,6 @@
                             "type": "string"
                         },
                         "x-sensitive": "true"
-                    },
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The user ID",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
                     },
                     {
                         "name": "q",
@@ -194,6 +195,54 @@
     },
     "components": {
         "schemas": {
+            "Contact": {
+                "type": "object",
+                "title": "io.ktor.openapi.OpenApiInfo.Contact",
+                "properties": {
+                    "name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "url": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            },
+            "License": {
+                "type": "object",
+                "title": "io.ktor.openapi.OpenApiInfo.License",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "identifier": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            },
             "OpenApiInfo": {
                 "type": "object",
                 "title": "io.ktor.openapi.OpenApiInfo",
@@ -223,28 +272,7 @@
                     "contact": {
                         "oneOf": [
                             {
-                                "type": "object",
-                                "title": "io.ktor.openapi.OpenApiInfo.Contact",
-                                "properties": {
-                                    "name": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ]
-                                    },
-                                    "url": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ]
-                                    },
-                                    "email": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ]
-                                    }
-                                }
+                                "$ref": "#/components/schemas/Contact"
                             },
                             {
                                 "type": "null"
@@ -254,28 +282,7 @@
                     "license": {
                         "oneOf": [
                             {
-                                "type": "object",
-                                "title": "io.ktor.openapi.OpenApiInfo.License",
-                                "required": [
-                                    "name"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
-                                    },
-                                    "url": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ]
-                                    },
-                                    "identifier": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ]
-                                    }
-                                }
+                                "$ref": "#/components/schemas/License"
                             },
                             {
                                 "type": "null"

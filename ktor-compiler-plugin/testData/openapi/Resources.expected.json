@@ -246,6 +246,27 @@
                     }
                 }
             },
+            "Articles": {
+                "type": "object",
+                "title": "openapi.Articles",
+                "properties": {}
+            },
+            "Id": {
+                "type": "object",
+                "title": "openapi.Articles.Id",
+                "required": [
+                    "parent",
+                    "id"
+                ],
+                "properties": {
+                    "parent": {
+                        "$ref": "#/components/schemas/Articles"
+                    },
+                    "id": {
+                        "type": "integer"
+                    }
+                }
+            },
             "Comments": {
                 "type": "object",
                 "title": "openapi.Articles.Id.Comments",
@@ -254,22 +275,7 @@
                 ],
                 "properties": {
                     "parent": {
-                        "type": "object",
-                        "title": "openapi.Articles.Id",
-                        "required": [
-                            "parent",
-                            "id"
-                        ],
-                        "properties": {
-                            "parent": {
-                                "type": "object",
-                                "title": "openapi.Articles",
-                                "properties": {}
-                            },
-                            "id": {
-                                "type": "integer"
-                            }
-                        }
+                        "$ref": "#/components/schemas/Id"
                     }
                 }
             }
