@@ -1,10 +1,93 @@
 <!--
 The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
+---
+Template for new releases:
+
+## [x.y.z] - YYYY-MM-DD
+
+> [Ktor x.y.z Changelog](https://github.com/ktorio/ktor/releases/tag/x.y.z)
+
+### Features
+-
+
+### Improvements
+-
+
+### Bugfixes
+-
+
+### Dependencies
+-
 -->
 
 ## [Unreleased]
 
 *No changes yet*
+
+## [3.4.1] - 2026-03-03
+
+> [Ktor 3.4.1 Changelog](https://github.com/ktorio/ktor/releases/tag/3.4.1)
+
+### Bugfixes
+
+OpenAPI generation:
+- [KTOR-9305] Fix for local parameter key variables causing errors
+- [KTOR-9279] Account for reified type parameters in call stack
+- [KTOR-9289] Fix resources endpoints
+- [KTOR-9291] More general support for routing functions
+- [KTOR-9281] Read lambda argument bodies for code inference
+
+[KTOR-9305]: https://youtrack.jetbrains.com/issue/KTOR-9305
+[KTOR-9279]: https://youtrack.jetbrains.com/issue/KTOR-9279
+[KTOR-9289]: https://youtrack.jetbrains.com/issue/KTOR-9289
+[KTOR-9291]: https://youtrack.jetbrains.com/issue/KTOR-9291
+[KTOR-9281]: https://youtrack.jetbrains.com/issue/KTOR-9281
+
+## [3.4.0] - 2026-01-22
+
+> [Ktor 3.4.0 Changelog](https://github.com/ktorio/ktor/releases/tag/3.4.0)
+
+### Features
+- [KTOR-8859] OpenAPI generation: Routing documentation API code generation
+
+### Dependencies
+- Kotlin 2.2.21 → 2.3.0
+- Gradle 9.0.0 → 9.3.0
+- Jib plugin 3.4.5 → 3.5.2
+
+[KTOR-8859]: https://youtrack.jetbrains.com/issue/KTOR-8859
+
+## [3.3.3] - 2025-11-27
+
+> [Ktor 3.3.3 Changelog](https://github.com/ktorio/ktor/releases/tag/3.3.3)
+
+### Features
+- [KTOR-9120] OpenAPI generation: Add operationId parameter
+
+### Bugfixes
+- [KTOR-8878] OpenAPI generation: Fix for stack overflow on resolveType
+
+[KTOR-9120]: https://youtrack.jetbrains.com/issue/KTOR-9120
+
+## [3.3.2] - 2025-11-05
+
+> [Ktor 3.3.2 Changelog](https://github.com/ktorio/ktor/releases/tag/3.3.2)
+
+### Improvements
+- [KTOR-8878] OpenAPI generation: Expanded support for common contextual types
+
+### Bugfixes
+- [KTOR-9021] OpenAPI generation: Fix type parameters inference and include missing KDoc parameters
+
+### Dependencies
+- Kotlin 2.2.20 → 2.2.21
+
+[KTOR-8878]: https://youtrack.jetbrains.com/issue/KTOR-8878
+[KTOR-9021]: https://youtrack.jetbrains.com/issue/KTOR-9021
+
+## [3.3.1] - 2025-10-08
+
+> [Ktor 3.3.1 Changelog](https://github.com/ktorio/ktor/releases/tag/3.3.1)
 
 ## [3.3.0] - 2025-09-12
 
@@ -93,7 +176,12 @@ The format is based on Keep a Changelog: https://keepachangelog.com/en/1.1.0/
 - Bump default JRE in Docker to 21 (current LTS version)
 - Set Kotlin API and language level to 1.8 for compatibility with Gradle 8.0+
 
-[unreleased]: https://github.com/ktorio/ktor-build-plugins/compare/v3.3.0...main
+[unreleased]: https://github.com/ktorio/ktor-build-plugins/compare/v3.4.1...main
+[3.4.1]: https://github.com/ktorio/ktor-build-plugins/compare/v3.4.0...v3.4.1
+[3.4.0]: https://github.com/ktorio/ktor-build-plugins/compare/v3.3.3...v3.4.0
+[3.3.3]: https://github.com/ktorio/ktor-build-plugins/compare/v3.3.2...v3.3.3
+[3.3.2]: https://github.com/ktorio/ktor-build-plugins/compare/v3.3.1...v3.3.2
+[3.3.1]: https://github.com/ktorio/ktor-build-plugins/compare/v3.3.0...v3.3.1
 [3.3.0]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.3...v3.3.0
 [3.2.3]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.2...v3.2.3
 [3.2.2]: https://github.com/ktorio/ktor-build-plugins/compare/v3.2.1...v3.2.2
