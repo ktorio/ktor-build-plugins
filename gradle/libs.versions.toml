@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.3.0"
+kotlin = "2.3.20"
 ktor-plugin = "3.4.1"
 ktor = "3.4.1"
 logback = "1.5.25"
