@@ -25,6 +25,11 @@ import org.jetbrains.kotlin.ir.util.toIrConst
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.name.SpecialNames
 
+private object IrCodeGenConstants {
+    // Mitigates breaking change in IrDeclarationOrigin.LOCAL_FUNCTION_FOR_LAMBDA between 2.3.0 and 2.3.20
+    val LOCAL_LAMBDA_ORIGIN = IrDeclarationOriginImpl("LOCAL_FUNCTION_FOR_LAMBDA")
+}
+
 context(context: CodeGenContext)
 fun IrExpression.chainBuilder(
     parentDeclaration: IrFunction,
@@ -76,7 +81,7 @@ fun builderLambda(
         name = SpecialNames.ANONYMOUS
         visibility = DescriptorVisibilities.LOCAL
         returnType = pluginContext.irBuiltIns.unitType
-        origin = IrDeclarationOrigin.LOCAL_FUNCTION_FOR_LAMBDA
+        origin = IrCodeGenConstants.LOCAL_LAMBDA_ORIGIN
     }.apply {
         parameters = buildList {
             receiverType?.let {
