@@ -783,7 +783,7 @@
         "schemas": {
             "Dude": {
                 "type": "object",
-                "title": "openapi.Dude",
+                "title": "Dude",
                 "required": [
                     "id",
                     "name"
@@ -799,7 +799,7 @@
             },
             "DudeRequest": {
                 "type": "object",
-                "title": "openapi.DudeRequest",
+                "title": "DudeRequest",
                 "required": [
                     "name"
                 ],
@@ -811,7 +811,7 @@
             },
             "ResponseError": {
                 "type": "object",
-                "title": "openapi.ResponseError",
+                "title": "ResponseError",
                 "required": [
                     "code",
                     "message"
@@ -836,7 +836,7 @@
             },
             "Stats": {
                 "type": "object",
-                "title": "openapi.Stats",
+                "title": "Stats",
                 "required": [
                     "posts",
                     "followers",
@@ -856,7 +856,7 @@
             },
             "DudeDetails": {
                 "type": "object",
-                "title": "openapi.DudeDetails",
+                "title": "DudeDetails",
                 "required": [
                     "dude",
                     "stats",
@@ -879,7 +879,7 @@
             },
             "Cat": {
                 "type": "object",
-                "title": "openapi.Cat",
+                "title": "Cat",
                 "required": [
                     "id",
                     "name",
@@ -899,7 +899,7 @@
             },
             "Dog": {
                 "type": "object",
-                "title": "openapi.Dog",
+                "title": "Dog",
                 "required": [
                     "id",
                     "name",
@@ -919,7 +919,7 @@
             },
             "Animal": {
                 "type": "object",
-                "title": "openapi.Animal",
+                "title": "Animal",
                 "oneOf": [
                     {
                         "$ref": "#/components/schemas/Cat"
@@ -938,7 +938,7 @@
             },
             "SuccessResponse": {
                 "type": "object",
-                "title": "openapi.SuccessResponse",
+                "title": "SuccessResponse",
                 "required": [
                     "message",
                     "data"
@@ -957,7 +957,7 @@
             },
             "PartialSuccessResponse": {
                 "type": "object",
-                "title": "openapi.PartialSuccessResponse",
+                "title": "PartialSuccessResponse",
                 "required": [
                     "message",
                     "warnings"

@@ -224,7 +224,7 @@
         "schemas": {
             "Post": {
                 "type": "object",
-                "title": "openapi.Post",
+                "title": "Post",
                 "required": [
                     "id",
                     "title",
@@ -248,12 +248,12 @@
             },
             "Articles": {
                 "type": "object",
-                "title": "openapi.Articles",
+                "title": "Articles",
                 "properties": {}
             },
             "Id": {
                 "type": "object",
-                "title": "openapi.Articles.Id",
+                "title": "Id",
                 "required": [
                     "parent",
                     "id"
@@ -269,7 +269,7 @@
             },
             "Comments": {
                 "type": "object",
-                "title": "openapi.Articles.Id.Comments",
+                "title": "Comments",
                 "required": [
                     "parent"
                 ],
