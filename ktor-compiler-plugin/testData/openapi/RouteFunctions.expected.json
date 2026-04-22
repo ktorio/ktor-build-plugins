@@ -199,7 +199,7 @@
         "schemas": {
             "User1": {
                 "type": "object",
-                "title": "openapi.User1",
+                "title": "User1",
                 "required": [
                     "id",
                     "name"
@@ -215,7 +215,7 @@
             },
             "Message1": {
                 "type": "object",
-                "title": "openapi.Message1",
+                "title": "Message1",
                 "required": [
                     "id",
                     "text"

@@ -36,7 +36,7 @@
         "schemas": {
             "Node": {
                 "type": "object",
-                "title": "openapi.Node",
+                "title": "Node",
                 "required": [
                     "name"
                 ],

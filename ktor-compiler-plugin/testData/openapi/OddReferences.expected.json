@@ -97,7 +97,7 @@
         "schemas": {
             "CustomResponse": {
                 "type": "object",
-                "title": "openapi.CustomResponse",
+                "title": "CustomResponse",
                 "required": [
                     "message"
                 ],

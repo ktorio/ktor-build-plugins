@@ -173,7 +173,7 @@
         "schemas": {
             "Contact": {
                 "type": "object",
-                "title": "io.ktor.openapi.OpenApiInfo.Contact",
+                "title": "Contact",
                 "properties": {
                     "name": {
                         "type": [
@@ -197,7 +197,7 @@
             },
             "License": {
                 "type": "object",
-                "title": "io.ktor.openapi.OpenApiInfo.License",
+                "title": "License",
                 "required": [
                     "name"
                 ],
@@ -221,7 +221,7 @@
             },
             "OpenApiInfo": {
                 "type": "object",
-                "title": "io.ktor.openapi.OpenApiInfo",
+                "title": "OpenApiInfo",
                 "required": [
                     "title",
                     "version"

@@ -137,7 +137,7 @@
         "schemas": {
             "User0": {
                 "type": "object",
-                "title": "openapi.User0",
+                "title": "User0",
                 "required": [
                     "id",
                     "name"
