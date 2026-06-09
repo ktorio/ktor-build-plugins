@@ -157,6 +157,55 @@ class DockerTest {
         assertTrue { dependencies.contains(project.tasks.named(dependentTasks[1]).get()) }
     }
 
+    @Test
+    fun `environment variables should be included in the image configuration`() {
+        project.applyKtorPlugin {
+            getExtension<DockerExtension>().environmentVariable("NAME", "Container")
+        }
+
+        val task = project.tasks.named("setupJibLocal", ConfigureJibLocalTask::class.java).get()
+        task.execute()
+
+        val jibExtension = project.extensions.getByType(JibExtension::class.java)
+        assertEquals(mapOf("NAME" to "Container"), jibExtension.container.environment)
+    }
+
+    @Test
+    fun `docker extension does not include environment variables without values in the image`() {
+        project.applyKtorPlugin {
+            getExtension<DockerExtension>().apply {
+                environmentVariables.add(DockerEnvironmentVariable("HOST_VAR")) // null value
+                environmentVariable("APP_ENV", "production")
+            }
+        }
+
+        val task = project.tasks.named("setupJibLocal", ConfigureJibLocalTask::class.java).get()
+        task.execute()
+
+        val jibExtension = project.extensions.getByType(JibExtension::class.java)
+        assertEquals(mapOf("APP_ENV" to "production"), jibExtension.container.environment)
+    }
+
+    @Test
+    fun `docker extension merges environment variables with existing jib container config`() {
+        project.applyKtorPlugin {
+            getExtension<DockerExtension>().environmentVariable("NAME", "Container")
+        }
+
+        project.extensions.configure(JibExtension::class.java) { ext ->
+            ext.container.environment = mapOf("EXISTING_VAR" to "existing_value")
+        }
+
+        val task = project.tasks.named("setupJibLocal", ConfigureJibLocalTask::class.java).get()
+        task.execute()
+
+        val jibExtension = project.extensions.getByType(JibExtension::class.java)
+        assertEquals(
+            mapOf("EXISTING_VAR" to "existing_value", "NAME" to "Container"),
+            jibExtension.container.environment
+        )
+    }
+
     companion object {
         @JvmStatic
         fun dataForTestingTasks() = listOf (
