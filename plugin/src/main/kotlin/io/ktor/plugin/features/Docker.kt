@@ -235,6 +235,14 @@ internal abstract class ConfigureJibTaskBase(@get:Input val isExternal: Boolean)
         val tag: String = dockerExtension.imageTag.get()
         jibExtension.to.tags = jibExtension.to.tags + tag
 
+        val envVars = dockerExtension.environmentVariables.get()
+            .filter { it.value != null }
+            .associate { it.variable to it.value!! }
+        if (envVars.isNotEmpty()) {
+            jibExtension.container.environment =
+                (jibExtension.container.environment ?: emptyMap()) + envVars
+        }
+
         val projectJava = project.javaVersion
         val imageJava = dockerExtension.jreVersion.get()
         if (imageJava < projectJava) {
