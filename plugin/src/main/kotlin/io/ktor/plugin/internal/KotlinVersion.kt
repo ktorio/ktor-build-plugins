@@ -21,5 +21,6 @@ internal value class KotlinVersion(private val value: Int) : Comparable<KotlinVe
         }
 
         val V2_1_20 = KotlinVersion(2_1_20)
+        val V2_4_0 = KotlinVersion(2_4_00)
     }
 }
