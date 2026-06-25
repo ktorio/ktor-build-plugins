@@ -1,8 +1,10 @@
 package io.ktor.plugin
 
 import io.ktor.plugin.KtorGradlePlugin.Companion.VERSION
+import io.ktor.plugin.features.CompilerPlugin
 import io.ktor.plugin.internal.*
 import org.gradle.api.plugins.ApplicationPlugin
+import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 import kotlin.test.*
 import io.ktor.plugin.KtorGradlePlugin.Companion.VERSION as KTOR_VERSION
 
@@ -84,6 +86,23 @@ class PluginTest {
 
         evaluate()
         assertEquals("-Dio.ktor.development=false", application.applicationDefaultJvmArgs.single())
+    }
+
+    @Test
+    fun `compiler plugin is not applied on Kotlin older than 2_4_0`() {
+        // The test classpath uses a Kotlin Gradle plugin version below 2.4.0 (see TestConstants.kt
+        // and libs.versions.toml). The Ktor OpenAPI compiler plugin artifact requires Kotlin 2.4.0+
+        // and would fail with NoClassDefFoundError when loaded by an older compiler, so the Ktor
+        // Gradle plugin must NOT apply the CompilerPlugin support plugin in this case.
+        val kotlinVersion = io.ktor.plugin.internal.KotlinVersion.parse(project.getKotlinPluginVersion())
+        assertTrue(
+            kotlinVersion < io.ktor.plugin.internal.KotlinVersion.V2_4_0,
+            "Test precondition: this test must run with Kotlin < 2.4.0, but got $kotlinVersion"
+        )
+        assertFalse(
+            project.plugins.hasPlugin(CompilerPlugin::class.java),
+            "CompilerPlugin must not be applied on Kotlin versions older than 2.4.0"
+        )
     }
 
     @Test
