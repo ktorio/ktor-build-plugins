@@ -4,6 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import io.ktor.plugin.internal.*
 import org.gradle.api.Project
+import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.plugins.ApplicationPlugin
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.TaskProvider
@@ -56,9 +57,13 @@ internal fun Project.configureFatJar() {
 }
 
 private fun Project.configureShadowPlugin(fatJarExtension: FatJarExtension) {
-    val shadowJar: TaskProvider<ShadowJar> = tasks.named(SHADOW_JAR_TASK_NAME, ShadowJar::class.java) {
-        it.archiveFileName.set(fatJarExtension.archiveFileName)
-        it.isZip64 = fatJarExtension.allowZip64.get()
+    val shadowJar: TaskProvider<ShadowJar> = tasks.named(SHADOW_JAR_TASK_NAME, ShadowJar::class.java) { shadowJar ->
+        shadowJar.archiveFileName.set(fatJarExtension.archiveFileName)
+        shadowJar.isZip64 = fatJarExtension.allowZip64.get()
+        shadowJar.filesMatching("META-INF/services/**") {
+            it.duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        }
+        shadowJar.mergeServiceFiles()
     }
 
     val buildFatJar = tasks.registerKtorTask(BUILD_FAT_JAR_TASK_NAME, BUILD_FAT_JAR_TASK_DESCRIPTION) {
