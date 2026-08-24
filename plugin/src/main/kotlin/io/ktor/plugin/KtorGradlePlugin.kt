@@ -16,6 +16,7 @@ public abstract class KtorGradlePlugin : Plugin<Project> {
     override fun apply(project: Project): Unit = with(project) {
         val extension = extensions.create(KtorExtension.NAME, KtorExtension::class.java)
         configureApplication(extension)
+        configureHotRun(extension)
         configureFatJar()
         configureDocker()
         configureBomFile()

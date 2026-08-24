@@ -1,16 +1,5 @@
 package io.ktor.samples.fatjar
 
-import io.ktor.server.cio.*
-import io.ktor.server.engine.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-
-fun main() {
-    embeddedServer(CIO, port = 8080) {
-        routing {
-            get("/") {
-                call.respondText("Hello World!")
-            }
-        }
-    }.start(wait = true)
+fun main(args: Array<String>) {
+    io.ktor.server.cio.EngineMain.main(args)
 }

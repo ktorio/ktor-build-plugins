@@ -1,5 +1,11 @@
 
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.attributes.Bundling
+import org.gradle.api.attributes.Category
+import org.gradle.api.attributes.LibraryElements
+import org.gradle.api.attributes.Usage
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.gradle.language.jvm.tasks.ProcessResources
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
@@ -14,6 +20,21 @@ group = libs.plugins.ktor.get().pluginId
 version = resolveVersion(libs.versions.ktor.plugin.get())
 description = "Ktor Gradle plugin"
 
+// Resolves just the built jar of the `hotswap-agent-plugin` subproject (not its `compileOnly`
+// hotswap-agent dependency, which never leaves that project) so it can be bundled as a resource
+// below — the runtime jar merge in HotRun.kt then combines it with the consumer-resolved
+// hotswap-agent dependency jar for `-javaagent:`.
+val hotswapPluginArtifact: Configuration by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    attributes {
+        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
+        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.LIBRARY))
+        attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
+        attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.JAR))
+    }
+}
+
 dependencies {
     implementation(gradleApi())
 
@@ -21,6 +42,8 @@ dependencies {
     implementation(libs.gradlePlugin.shadow)
     implementation(libs.gradlePlugin.jib)
     implementation(libs.gradlePlugin.graalvm)
+
+    hotswapPluginArtifact(project(":hotswap-agent-plugin"))
 
     testImplementation(libs.gradlePlugin.kotlin)
     testImplementation(libs.mockk)
@@ -32,6 +55,12 @@ dependencies {
         implementation("org.apache.commons:commons-lang3:[3.18.0,)") {
             because("Versions 3.0..<3.18.0 are affected by CVE-2025-48924")
         }
+    }
+}
+
+tasks.named<ProcessResources>("processResources") {
+    from(hotswapPluginArtifact) {
+        into("io/ktor/plugin/hotreload")
     }
 }
 

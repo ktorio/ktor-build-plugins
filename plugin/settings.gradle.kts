@@ -18,3 +18,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "plugin"
+
+include("hotswap-agent-plugin")
