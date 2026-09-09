@@ -9,7 +9,7 @@ gradlePlugin-jib = "3.5.4"
 gradlePlugin-graalvm = "0.10.6"
 gradlePlugin-mavenPublishing = "0.36.0"
 binaryCompatibilityValidator = "0.18.1"
-junit = "5.14.2"
+junit = "5.14.4"
 mockk = "1.14.11"
 serialization = "1.11.0"
 
