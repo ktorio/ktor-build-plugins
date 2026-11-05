@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.3.21"
-ktor-plugin = "3.7.0-dev-plus"
-ktor = "3.7.0-dev-plus"
+ktor-plugin = "3.7.0"
+ktor = "3.7.0-dev-plus-eap-1656"
 logback = "1.5.25"
 pluginPublish = "1.3.1"
 gradlePlugin-shadow = "9.1.0"
