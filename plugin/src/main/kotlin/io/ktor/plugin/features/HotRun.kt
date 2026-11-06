@@ -1,7 +1,9 @@
 package io.ktor.plugin.features
 
 import io.ktor.plugin.internal.*
+import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.flow.FlowAction
 import org.gradle.api.flow.FlowParameters
 import org.gradle.api.flow.FlowScope
@@ -150,8 +152,13 @@ private val HOT_RELOAD_JVM_ARGS = listOf(
     "-XX:HotswapAgent=external",
 )
 
-/** JBR is compatible up to Java 21; targeting a later version breaks enhanced redefinition. */
-private const val JBR_JAVA_VERSION = 21
+/**
+ * Gradle property (`-Pio.ktor.hotReload.jbrVersion=<version>`) to select the JetBrains Runtime used
+ * by `runHot`. Defaults to the project's Java toolchain version, but not below 21, or to 21 when no
+ * toolchain version is configured. An explicit value takes precedence over the toolchain.
+ */
+private const val JBR_VERSION_PROPERTY = "io.ktor.hotReload.jbrVersion"
+private const val DEFAULT_JBR_JAVA_VERSION = 21
 
 /**
  * Registers the [RUN_HOT_TASK_NAME] task: launches the Ktor server on the JetBrains Runtime with
@@ -164,6 +171,8 @@ private const val JBR_JAVA_VERSION = 21
  * apply immediately. Structural changes (new routes, application-scoped setup) additionally require
  * re-running the modules — set `-P$EMBEDDED_SERVER_ACCESSOR_PROPERTY` to enable that automatically via
  * a bundled custom HotSwapAgent plugin. Opt out of the forked recompile with `-P$AUTO_RECOMPILE_PROPERTY=false`.
+ * The JBR version follows the project's Java toolchain (minimum 21) and can be selected explicitly
+ * with `-P$JBR_VERSION_PROPERTY=<version>`.
  * If a change doesn't seem to reload, pass `-P$VERBOSE_PROPERTY=true` to see the full recompile
  * output and HotSwapAgent's own debug logging.
  */
@@ -539,7 +548,27 @@ internal abstract class StopHotRecompilerFlowAction : FlowAction<StopHotRecompil
 }
 
 /**
- * Resolves a JetBrains Runtime launcher through Gradle's toolchain service.
+ * Selects the JBR version from the explicit Gradle property, then the project's Java toolchain, then
+ * the default version. Toolchain versions below the default are raised to the default; an explicit
+ * version is used as-is.
+ */
+internal fun Project.hotRunJbrVersion(): Provider<Int> {
+    return hotRunJbrVersion(providers.gradleProperty(JBR_VERSION_PROPERTY))
+}
+
+internal fun Project.hotRunJbrVersion(jbrVersionOverride: Provider<String>): Provider<Int> {
+    val toolchainVersion = extensions.getByType(JavaPluginExtension::class.java).toolchain.languageVersion
+        .map { it.asInt().coerceAtLeast(DEFAULT_JBR_JAVA_VERSION) }
+        .orElse(DEFAULT_JBR_JAVA_VERSION)
+    val override = jbrVersionOverride.map { value ->
+        value.toIntOrNull()?.takeIf { it > 0 }
+            ?: throw GradleException("Gradle property '$JBR_VERSION_PROPERTY' must be a positive Java version, but was '$value'.")
+    }
+    return override.orElse(toolchainVersion)
+}
+
+/**
+ * Resolves a JetBrains Runtime launcher through Gradle's toolchain service using [hotRunJbrVersion].
  *
  * Gradle auto-detects JBR installations already on the machine. To let Gradle download one on
  * demand, apply the foojay toolchain resolver in the consuming build's `settings.gradle.kts`.
@@ -547,7 +576,7 @@ internal abstract class StopHotRecompilerFlowAction : FlowAction<StopHotRecompil
 private fun Project.jetBrainsRuntimeLauncher(): Provider<JavaLauncher> {
     val toolchains = extensions.getByType(JavaToolchainService::class.java)
     return toolchains.launcherFor {
-        it.languageVersion.set(JavaLanguageVersion.of(JBR_JAVA_VERSION))
+        it.languageVersion.set(hotRunJbrVersion().map { version -> JavaLanguageVersion.of(version) })
         it.vendor.set(JvmVendorSpec.JETBRAINS)
     }
 }
