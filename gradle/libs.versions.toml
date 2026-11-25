@@ -10,7 +10,7 @@ gradlePlugin-graalvm = "0.10.6"
 gradlePlugin-mavenPublishing = "0.37.0"
 binaryCompatibilityValidator = "0.18.1"
 junit = "5.14.4"
-mockk = "1.14.11"
+mockk = "1.14.12"
 serialization = "1.11.0"
 
 [libraries]
